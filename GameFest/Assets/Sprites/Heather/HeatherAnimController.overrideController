@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: HeatherAnimController
+  m_Controller: {fileID: 9100000, guid: 4f7f5de427dd7294cbba3533428f173c, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: a009b53f6dd8dcc41884d3f73b36f70f, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: d2e23e9b1dcda1b4eb402c072cc10f92, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 82a36ea7637a1e44b9596061712201f9, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: ad309be524a8a67488d2b11ae2158478, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: b39d1788ecb80fb4e8607f8a7b7862a8, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 04c3be3215a8f45419549d88916d0de0, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: cc3c815d2e03b0e418b265fc358b4787, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 923ba9ce26884734bbd556ea1e58511a, type: 2}
