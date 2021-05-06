@@ -11,6 +11,8 @@ public class PlayerControls : MonoBehaviour
     public PlayerInput PlayerInput;
     public Transform PlayerPrefab;
 
+    GenericInputHandler _activeHandler = null;
+
     // player information
     InputDevice _device;
     Color _colour;
@@ -49,6 +51,8 @@ public class PlayerControls : MonoBehaviour
         // create character
         var tr = Instantiate(PlayerPrefab);
         _movement = tr.GetComponentInChildren<PlayerMovement>();
+
+        _activeHandler = GetComponent<LobbyInputHandler>();
     }
 
     /// <summary>
@@ -189,6 +193,9 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnMove(InputAction.CallbackContext ctx)
     {
+        if (_activeHandler != null)
+            _activeHandler.OnMove(ctx);
+
         //    if (_state.GetState() == PlayerStateEnum.Ready)
         //        // move the player
         //        _movement.Move(ctx.ReadValue<Vector2>());
@@ -200,7 +207,11 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnTouchpad(InputAction.CallbackContext ctx)
     {
+        // only handle it once
+        if (!ctx.performed) return;
 
+        if (_activeHandler != null)
+            _activeHandler.OnTouchpad();
     }
 
     /// <summary>
@@ -209,8 +220,11 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnCross(InputAction.CallbackContext ctx)
     {
-        //if (_state.GetState() == PlayerStateEnum.Playing)
-        //    _movement.Jump();
+        // only handle it once
+        if (!ctx.performed) return;
+
+        if (_activeHandler != null)
+            _activeHandler.OnCross();
     }
 
     /// <summary>
