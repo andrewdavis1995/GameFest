@@ -1,11 +1,11 @@
 ﻿namespace Assets.Scripts
 {
-    public enum PlayerStateEnum { NotStarted, NameEntry, CharacterSelection, Ready, Playing }
+    public enum PlayerStateEnum { NameEntry, CharacterSelection, Ready }
 
     /// <summary>
     /// Stores the current state of a player - i.e. which action they are taking part in
     /// </summary>
-    public class PlayerState
+    public class LobbyState
     {
         // the state of the player
         private PlayerStateEnum _state;
@@ -13,9 +13,9 @@
         /// <summary>
         /// Constructor
         /// </summary>
-        public PlayerState()
+        public LobbyState()
         {
-            _state = PlayerStateEnum.NotStarted;
+            _state = PlayerStateEnum.NameEntry;
         }
 
         /// <summary>

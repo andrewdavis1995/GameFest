@@ -16,14 +16,11 @@ public class PlayerControls : MonoBehaviour
     // player information
     InputDevice _device;
     Color _colour;
-    PlayerState _state = new PlayerState();
+    LobbyState _state = new LobbyState();
     string _playerName = "";
 
     // the movement script for this player
     PlayerMovement _movement;
-
-    // UI displays
-    LobbyDisplayScript _lobbyDisplay;
 
     // paddles - TODO: move to another script
     Transform[] _paddles;
@@ -35,9 +32,11 @@ public class PlayerControls : MonoBehaviour
     /// </summary>
     private void Start()
     {
-        // get he necessary components
+        // get the necessary components
         _device = PlayerInput.devices.FirstOrDefault();
         _paddles = GameObject.FindGameObjectsWithTag("Paddle").Select(e => e.transform).ToArray();
+
+        _activeHandler = GetComponent<LobbyInputHandler>();
 
         // work out which colour to assign to this player
         GetColour_();
@@ -48,31 +47,9 @@ public class PlayerControls : MonoBehaviour
         // sets the colour on dualshock controls
         SetLightbarColour_();
 
-        // create character
-        var tr = Instantiate(PlayerPrefab);
-        _movement = tr.GetComponentInChildren<PlayerMovement>();
-
-        _activeHandler = GetComponent<LobbyInputHandler>();
-    }
-
-    /// <summary>
-    /// Adds a letter to the player name
-    /// </summary>
-    /// <param name="character">The character to add to the name</param>
-    internal void AddToPlayerName()
-    {
-        _lobbyDisplay.AddToPlayerName();
-        _playerName = _lobbyDisplay.GetPlayerName();
-    }
-
-    /// <summary>
-    /// Adds a letter to the player name
-    /// </summary>
-    /// <param name="character">The character to add to the name</param>
-    internal void BackspacePlayerName()
-    {
-        _lobbyDisplay.BackspacePlayerName();
-        _playerName = _lobbyDisplay.GetPlayerName();
+        //// create character
+        //var tr = Instantiate(PlayerPrefab);
+        //_movement = tr.GetComponentInChildren<PlayerMovement>();
     }
 
     /// <summary>
@@ -91,10 +68,12 @@ public class PlayerControls : MonoBehaviour
     {
         // find all panels
         var panels = GameObject.FindGameObjectsWithTag("PlayerColourDisplay");
-        _lobbyDisplay = panels[PlayerInput.playerIndex].GetComponentInChildren<LobbyDisplayScript>();
+        var lobbyDisplay = panels[PlayerInput.playerIndex].GetComponentInChildren<LobbyDisplayScript>();
 
         // set the panel that corresponds to this player with the correct colour and device
-        _lobbyDisplay.PlayerStarted(_colour, _device, PlayerInput.playerIndex);
+        lobbyDisplay.PlayerStarted(_colour, _device, PlayerInput.playerIndex);
+
+        (_activeHandler as LobbyInputHandler).SetDisplay(lobbyDisplay, (x) => _playerName = x);
 
         // we will now ask for name
         _state.SetState(PlayerStateEnum.NameEntry);
@@ -127,22 +106,6 @@ public class PlayerControls : MonoBehaviour
 
         // set the colour
         _colour = new Color(r, g, b);
-    }
-
-    /// <summary>
-    /// Displays the currently selected characters
-    /// </summary>
-    internal void SetLetterDisplay(string current, string left, string right)
-    {
-        _lobbyDisplay.SetLetterDisplay(current, left, right);
-    }
-
-    /// <summary>
-    /// Displays the currently selected characters
-    /// </summary>
-    internal void SetCharacterDisplay(Sprite current, Sprite left, Sprite right)
-    {
-        _lobbyDisplay.SetCharacterDisplay(current, left, right);
     }
 
     /// <summary>
@@ -179,15 +142,6 @@ public class PlayerControls : MonoBehaviour
     }
 
     /// <summary>
-    /// Sets the visibility of the character selection panel
-    /// </summary>
-    /// <param name="state"></param>
-    public void ShowCharacterSelection(bool state)
-    {
-        _lobbyDisplay.ShowCharacterSelectionPanel(state);
-    }
-
-    /// <summary>
     /// When the movement input is triggered
     /// </summary>
     /// <param name="ctx">The context of the input</param>
@@ -212,6 +166,15 @@ public class PlayerControls : MonoBehaviour
 
         if (_activeHandler != null)
             _activeHandler.OnTouchpad();
+    }
+
+    public void OnL1(InputAction.CallbackContext ctx)
+    {
+        // only handle it once
+        if (!ctx.performed) return;
+
+        if (_activeHandler != null)
+            _activeHandler.OnL1();
     }
 
     /// <summary>
@@ -253,8 +216,11 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnCircle(InputAction.CallbackContext ctx)
     {
-        //if (_state.GetState() == PlayerStateEnum.Playing)
-        //    _movement.Jump();
+        // only handle it once
+        if (!ctx.performed) return;
+
+        if (_activeHandler != null)
+            _activeHandler.OnCircle();
     }
 
     /// <summary>
@@ -275,15 +241,6 @@ public class PlayerControls : MonoBehaviour
     {
         //_paddleState = true;
         //SetPaddles_();
-    }
-
-    /// <summary>
-    /// When the player is ready
-    /// <param name="ready">Whether the player is ready</param>
-    /// </summary>
-    public void Ready(bool ready)
-    {
-        _lobbyDisplay.ShowReadyPanel(ready);
     }
 
     /// <summary>

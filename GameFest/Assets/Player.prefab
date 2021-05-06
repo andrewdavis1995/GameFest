@@ -123,11 +123,35 @@ MonoBehaviour:
     m_ActionId: 552956ac-4d1f-4cb2-8e3a-a053ba6c91b5
     m_ActionName: Gameplay/Square[/Keyboard/a]
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2432584173636143568}
+        m_TargetAssemblyTypeName: PlayerControls, Assembly-CSharp
+        m_MethodName: OnCircle
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: eb17da53-2a59-4d59-94b9-4548e664e808
     m_ActionName: Gameplay/Circle[/Keyboard/l]
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2432584173636143568}
+        m_TargetAssemblyTypeName: PlayerControls, Assembly-CSharp
+        m_MethodName: OnL1
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: f2e2b5e8-682a-4788-bd94-d80625cae7f7
     m_ActionName: Gameplay/L1[/Keyboard/q]
   - m_PersistentCalls:
@@ -165,3 +189,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5154d3b7780d7694ba43531df5772f71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CharacterSprites:
+  - {fileID: 21300000, guid: 9c922659c5f0b20409e531f5f2eb6142, type: 3}
+  - {fileID: 21300000, guid: 1da58174a8ba03744930091a21a7b3cc, type: 3}
+  - {fileID: 21300000, guid: 6b5012331e5ad4349b046d83fc1dc4b4, type: 3}
+  - {fileID: 21300000, guid: 5dc797f033673db44983cce4d2dea9ab, type: 3}
+  - {fileID: 21300000, guid: 8f7ac51cad4eeb44891f89834df38e44, type: 3}
+  - {fileID: 21300000, guid: 75e4c76902c67ec49a3a990c2e68d3de, type: 3}
+  - {fileID: 21300000, guid: 548165f74b4102445a6ce9f5874a784b, type: 3}
+  - {fileID: 21300000, guid: 15d820ba3d27f3d458ee2028907385d0, type: 3}
+  - {fileID: 21300000, guid: c1ec961bc68ea8c479c3af91b4d5729b, type: 3}
