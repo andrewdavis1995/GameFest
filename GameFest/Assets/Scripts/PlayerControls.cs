@@ -189,21 +189,58 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnMove(InputAction.CallbackContext ctx)
     {
-        Debug.Log("ON MOVE");
-
-        if (_state.GetState() == PlayerStateEnum.Ready)
-            // move the player
-            _movement.Move(ctx.ReadValue<Vector2>());
+        //    if (_state.GetState() == PlayerStateEnum.Ready)
+        //        // move the player
+        //        _movement.Move(ctx.ReadValue<Vector2>());
     }
 
     /// <summary>
-    /// When the jump input is triggered
+    /// When the Touchpad input is triggered
     /// </summary>
     /// <param name="ctx">The context of the input</param>
-    public void OnJump(InputAction.CallbackContext ctx)
+    public void OnTouchpad(InputAction.CallbackContext ctx)
     {
-        if (_state.GetState() == PlayerStateEnum.Playing)
-            _movement.Jump();
+
+    }
+
+    /// <summary>
+    /// When the Cross input is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
+    public void OnCross(InputAction.CallbackContext ctx)
+    {
+        //if (_state.GetState() == PlayerStateEnum.Playing)
+        //    _movement.Jump();
+    }
+
+    /// <summary>
+    /// When the Square input is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
+    public void OnSquare(InputAction.CallbackContext ctx)
+    {
+        //if (_state.GetState() == PlayerStateEnum.Playing)
+        //    _movement.Jump();
+    }
+
+    /// <summary>
+    /// When the Triangle input is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
+    public void OnTriangle(InputAction.CallbackContext ctx)
+    {
+        //if (_state.GetState() == PlayerStateEnum.Playing)
+        //    _movement.Jump();
+    }
+
+    /// <summary>
+    /// When the OnCircle input is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
+    public void OnCircle(InputAction.CallbackContext ctx)
+    {
+        //if (_state.GetState() == PlayerStateEnum.Playing)
+        //    _movement.Jump();
     }
 
     /// <summary>
@@ -212,8 +249,8 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void PaddleRight(InputAction.CallbackContext ctx)
     {
-        _paddleState = false;
-        SetPaddles_();
+        //_paddleState = false;
+        //SetPaddles_();
     }
 
     /// <summary>
@@ -222,8 +259,8 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void PaddleLeft(InputAction.CallbackContext ctx)
     {
-        _paddleState = true;
-        SetPaddles_();
+        //_paddleState = true;
+        //SetPaddles_();
     }
 
     /// <summary>

@@ -51,28 +51,6 @@ public class LobbyLogic : MonoBehaviour
     }
 
     /// <summary>
-    /// When the Left input is triggered
-    /// </summary>
-    /// <param name="ctx">The context of the input</param>
-    public void OnLeft(InputAction.CallbackContext ctx)
-    {
-        // only handle it once
-        if (!ctx.performed) return;
-
-        switch (PlayerController.GetPlayerState())
-        {
-            // name entry, move the letter to the left
-            case PlayerStateEnum.NameEntry:
-                UpdateIndex_(-1);
-                break;
-            // name entry, move the character to the left
-            case PlayerStateEnum.CharacterSelection:
-                UpdateCharacters_(-1);
-                break;
-        }
-    }
-
-    /// <summary>
     /// When the Enter input is triggered
     /// </summary>
     /// <param name="ctx">The context of the input</param>
