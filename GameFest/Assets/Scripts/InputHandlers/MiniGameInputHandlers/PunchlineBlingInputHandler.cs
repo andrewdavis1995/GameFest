@@ -1,7 +1,10 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-public class GameCentralInputHandler : GenericInputHandler
+public class PunchlineBlingInputHandler : GenericInputHandler
 {
+    PlayerMovement _movement;
+
     /// <summary>
     /// Creates the specified object for the player attached to this object
     /// </summary>
@@ -10,11 +13,23 @@ public class GameCentralInputHandler : GenericInputHandler
     /// <param name="characterIndex">The index of the selected character</param>
     public override void Spawn(Transform prefab, Vector2 position, int characterIndex)
     {
-        // create the object
         var spawned = Instantiate(prefab, position, Quaternion.identity);
+        _movement = spawned.GetComponent<PlayerMovement>();
         SetAnimation(spawned, characterIndex);
+    }
 
-        // do a little jump - TODO: remove when we have a proper flow set up
-        spawned.GetComponent<Rigidbody2D>().AddForce(new Vector2(100, 100));
+    /// <summary>
+    /// When the move event is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the movement</param>
+    public override void OnMove(InputAction.CallbackContext ctx)
+    {
+        // move the player
+        _movement.Move(ctx.ReadValue<Vector2>());
+    }
+
+    public override void OnCross()
+    {
+        _movement.Jump();
     }
 }

@@ -15,6 +15,8 @@ public class PlayerManagerScript : MonoBehaviour
 
     List<PlayerControls> _players = new List<PlayerControls>();
 
+    public RuntimeAnimatorController[] CharacterControllers;   // controllers to control players appearance and animations
+
     /// <summary>
     /// Called when object is created
     /// </summary>
@@ -34,6 +36,7 @@ public class PlayerManagerScript : MonoBehaviour
     public void SetPlayers(List<PlayerControls> players)
     {
         _players = players;
+        Manager.DisableJoining();
     }
 
     /// <summary>

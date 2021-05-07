@@ -7,8 +7,6 @@ using UnityEngine;
 /// </summary>
 public class PlayerMovement : MonoBehaviour
 {
-
-
     // constant values
     const float JUMP_FORCE = 800f;
 

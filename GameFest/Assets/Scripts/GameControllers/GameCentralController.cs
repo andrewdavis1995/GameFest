@@ -1,24 +1,22 @@
+using System;
+using System.Collections;
+using Assets;
 using UnityEngine;
 
 public class GameCentralController : MonoBehaviour
 {
-    public Transform PlayerPrefab;      // The prefac to create
+    public Transform PlayerPrefab;      // The prefab to create
 
     public float START_LEFT = 0;        // where to start spawning players
     public float POSITION_GAP = 0;      // the gap to leave between players
 
-    public RuntimeAnimatorController[] CharacterControllers;   // controllers to control players appearance and animations
-
-    public static GameCentralController Instance;       // static instance of this object
+    MiniGameManager _manager;   // the manager to handle mini games
 
     /// <summary>
     /// Called when item is created
     /// </summary>
     void Start()
     {
-        // keep a static instance to this class
-        Instance = this;
-
         // loop through all players
         float left = START_LEFT;
         foreach (var player in PlayerManagerScript.Instance.GetPlayers())
@@ -32,5 +30,16 @@ public class GameCentralController : MonoBehaviour
             // move to next position
             left += POSITION_GAP;
         }
+
+
+        StartCoroutine(LoadMiniGame());
+    }
+
+    private IEnumerator LoadMiniGame()
+    {
+        yield return new WaitForSeconds(4);
+
+        // TODO: get this from _manager
+        PlayerManagerScript.Instance.NextScene(2);
     }
 }

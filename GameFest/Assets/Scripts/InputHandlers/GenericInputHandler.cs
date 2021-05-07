@@ -13,6 +13,17 @@ public abstract class GenericInputHandler : MonoBehaviour
     public virtual void OnTouchpad() { }
     public virtual void OnL1() { }
     public virtual void OnR1() { }
+
+    /// <summary>
+    /// Sets the animation to that of the correct character
+    /// </summary>
+    /// <param name="spawned">The instantiated object with an animator attached</param>
+    /// <param name="characterIndex">The index of the selected character</param>
+    public void SetAnimation(Transform spawned, int characterIndex)
+    {
+        // update the animation controller
+        spawned.GetComponent<Animator>().runtimeAnimatorController = PlayerManagerScript.Instance.CharacterControllers[characterIndex];
+    }
 }
 
 /* CODE DUMP
@@ -51,9 +62,5 @@ public abstract class GenericInputHandler : MonoBehaviour
         //if (_state.GetState() == PlayerStateEnum.Playing)
         //    _movement.Jump();
  * 
- * 
-        //    if (_state.GetState() == PlayerStateEnum.Ready)
-        //        // move the player
-        //        _movement.Move(ctx.ReadValue<Vector2>());
  * 
  */
