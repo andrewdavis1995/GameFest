@@ -155,6 +155,16 @@ MonoBehaviour:
   PlayerPrefab: {fileID: 8475240428089446547, guid: 08a36dd0cd8a4884281d758a114aa1d8, type: 3}
   START_LEFT: -7
   POSITION_GAP: 4
+  CharacterControllers:
+  - {fileID: 9100000, guid: 48ea3fe01c006264f8e781bcf8bbd1b1, type: 2}
+  - {fileID: 22100000, guid: 5d2638a9c897581468e24c76c574cb3f, type: 2}
+  - {fileID: 22100000, guid: 761eb0bccaf4bd94490e831f4de55b44, type: 2}
+  - {fileID: 22100000, guid: 9e3e874e39831ec429cb7a2a9f06904e, type: 2}
+  - {fileID: 22100000, guid: 4903c35169ee135459ae26d470054293, type: 2}
+  - {fileID: 22100000, guid: ef2c1058a38a30e41ae15c46117c8c75, type: 2}
+  - {fileID: 22100000, guid: 922235d001dbf994cb8eaa0fcf1e93c9, type: 2}
+  - {fileID: 22100000, guid: 659d383f6efb8df45b209850d24b3d48, type: 2}
+  - {fileID: 22100000, guid: a95294f63a6c8cb469821a33a2150fb3, type: 2}
 --- !u!4 &678814290
 Transform:
   m_ObjectHideFlags: 0

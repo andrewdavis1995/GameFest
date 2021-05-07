@@ -19,6 +19,7 @@ public class PlayerControls : MonoBehaviour
 
     Color _colour;
     string _playerName = "";
+    int _characterIndex = 0;
 
     /// <summary>
     /// Called when the object is created
@@ -64,7 +65,7 @@ public class PlayerControls : MonoBehaviour
     /// <param name="position">Where to spawn</param>
     internal void Spawn(Transform playerPrefab, Vector2 position)
     {
-        _activeHandler.Spawn(playerPrefab, position);
+        _activeHandler.Spawn(playerPrefab, position, _characterIndex);
     }
 
     /// <summary>
@@ -79,7 +80,7 @@ public class PlayerControls : MonoBehaviour
         // set the panel that corresponds to this player with the correct colour and device
         lobbyDisplay.PlayerStarted(_colour, _device, PlayerInput.playerIndex);
 
-        (_activeHandler as LobbyInputHandler).SetDisplay(lobbyDisplay, (x) => _playerName = x, PlayerInput.playerIndex == 0);
+        (_activeHandler as LobbyInputHandler).SetDisplay(lobbyDisplay, (x, y) => { _playerName = x; _characterIndex = y; }, PlayerInput.playerIndex == 0);
     }
 
     /// <summary>

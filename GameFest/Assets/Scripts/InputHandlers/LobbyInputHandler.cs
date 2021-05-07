@@ -19,7 +19,7 @@ public class LobbyInputHandler : GenericInputHandler
 
     // link to display and PlayerInput
     LobbyDisplayScript _display = null;
-    Action<string> _nameCompleteCallback;
+    Action<string, int> _detailsCompleteCallback;
 
     // is this player the host (player 1)
     bool _isHost = false;
@@ -124,10 +124,10 @@ public class LobbyInputHandler : GenericInputHandler
     /// <param name="display">The UI element to update</param>
     /// <param name="nameCallback">The callback function to call when the name is updated</param>
     /// <param name="isHost">Is this player the host (player 1)</param>
-    public void SetDisplay(LobbyDisplayScript display, Action<string> nameCallback, bool isHost)
+    public void SetDisplay(LobbyDisplayScript display, Action<string, int> detailsCallback, bool isHost)
     {
         _display = display;
-        _nameCompleteCallback = nameCallback;
+        _detailsCompleteCallback = detailsCallback;
         _isHost = isHost;
     }
 
@@ -258,9 +258,6 @@ public class LobbyInputHandler : GenericInputHandler
         // check the name is valid
         if (_display.GetPlayerName().Length >= 3)
         {
-            // tell the player object what the name is
-            _nameCompleteCallback(_display.GetPlayerName());
-
             // move to the next stage
             _state.SetState(PlayerStateEnum.CharacterSelection);
             _display.ShowCharacterSelectionPanel(true);
@@ -277,6 +274,9 @@ public class LobbyInputHandler : GenericInputHandler
     /// </summary>
     void CharacterSelected_()
     {
+        // tell the player object what the name is
+        _detailsCompleteCallback(_display.GetPlayerName(), _characterIndex);
+
         _state.SetState(PlayerStateEnum.Ready);
         _display.ShowReadyPanel(true);
     }
