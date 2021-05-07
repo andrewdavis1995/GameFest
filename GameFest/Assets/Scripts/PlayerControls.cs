@@ -11,21 +11,13 @@ public class PlayerControls : MonoBehaviour
     public PlayerInput PlayerInput;
     public Transform PlayerPrefab;
 
+    // the handler which will deal with inputs
     GenericInputHandler _activeHandler = null;
 
     // player information
     InputDevice _device;
     Color _colour;
-    LobbyState _state = new LobbyState();
     string _playerName = "";
-
-    // the movement script for this player
-    PlayerMovement _movement;
-
-    // paddles - TODO: move to another script
-    Transform[] _paddles;
-    bool _paddleState = false;
-
 
     /// <summary>
     /// Called when the object is created
@@ -34,7 +26,6 @@ public class PlayerControls : MonoBehaviour
     {
         // get the necessary components
         _device = PlayerInput.devices.FirstOrDefault();
-        _paddles = GameObject.FindGameObjectsWithTag("Paddle").Select(e => e.transform).ToArray();
 
         _activeHandler = GetComponent<LobbyInputHandler>();
 
@@ -46,10 +37,6 @@ public class PlayerControls : MonoBehaviour
 
         // sets the colour on dualshock controls
         SetLightbarColour_();
-
-        //// create character
-        //var tr = Instantiate(PlayerPrefab);
-        //_movement = tr.GetComponentInChildren<PlayerMovement>();
     }
 
     /// <summary>
@@ -74,9 +61,6 @@ public class PlayerControls : MonoBehaviour
         lobbyDisplay.PlayerStarted(_colour, _device, PlayerInput.playerIndex);
 
         (_activeHandler as LobbyInputHandler).SetDisplay(lobbyDisplay, (x) => _playerName = x);
-
-        // we will now ask for name
-        _state.SetState(PlayerStateEnum.NameEntry);
     }
 
     /// <summary>
@@ -118,27 +102,9 @@ public class PlayerControls : MonoBehaviour
         // if the device is a gamepad,
         if (gamepad != null)
         {
-            // set the lightbar colour
+            // set the lightbar colour on dualshock controllers
             gamepad.SetLightBarColor(_colour);
         }
-    }
-
-    /// <summary>
-    /// Returns the current state the player is in
-    /// </summary>
-    /// <returns>The players state - what action they are doing</returns>
-    public PlayerStateEnum GetPlayerState()
-    {
-        return _state.GetState();
-    }
-
-    /// <summary>
-    /// Sets the current state the player is in
-    /// </summary>
-    /// <param name="state"></param>
-    public void SetPlayerState(PlayerStateEnum state)
-    {
-        _state.SetState(state);
     }
 
     /// <summary>
@@ -149,10 +115,6 @@ public class PlayerControls : MonoBehaviour
     {
         if (_activeHandler != null)
             _activeHandler.OnMove(ctx);
-
-        //    if (_state.GetState() == PlayerStateEnum.Ready)
-        //        // move the player
-        //        _movement.Move(ctx.ReadValue<Vector2>());
     }
 
     /// <summary>
@@ -196,8 +158,6 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnSquare(InputAction.CallbackContext ctx)
     {
-        //if (_state.GetState() == PlayerStateEnum.Playing)
-        //    _movement.Jump();
     }
 
     /// <summary>
@@ -206,8 +166,6 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnTriangle(InputAction.CallbackContext ctx)
     {
-        //if (_state.GetState() == PlayerStateEnum.Playing)
-        //    _movement.Jump();
     }
 
     /// <summary>
@@ -229,8 +187,6 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void PaddleRight(InputAction.CallbackContext ctx)
     {
-        //_paddleState = false;
-        //SetPaddles_();
     }
 
     /// <summary>
@@ -239,22 +195,5 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void PaddleLeft(InputAction.CallbackContext ctx)
     {
-        //_paddleState = true;
-        //SetPaddles_();
-    }
-
-    /// <summary>
-    /// Updates the angle of the paddles
-    /// </summary>
-    void SetPaddles_()
-    {
-        var paddleAngle = _paddleState ? 45 : -45;
-
-        // loop through all the paddles
-        foreach (var paddle in _paddles)
-        {
-            // change the angle
-            paddle.eulerAngles = new Vector3(0, 0, paddleAngle);
-        }
     }
 }

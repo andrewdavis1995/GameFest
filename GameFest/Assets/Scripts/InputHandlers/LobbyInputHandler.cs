@@ -9,33 +9,54 @@ public class LobbyInputHandler : GenericInputHandler
     private string _alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private int _currentIndex = 0;
 
+    // character selection logic
     public Sprite[] CharacterSprites;
     private int _characterIndex = 0;
 
+    // what step is the player at
     LobbyState _state = new LobbyState();
 
+    // link to display and PlayerInput
     LobbyDisplayScript _display = null;
-    Action<string> _setNameCallback;
+    Action<string> _nameCompleteCallback;
 
+    /// <summary>
+    /// When the movement event is triggered - change letter/character
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
     public override void OnMove(InputAction.CallbackContext ctx)
     {
         // only handle it once
         if (!ctx.performed) return;
 
+        // only use buttons - joystick moves too much
+        if (ctx.control.layout.ToLower() == "stick") return;
+
         var movement = ctx.ReadValue<Vector2>();
-        if (movement.x > 0.95f)
+
+        // if right, move right
+        if (movement.x > 0.99f)
             MoveRight_();
 
-        if (movement.x < 0.95f)
+        // if left, move left
+        if (movement.x < -0.99f)
             MoveLeft_();
     }
 
+    /// <summary>
+    /// Assigns a UI display to the handler
+    /// </summary>
+    /// <param name="display">The UI element to update</param>
+    /// <param name="nameCallback">The callback function to call when the name is updated</param>
     public void SetDisplay(LobbyDisplayScript display, Action<string> nameCallback)
     {
         _display = display;
-        _setNameCallback = nameCallback;
+        _nameCompleteCallback = nameCallback;
     }
 
+    /// <summary>
+    /// Move to the next letter/character to the left
+    /// </summary>
     private void MoveLeft_()
     {
         switch (_state.GetState())
@@ -51,6 +72,9 @@ public class LobbyInputHandler : GenericInputHandler
         }
     }
 
+    /// <summary>
+    /// Move to the next letter/character to the right
+    /// </summary>
     private void MoveRight_()
     {
         switch (_state.GetState())
@@ -66,6 +90,9 @@ public class LobbyInputHandler : GenericInputHandler
         }
     }
 
+    /// <summary>
+    /// When the cross is triggered - select letter
+    /// </summary>
     public override void OnCross()
     {
         switch (_state.GetState())
@@ -77,6 +104,9 @@ public class LobbyInputHandler : GenericInputHandler
         }
     }
 
+    /// <summary>
+    /// When the circle is triggered - back
+    /// </summary>
     public override void OnCircle()
     {
         switch (_state.GetState())
@@ -93,6 +123,9 @@ public class LobbyInputHandler : GenericInputHandler
         }
     }
 
+    /// <summary>
+    /// When the touchpad event is triggered - continue
+    /// </summary>
     public override void OnTouchpad()
     {
         switch (_state.GetState())
@@ -109,7 +142,7 @@ public class LobbyInputHandler : GenericInputHandler
     }
 
     /// <summary>
-    /// Moves the letters to the next/previous letter
+    /// Moves the letter to the next/previous letter
     /// </summary>
     /// <param name="direction">How much to move by (positive or negative 1)</param>
     void UpdateIndex_(int direction)
@@ -153,7 +186,7 @@ public class LobbyInputHandler : GenericInputHandler
     }
 
     /// <summary>
-    /// Backspace
+    /// When the L1 event is triggered - backspace
     /// </summary>
     public override void OnL1()
     {
@@ -174,7 +207,10 @@ public class LobbyInputHandler : GenericInputHandler
         // check the name is valid
         if (_display.GetPlayerName().Length >= 3)
         {
-            _setNameCallback(_display.GetPlayerName());
+            // tell the player object what the name is
+            _nameCompleteCallback(_display.GetPlayerName());
+
+            // move to the next stage
             _state.SetState(PlayerStateEnum.CharacterSelection);
             _display.ShowCharacterSelectionPanel(true);
         }
