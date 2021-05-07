@@ -1,4 +1,3 @@
-using UnityEditor.Animations;
 using UnityEngine;
 
 public class GameCentralInputHandler : GenericInputHandler
@@ -13,7 +12,10 @@ public class GameCentralInputHandler : GenericInputHandler
     {
         // create the object
         var spawned = Instantiate(prefab, position, Quaternion.identity);
-        spawned.GetComponent<Rigidbody2D>().AddForce(new Vector2(100, 100));
+        // update the animation controller
         spawned.GetComponent<Animator>().runtimeAnimatorController = GameCentralController.Instance.CharacterControllers[characterIndex];
+
+        // do a little jump - TODO: remove when we have a proper flow set up
+        spawned.GetComponent<Rigidbody2D>().AddForce(new Vector2(100, 100));
     }
 }

@@ -80,6 +80,7 @@ public class PlayerControls : MonoBehaviour
         // set the panel that corresponds to this player with the correct colour and device
         lobbyDisplay.PlayerStarted(_colour, _device, PlayerInput.playerIndex);
 
+        // connects the input handler to the display
         (_activeHandler as LobbyInputHandler).SetDisplay(lobbyDisplay, (x, y) => { _playerName = x; _characterIndex = y; }, PlayerInput.playerIndex == 0);
     }
 
