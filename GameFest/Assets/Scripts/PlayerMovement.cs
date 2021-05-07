@@ -24,7 +24,7 @@ public class PlayerMovement : MonoBehaviour
     bool _onGround = false;
     Quaternion _rotation;
 
-    private void Start()
+    void Start()
     {
         // find necessary components
         _renderer = GetComponent<SpriteRenderer>();
@@ -61,7 +61,7 @@ public class PlayerMovement : MonoBehaviour
     /// Sets the FlipX property of the player image
     /// </summary>
     /// <param name="xMove">How much the player is moving</param>
-    private void UpdateOrientation_(float xMove)
+    void UpdateOrientation_(float xMove)
     {
         // if moving right, set flip to false
         if (xMove > 0)
@@ -127,7 +127,7 @@ public class PlayerMovement : MonoBehaviour
     /// Occurs when this object collides with another
     /// </summary>
     /// <param name="collision">The collision event - including the object that the player collided with</param>
-    private void OnCollisionEnter2D(Collision2D collision)
+    void OnCollisionEnter2D(Collision2D collision)
     {
         // if colliding with the ground, and moving downwards
         if (collision.gameObject.tag == "Ground" && collision.relativeVelocity.y > 0)
@@ -141,7 +141,7 @@ public class PlayerMovement : MonoBehaviour
     /// Occurs when this object stops colliding with another
     /// </summary>
     /// <param name="collision">The collision event - including the object that the player stopped colliding with</param>
-    private void OnCollisionExit2D(Collision2D collision)
+    void OnCollisionExit2D(Collision2D collision)
     {
         // if the player left the ground, they are falling
         if (collision.gameObject.tag == "Ground")

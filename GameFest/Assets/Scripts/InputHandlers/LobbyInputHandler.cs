@@ -1,5 +1,6 @@
 using Assets.Scripts;
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,6 +21,10 @@ public class LobbyInputHandler : GenericInputHandler
     LobbyDisplayScript _display = null;
     Action<string> _nameCompleteCallback;
 
+    // is this player the host (player 1)
+    bool _isHost = false;
+
+    #region Override functions
     /// <summary>
     /// When the movement event is triggered - change letter/character
     /// </summary>
@@ -41,53 +46,6 @@ public class LobbyInputHandler : GenericInputHandler
         // if left, move left
         if (movement.x < -0.99f)
             MoveLeft_();
-    }
-
-    /// <summary>
-    /// Assigns a UI display to the handler
-    /// </summary>
-    /// <param name="display">The UI element to update</param>
-    /// <param name="nameCallback">The callback function to call when the name is updated</param>
-    public void SetDisplay(LobbyDisplayScript display, Action<string> nameCallback)
-    {
-        _display = display;
-        _nameCompleteCallback = nameCallback;
-    }
-
-    /// <summary>
-    /// Move to the next letter/character to the left
-    /// </summary>
-    private void MoveLeft_()
-    {
-        switch (_state.GetState())
-        {
-            // name entry, move the letter to the left
-            case PlayerStateEnum.NameEntry:
-                UpdateIndex_(-1);
-                break;
-            // name entry, move the character to the left
-            case PlayerStateEnum.CharacterSelection:
-                UpdateCharacters_(-1);
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Move to the next letter/character to the right
-    /// </summary>
-    private void MoveRight_()
-    {
-        switch (_state.GetState())
-        {
-            // name entry, move the letter to the right
-            case PlayerStateEnum.NameEntry:
-                UpdateIndex_(1);
-                break;
-            // name entry, move the character to the right
-            case PlayerStateEnum.CharacterSelection:
-                UpdateCharacters_(1);
-                break;
-        }
     }
 
     /// <summary>
@@ -138,7 +96,114 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.CharacterSelection:
                 CharacterSelected_();
                 break;
+            case PlayerStateEnum.Ready:
+                StartGame_();
+                break;
         }
+    }
+
+    /// <summary>
+    /// When the L1 event is triggered - backspace
+    /// </summary>
+    public override void OnL1()
+    {
+        switch (_state.GetState())
+        {
+            // name entry, move the letter to the left
+            case PlayerStateEnum.NameEntry:
+                _display.BackspacePlayerName();
+                break;
+        }
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Assigns a UI display to the handler
+    /// </summary>
+    /// <param name="display">The UI element to update</param>
+    /// <param name="nameCallback">The callback function to call when the name is updated</param>
+    /// <param name="isHost">Is this player the host (player 1)</param>
+    public void SetDisplay(LobbyDisplayScript display, Action<string> nameCallback, bool isHost)
+    {
+        _display = display;
+        _nameCompleteCallback = nameCallback;
+        _isHost = isHost;
+    }
+
+    /// <summary>
+    /// Move to the next letter/character to the left
+    /// </summary>
+    void MoveLeft_()
+    {
+        switch (_state.GetState())
+        {
+            // name entry, move the letter to the left
+            case PlayerStateEnum.NameEntry:
+                UpdateIndex_(-1);
+                break;
+            // name entry, move the character to the left
+            case PlayerStateEnum.CharacterSelection:
+                UpdateCharacters_(-1);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Move to the next letter/character to the right
+    /// </summary>
+    void MoveRight_()
+    {
+        switch (_state.GetState())
+        {
+            // name entry, move the letter to the right
+            case PlayerStateEnum.NameEntry:
+                UpdateIndex_(1);
+                break;
+            // name entry, move the character to the right
+            case PlayerStateEnum.CharacterSelection:
+                UpdateCharacters_(1);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Starts the game (if all players are ready)
+    /// </summary>
+    void StartGame_()
+    {
+        // non-hosts cannot start the game
+        if (!_isHost) return;
+
+        // find all players
+        var allPlayers = GameObject.FindObjectsOfType<LobbyInputHandler>();
+
+        // check if all players are ready
+        var allReady = allPlayers.All(p => p.Ready());
+
+        // if all ready...
+        if(allReady)
+        {
+            // ...store the player list in the manager
+            PlayerManagerScript.Instance.SetPlayers(allPlayers.Select(p => p.GetComponent<PlayerControls>()).ToList());
+            // move to the game central scene
+            PlayerManagerScript.Instance.NextScene(1);
+        }
+        else
+        {
+            // ...otherwise, stop
+            // TODO: display message in UI
+            Debug.Log("Not all players are ready");
+        }
+    }
+
+    /// <summary>
+    /// Is the player ready to player
+    /// </summary>
+    /// <returns>Whether the player is ready</returns>
+    public bool Ready()
+    {
+        return _state.GetState() == PlayerStateEnum.Ready;
     }
 
     /// <summary>
@@ -186,23 +251,9 @@ public class LobbyInputHandler : GenericInputHandler
     }
 
     /// <summary>
-    /// When the L1 event is triggered - backspace
-    /// </summary>
-    public override void OnL1()
-    {
-        switch (_state.GetState())
-        {
-            // name entry, move the letter to the left
-            case PlayerStateEnum.NameEntry:
-                _display.BackspacePlayerName();
-                break;
-        }
-    }
-
-    /// <summary>
     /// When the name entry is complete
     /// </summary>
-    private void NameComplete_()
+    void NameComplete_()
     {
         // check the name is valid
         if (_display.GetPlayerName().Length >= 3)
@@ -224,12 +275,13 @@ public class LobbyInputHandler : GenericInputHandler
     /// <summary>
     /// When character has been selected
     /// </summary>
-    private void CharacterSelected_()
+    void CharacterSelected_()
     {
         _state.SetState(PlayerStateEnum.Ready);
         _display.ShowReadyPanel(true);
     }
 
+    #region Fetch index of the left/right elements to display
     /// <summary>
     /// Gets the index of the letter to show on the right
     /// </summary>
@@ -265,4 +317,5 @@ public class LobbyInputHandler : GenericInputHandler
         if (_characterIndex == 0) return CharacterSprites.Length - 1;
         else return _characterIndex - 1;
     }
+    #endregion
 }

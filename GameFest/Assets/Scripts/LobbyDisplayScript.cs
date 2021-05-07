@@ -56,6 +56,7 @@ public class LobbyDisplayScript : MonoBehaviour
         NoPlayerPanel.gameObject.SetActive(false);
         PlayerStartedPanel.gameObject.SetActive(true);
 
+        // show the first set of instructions
         UpdateInstructions_(0, false);
     }
 
@@ -122,18 +123,25 @@ public class LobbyDisplayScript : MonoBehaviour
     /// <param name="hostOnly">Whether these instructions are only valid for the host</param>
     private void UpdateInstructions_(int index, bool hostOnly)
     {
+        // check which device type the player is using
         if (_device is Gamepad)
         {
+            // loop through all controller instructions
             for (int i = 0; i < InstructionsController.Length; i++)
             {
+                // only set the instruction to visible if the index matches the specified index
+                // if host only, make sure this is the host
                 var state = (i == index) && (!hostOnly || _playerIndex == 0);
                 InstructionsController[i].gameObject.SetActive(state);
             }
         }
         else if (_device is Keyboard)
         {
+            // loop through all keyboard instructions
             for (int i = 0; i < InstructionsKeyboard.Length; i++)
             {
+                // only set the instruction to visible if the index matches the specified index
+                // if host only, make sure this is the host
                 var state = (i == index) && (!hostOnly || _playerIndex == 0);
                 InstructionsKeyboard[i].gameObject.SetActive(state);
             }

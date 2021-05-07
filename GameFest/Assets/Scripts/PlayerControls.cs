@@ -16,14 +16,17 @@ public class PlayerControls : MonoBehaviour
 
     // player information
     InputDevice _device;
+
     Color _colour;
     string _playerName = "";
 
     /// <summary>
     /// Called when the object is created
     /// </summary>
-    private void Start()
+    void Start()
     {
+        DontDestroyOnLoad(this);
+
         // get the necessary components
         _device = PlayerInput.devices.FirstOrDefault();
 
@@ -39,6 +42,12 @@ public class PlayerControls : MonoBehaviour
         SetLightbarColour_();
     }
 
+    internal void SetActiveScript(Type type)
+    {
+        Destroy(gameObject.GetComponent<GenericInputHandler>());
+        _activeHandler = (GenericInputHandler)gameObject.AddComponent(type);
+    }
+
     /// <summary>
     /// Returns the name of the player
     /// </summary>
@@ -49,9 +58,19 @@ public class PlayerControls : MonoBehaviour
     }
 
     /// <summary>
+    /// Calls the spawn function on the active input handler - creating the necessary prefab
+    /// </summary>
+    /// <param name="playerPrefab">The prefab to spawn</param>
+    /// <param name="position">Where to spawn</param>
+    internal void Spawn(Transform playerPrefab, Vector2 position)
+    {
+        _activeHandler.Spawn(playerPrefab, position);
+    }
+
+    /// <summary>
     /// Sets the colour of the appropriate lobby panel to match the colour of this player
     /// </summary>
-    private void UpdateMenu()
+    void UpdateMenu()
     {
         // find all panels
         var panels = GameObject.FindGameObjectsWithTag("PlayerColourDisplay");
@@ -60,13 +79,13 @@ public class PlayerControls : MonoBehaviour
         // set the panel that corresponds to this player with the correct colour and device
         lobbyDisplay.PlayerStarted(_colour, _device, PlayerInput.playerIndex);
 
-        (_activeHandler as LobbyInputHandler).SetDisplay(lobbyDisplay, (x) => _playerName = x);
+        (_activeHandler as LobbyInputHandler).SetDisplay(lobbyDisplay, (x) => _playerName = x, PlayerInput.playerIndex == 0);
     }
 
     /// <summary>
     /// Gets the colour for this player
     /// </summary>
-    private void GetColour_()
+    void GetColour_()
     {
         float r = 0, g = 0, b = 0;
 
@@ -95,7 +114,7 @@ public class PlayerControls : MonoBehaviour
     /// <summary>
     /// Sets the colour of the lightbar on the dualshock
     /// </summary>
-    private void SetLightbarColour_()
+    void SetLightbarColour_()
     {
         var gamepad = _device as DualShockGamepad;
 

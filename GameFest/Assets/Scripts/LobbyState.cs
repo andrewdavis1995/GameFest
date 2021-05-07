@@ -8,7 +8,7 @@
     public class LobbyState
     {
         // the state of the player
-        private PlayerStateEnum _state;
+        PlayerStateEnum _state;
 
         /// <summary>
         /// Constructor

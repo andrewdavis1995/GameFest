@@ -3,6 +3,8 @@ using UnityEngine.InputSystem;
 
 public abstract class GenericInputHandler : MonoBehaviour
 {
+    public virtual void Spawn(Transform prefab, Vector2 position) { }
+
     public virtual void OnMove(InputAction.CallbackContext ctx) { }
     public virtual void OnCross() { }
     public virtual void OnCircle() { }
