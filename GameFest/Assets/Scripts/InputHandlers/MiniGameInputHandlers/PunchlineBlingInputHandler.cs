@@ -83,7 +83,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         {
             // if it was a card, forget that this was the current card
             case "Card":
-                if (_currentCard != null && _currentCard == collision.GetComponent<CardScript>())
+                if (_currentCard != null)
                 {
                 // TODO: only do this if player is active
                     _currentCard.InZone(false);

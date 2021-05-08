@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.020786976, y: 0.5184002}
   m_AnchorMax: {x: 0.14060652, y: 0.97840023}
-  m_AnchoredPosition: {x: -0.00047302246, y: 0.000036239624}
+  m_AnchoredPosition: {x: -0.00048828125, y: 0.000036239624}
   m_SizeDelta: {x: -0.001, y: -0.000026703}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1583703
@@ -723,7 +723,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.020786976, y: 0.5184002}
   m_AnchorMax: {x: 0.14060652, y: 0.97840023}
-  m_AnchoredPosition: {x: -0.00047302246, y: 0.000036239624}
+  m_AnchoredPosition: {x: -0.00048828125, y: 0.000036239624}
   m_SizeDelta: {x: -0.001, y: -0.000026703}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &565012965
@@ -1998,7 +1998,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.020786976, y: 0.5184002}
   m_AnchorMax: {x: 0.14060652, y: 0.97840023}
-  m_AnchoredPosition: {x: -0.00047302246, y: 0.000036239624}
+  m_AnchoredPosition: {x: -0.00048828125, y: 0.000036239624}
   m_SizeDelta: {x: -0.001, y: -0.000026703}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1450035165
@@ -2661,7 +2661,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.020786976, y: 0.5184002}
   m_AnchorMax: {x: 0.14060652, y: 0.97840023}
-  m_AnchoredPosition: {x: -0.00047302246, y: 0.000036239624}
+  m_AnchoredPosition: {x: -0.00048828125, y: 0.000036239624}
   m_SizeDelta: {x: -0.001, y: -0.000026703}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1729781229
@@ -3690,32 +3690,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 1964389221360031298}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 77269c6cee1943040a12b851f5464994, type: 3}
+  m_Script: {fileID: 11500000, guid: caf99ba07ad30684781e3a501c5bdfc8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NoPlayerPanel: {fileID: 1964389220958077874}
-  PlayerStartedPanel: {fileID: 1964389222205147630}
-  PnlCharacter: {fileID: 1964389221090402953}
-  PnlReady: {fileID: 86201453}
-  InstructionsController:
-  - {fileID: 151898638}
-  - {fileID: 885006722}
-  - {fileID: 296883937}
-  InstructionsKeyboard:
-  - {fileID: 575776741}
-  - {fileID: 1422582165}
-  - {fileID: 1484147623}
-  ImgController: {fileID: 1964389221543019721}
-  LetterTextLeft: {fileID: 1964389221625669315}
-  LetterTextMiddle: {fileID: 1964389221823688242}
-  LetterTextRight: {fileID: 1964389221320443014}
-  NameDisplay: {fileID: 1964389220640075932}
-  ImageCharacterLeft: {fileID: 1964389220774612254}
-  ImageCharacterMiddle: {fileID: 1964389220327273056}
-  ImageCharacterRight: {fileID: 1964389221951126371}
-  ControllerImages:
-  - {fileID: 21300000, guid: 786b1dc011e25d744b6e7df9e7a29062, type: 3}
-  - {fileID: 21300000, guid: 3425b7488a7a403408cfd92a61f7f351, type: 3}
+  NoPlayerPanel: {fileID: 0}
+  PlayerStartedPanel: {fileID: 0}
+  PnlCharacter: {fileID: 0}
+  PnlReady: {fileID: 0}
+  InstructionsController: []
+  InstructionsKeyboard: []
+  ImgController: {fileID: 0}
+  LetterTextLeft: {fileID: 0}
+  LetterTextMiddle: {fileID: 0}
+  LetterTextRight: {fileID: 0}
+  NameDisplay: {fileID: 0}
+  ImageCharacterLeft: {fileID: 0}
+  ImageCharacterMiddle: {fileID: 0}
+  ImageCharacterRight: {fileID: 0}
+  ControllerImages: []
 --- !u!1 &1964389221543019723
 GameObject:
   m_ObjectHideFlags: 0
