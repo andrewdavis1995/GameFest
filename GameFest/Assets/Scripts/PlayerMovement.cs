@@ -24,6 +24,10 @@ public class PlayerMovement : MonoBehaviour
     bool _onGround = false;
     Quaternion _rotation;
 
+    // callback functions
+    Action<Collider2D> _triggerEnterCallback;
+    Action<Collider2D> _triggerExitCallback;
+
     void Start()
     {
         // find necessary components
@@ -37,6 +41,17 @@ public class PlayerMovement : MonoBehaviour
         // TODO: only get paddles assigned to the player
         // TODO: Temp - move elsewhere
         _paddles = GameObject.FindGameObjectsWithTag("Paddle").Select(e => e.transform).ToArray();
+    }
+
+    /// <summary>
+    /// Sets the functions to call when the player collides with a trigger
+    /// </summary>
+    /// <param name="triggerEnter">Function to call when player enters the trigger</param>
+    /// <param name="triggerExit">Function to call when player leaves the trigger</param>
+    internal void AddTriggerCallbacks(Action<Collider2D> triggerEnter, Action<Collider2D> triggerExit)
+    {
+        _triggerEnterCallback = triggerEnter;
+        _triggerExitCallback = triggerExit;
     }
 
     /// <summary>
@@ -150,5 +165,23 @@ public class PlayerMovement : MonoBehaviour
             _onGround = false;
             SetAnimation_("Jump");
         }
+    }
+
+    /// <summary>
+    /// When the player starts contact with a trigger
+    /// </summary>
+    /// <param name="collision">The trigger item</param>
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        _triggerEnterCallback?.Invoke(collision);
+    }
+
+    /// <summary>
+    /// When the player leaves contact with a trigger
+    /// </summary>
+    /// <param name="collision">The trigger item</param>
+    public void OnTriggerExit2D(Collider2D collision)
+    {
+        _triggerExitCallback?.Invoke(collision);
     }
 }

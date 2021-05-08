@@ -14,6 +14,9 @@ public abstract class GenericInputHandler : MonoBehaviour
     public virtual void OnL1() { }
     public virtual void OnR1() { }
 
+    public virtual void TriggerEnter(Collision2D collision) { }
+    public virtual void TriggerExit(Collision2D collision) { }
+
     /// <summary>
     /// Sets the animation to that of the correct character
     /// </summary>
@@ -37,8 +40,6 @@ public abstract class GenericInputHandler : MonoBehaviour
 
         _paddles = GameObject.FindGameObjectsWithTag("Paddle").Select(e => e.transform).ToArray();
 
- * 
-
     /// <summary>
     /// Updates the angle of the paddles
     /// </summary>
@@ -53,14 +54,4 @@ public abstract class GenericInputHandler : MonoBehaviour
             paddle.eulerAngles = new Vector3(0, 0, paddleAngle);
         }
     }
-
-
-
- * 
- * MOVEMENT
- * 
-        //if (_state.GetState() == PlayerStateEnum.Playing)
-        //    _movement.Jump();
- * 
- * 
- */
+*/

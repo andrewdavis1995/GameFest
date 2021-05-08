@@ -187,6 +187,11 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnTriangle(InputAction.CallbackContext ctx)
     {
+        // only handle it once
+        if (!ctx.performed) return;
+
+        if (_activeHandler != null)
+            _activeHandler.OnTriangle();
     }
 
     /// <summary>
