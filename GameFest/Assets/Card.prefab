@@ -99,6 +99,7 @@ MonoBehaviour:
   CardFront: {fileID: 1527097446}
   CardBack: {fileID: 7303337566913356908}
   CardSelected: {fileID: 0}
+  JokeText: {fileID: 0}
 --- !u!1 &1676387639
 GameObject:
   m_ObjectHideFlags: 0
@@ -299,6 +300,7 @@ MonoBehaviour:
   CardFront: {fileID: 7303337567158177954}
   CardBack: {fileID: 7303337566913356908}
   CardSelected: {fileID: 1527097445}
+  JokeText: {fileID: 1676387641}
 --- !u!61 &1843162736
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -425,3 +427,4 @@ MonoBehaviour:
   CardFront: {fileID: 7303337567158177954}
   CardBack: {fileID: 7303337566913356908}
   CardSelected: {fileID: 0}
+  JokeText: {fileID: 0}

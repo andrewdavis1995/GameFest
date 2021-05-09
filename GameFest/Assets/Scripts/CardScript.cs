@@ -7,6 +7,11 @@ public class CardScript : MonoBehaviour
     public Transform CardFront;
     public Transform CardBack;
     public GameObject CardSelected;
+    public TextMesh JokeText;
+
+    // content of this card
+    Joke _joke;
+    bool _isPunchline = false;
 
     // state variables
     private bool _isSpinning = false;
@@ -49,6 +54,24 @@ public class CardScript : MonoBehaviour
         // wait a few seconds, then turn back
         yield return new WaitForSeconds(2);
         StartCoroutine(SpinHide());
+    }
+
+    /// <summary>
+    /// Sets te joke linked to this card
+    /// </summary>
+    /// <param name="joke">The joke object linked to the card</param>
+    /// <param name="punchline">Is this card showing the punchline? (If false, it shows the setup)</param>
+    internal void SetJoke(Joke joke, bool punchline)
+    {
+        _joke = joke;
+        _isPunchline = punchline;
+
+        // set display text - punchline or setup?
+        var stringToUse = punchline ? joke.Punchline : joke.Setup;
+        JokeText.text = TextFormatter.GetCardJokeString(stringToUse);
+
+        // TODO: Set background image based on setup
+        //CardBack.GetComponent<SpriteRenderer>().sprite = 
     }
 
     /// <summary>
