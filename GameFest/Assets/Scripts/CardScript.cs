@@ -30,6 +30,24 @@ public class CardScript : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the joke associated with this card
+    /// </summary>
+    /// <returns>The linked joke object</returns>
+    public Joke GetJoke()
+    {
+        return _joke;
+    }
+
+    /// <summary>
+    /// Returns whether this card relates to a punchline, or setup of the joke
+    /// </summary>
+    /// <returns>True if it is the punchline, false if it is the setup</returns>
+    public bool IsPunchline()
+    {
+        return _isPunchline;
+    }
+
+    /// <summary>
     /// Controls the turning of the card to reveal the answer
     /// </summary>
     private IEnumerator SpinReveal()
@@ -38,7 +56,7 @@ public class CardScript : MonoBehaviour
         _isSpinning = true;
 
         // rotate the card 180 degrees
-        for (float i = 0; i <= 180; i++)
+        for (float i = 0; i <= 180; i+=2)
         {
             // once it reaches halfway (i.e. invisible at the halfway point), show the other side of the card
             if (i == 90)
@@ -80,7 +98,7 @@ public class CardScript : MonoBehaviour
     private IEnumerator SpinHide()
     {
         // turn from 180 degress back to the start point
-        for (float i = 180; i >= 0; i--)
+        for (float i = 180; i >= 0; i-=2)
         {
             // once it reaches halfway (i.e. invisible at the halfway point), hide the other side of the card
             if (i == 90)

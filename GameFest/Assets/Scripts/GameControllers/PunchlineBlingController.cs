@@ -26,7 +26,7 @@ public class PunchlineBlingController : MonoBehaviour
 
         var jokeIndex = 0;
 
-        while (_cards.Length > 1 && remainingIndexes.Count > 1)
+        while (remainingIndexes.Count > 1 && jokeIndex < jokes.Count)
         {
             // setup
             SetCard_(jokes[jokeIndex], false, ref remainingIndexes);
@@ -37,14 +37,29 @@ public class PunchlineBlingController : MonoBehaviour
             jokeIndex++;
         }
 
+        // hide all remaining cards (no joke assigned)
+        for(int i = 0; i < remainingIndexes.Count; i++)
+        {
+            _cards[remainingIndexes[i]].gameObject.SetActive(false);
+        }
+
         SpawnPlayers_();
     }
 
-    void SetCard_(Joke joke, bool useSetup, ref List<int> remainingIndexes)
+    /// <summary>
+    /// Sets the content of a card
+    /// </summary>
+    /// <param name="joke">The joke to use</param>
+    /// <param name="usePunchline">Is this the punchline? (False if it's the setup)</param>
+    /// <param name="remainingIndexes">The list of indexes (of cards) that are yet to be assigned</param>
+    void SetCard_(Joke joke, bool usePunchline, ref List<int> remainingIndexes)
     {
+        // get a random index of card to use
         var random = UnityEngine.Random.Range(0, remainingIndexes.Count);
         var index = remainingIndexes[random];
-        _cards[index].SetJoke(joke, useSetup);
+
+        // display the information on the card
+        _cards[index].SetJoke(joke, usePunchline);
         remainingIndexes.RemoveAt(random);
     }
 

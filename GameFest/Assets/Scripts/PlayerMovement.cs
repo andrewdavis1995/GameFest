@@ -22,7 +22,6 @@ public class PlayerMovement : MonoBehaviour
     // player state
     Vector2 _movementInput;
     bool _onGround = false;
-    Quaternion _rotation;
 
     // callback functions
     Action<Collider2D> _triggerEnterCallback;
@@ -34,9 +33,6 @@ public class PlayerMovement : MonoBehaviour
         _renderer = GetComponent<SpriteRenderer>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
-
-        // get startup state
-        _rotation = transform.rotation;
 
         // TODO: only get paddles assigned to the player
         // TODO: Temp - move elsewhere
@@ -59,7 +55,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     void Update()
     {
-        transform.rotation = _rotation;
+        transform.eulerAngles = new Vector3(0, 0, 0);
 
         // only move if the value of the input is big enough to be noticeable
         var xMove = Math.Abs(_movementInput.x) > 0.25f ? _movementInput.x : 0;
@@ -118,6 +114,7 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="movement">How much to move by</param>
     public void Move(Vector2 movement)
     {
+        Debug.Log(movement + " in PlayerMovement::Move");
         _movementInput = movement;
     }
 

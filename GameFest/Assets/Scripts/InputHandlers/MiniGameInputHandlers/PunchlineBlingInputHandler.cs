@@ -68,6 +68,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
                 _currentCard = collision.GetComponent<CardScript>();
                 // TODO: only do this if player is active
                 _currentCard.InZone(true);
+                Debug.Log(_currentCard.GetJoke().Setup);
                 break;
         }
     }
@@ -85,7 +86,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
             case "Card":
                 if (_currentCard != null)
                 {
-                // TODO: only do this if player is active
+                    // TODO: only do this if player is active
                     _currentCard.InZone(false);
 
                     _currentCard = null;
