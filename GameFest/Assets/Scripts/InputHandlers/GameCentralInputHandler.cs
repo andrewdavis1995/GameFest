@@ -8,7 +8,7 @@ public class GameCentralInputHandler : GenericInputHandler
     /// <param name="prefab">The prefab to instantiate</param>
     /// <param name="position">The location at which to spawn the item</param>
     /// <param name="characterIndex">The index of the selected character</param>
-    public override void Spawn(Transform prefab, Vector2 position, int characterIndex)
+    public override void Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName)
     {
         // create the object
         var spawned = Instantiate(prefab, position, Quaternion.identity);

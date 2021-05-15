@@ -19,6 +19,10 @@ public class PlayerMovement : MonoBehaviour
     SpriteRenderer _renderer;
     Transform[] _paddles;
 
+    // public objects
+    public TextMesh TxtPlayerName;
+    public GameObject ActivePlayerIcon;
+
     // player state
     Vector2 _movementInput;
     bool _onGround = false;
@@ -48,6 +52,26 @@ public class PlayerMovement : MonoBehaviour
     {
         _triggerEnterCallback = triggerEnter;
         _triggerExitCallback = triggerExit;
+    }
+
+    /// <summary>
+    /// Sets the visibilty of the active icon
+    /// </summary>
+    /// <param name="state">The state to set</param>
+    public void SetActiveIcon(bool state)
+    {
+        ActivePlayerIcon.SetActive(state);
+    }
+
+    /// <summary>
+    /// Sets the state of the player name display
+    /// </summary>
+    /// <param name="state">Visibility of the name</param>
+    /// <param name="name">The name of the player</param>
+    public void SetPlayerName(bool state, string name = "")
+    {
+        TxtPlayerName.gameObject.SetActive(state);
+        TxtPlayerName.text = name;
     }
 
     /// <summary>

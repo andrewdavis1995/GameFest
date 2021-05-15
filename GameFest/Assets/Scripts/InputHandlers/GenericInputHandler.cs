@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 public abstract class GenericInputHandler : MonoBehaviour
 {
-    public virtual void Spawn(Transform prefab, Vector2 position, int characterIndex) { }
+    public virtual void Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName) { }
 
     public virtual void OnMove(InputAction.CallbackContext ctx) { }
     public virtual void OnCross() { }
@@ -16,6 +16,53 @@ public abstract class GenericInputHandler : MonoBehaviour
 
     public virtual void TriggerEnter(Collision2D collision) { }
     public virtual void TriggerExit(Collision2D collision) { }
+
+    /// <summary>
+    /// Set the height of the player based on the selected character
+    /// </summary>
+    /// <param name="player">The transform the the player display</param>
+    /// <param name="characterIndex">The index of the chosen character</param>
+    public virtual void SetHeight(Transform player, int characterIndex)
+    {
+        float size = 0.2f;
+
+        switch (characterIndex)
+        {
+            // Andrew
+            case 0:
+                size += 0.05f;
+                break;
+                // Rachel
+            case 1:
+                size -= 0.022f;
+                break;
+                // Naomi
+            case 2:
+                size += 0f;
+                break;
+                // Heather
+            case 3:
+                size -= 0.05f;
+                break;
+                // Mum & Dad
+            case 4:
+            case 5:
+                size += 0.025f;
+                break;
+                // John & Fraser
+            case 6:
+            case 7:
+                size += 0.022f;
+                break;
+                // Matthew
+            case 8:
+                size += 0.04f;
+                break;
+        }
+
+        // set height
+        player.localScale = new Vector3(size, size, 1);
+    }
 
     /// <summary>
     /// Sets the animation to that of the correct character

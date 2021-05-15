@@ -65,7 +65,7 @@ public class PlayerControls : MonoBehaviour
     /// <param name="position">Where to spawn</param>
     internal void Spawn(Transform playerPrefab, Vector2 position)
     {
-        _activeHandler.Spawn(playerPrefab, position, _characterIndex);
+        _activeHandler.Spawn(playerPrefab, position, _characterIndex, _playerName);
     }
 
     /// <summary>

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,14 +8,19 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     PlayerMovement _movement;
     CardScript _currentCard;
 
+    bool _isActivePlayer = false;
+
+    List<Joke> _jokes = new List<Joke>();
+
     /// <summary>
     /// Creates the specified object for the player attached to this object
     /// </summary>
     /// <param name="prefab">The prefab to instantiate</param>
     /// <param name="position">The location at which to spawn the item</param>
     /// <param name="characterIndex">The index of the selected character</param>
-    public override void Spawn(Transform prefab, Vector2 position, int characterIndex)
+    public override void Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName)
     {
+        // create the player display
         var spawned = Instantiate(prefab, position, Quaternion.identity);
 
         // get the movement script attached to the visual player
@@ -21,8 +28,40 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         // assign callbacks for when the item interacts with triggers
         _movement.AddTriggerCallbacks(TriggerEnter, TriggerExit);
 
+        // set the height of the object
+        SetHeight(spawned, characterIndex);
+
         // use the correct animation controller
         SetAnimation(spawned, characterIndex);
+
+        _movement.SetPlayerName(true, playerName);
+    }
+
+    /// <summary>
+    /// Sets whether the player is "active" or not - i.e. their turn to answer
+    /// </summary>
+    /// <param name="active">The state to set</param>
+    internal void ActivePlayer(bool active)
+    {
+        _isActivePlayer = active;
+
+        // show the card selection border
+        if (_currentCard != null && active)
+        {
+            _currentCard.InZone(true);
+        }
+
+        // show/hide the active icon
+        _movement.SetActiveIcon(active);
+    }
+
+    /// <summary>
+    /// Gets whether the player is "active" or not - i.e. their turn to answer
+    /// </summary>
+    /// <returns>Whether the player is active</returns>
+    internal bool ActivePlayer()
+    {
+        return _isActivePlayer;
     }
 
     /// <summary>
@@ -49,8 +88,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     public override void OnTriangle()
     {
         // flip the selected card
-        // TODO: Only do this if the player is active
-        if (_currentCard != null)
+        if (_currentCard != null && _isActivePlayer)
             _currentCard.Flip();
     }
 
@@ -66,9 +104,8 @@ public class PunchlineBlingInputHandler : GenericInputHandler
             // if it was a card, this becomes the selected card
             case "Card":
                 _currentCard = collision.GetComponent<CardScript>();
-                // TODO: only do this if player is active
-                _currentCard.InZone(true);
-                Debug.Log(_currentCard.GetJoke().Setup);
+                if (_isActivePlayer)
+                    _currentCard.InZone(true);
                 break;
         }
     }
@@ -86,12 +123,19 @@ public class PunchlineBlingInputHandler : GenericInputHandler
             case "Card":
                 if (_currentCard != null)
                 {
-                    // TODO: only do this if player is active
                     _currentCard.InZone(false);
-
                     _currentCard = null;
                 }
                 break;
         }
+    }
+
+    /// <summary>
+    /// When the player has successfully matched a joke
+    /// </summary>
+    /// <param name="joke">The joke that was earned</param>
+    public void JokeEarned(Joke joke)
+    {
+        _jokes.Add(joke);
     }
 }

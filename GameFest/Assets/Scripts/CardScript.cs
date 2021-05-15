@@ -14,7 +14,7 @@ public class CardScript : MonoBehaviour
     bool _isPunchline = false;
 
     // state variables
-    private bool _isSpinning = false;
+    private bool _flipped = false;
 
     /// <summary>
     /// Sets the "selected" image when the player enters the trigger zone
@@ -22,8 +22,11 @@ public class CardScript : MonoBehaviour
     /// <param name="inZone"></param>
     public void InZone(bool inZone)
     {
+        Debug.Log("FLIPPED " + _flipped);
+        Debug.Log("State " + PunchlineBlingController.Instance.GetState());
+
         // don't do this if it is already turning
-        if (!_isSpinning)
+        if (!_flipped && AppropriateStage_())
         {
             CardSelected.SetActive(inZone);
         }
@@ -53,10 +56,12 @@ public class CardScript : MonoBehaviour
     private IEnumerator SpinReveal()
     {
         CardSelected.SetActive(false);
-        _isSpinning = true;
+        _flipped = true;
+
+        PunchlineBlingController.Instance.CardSelected(this);
 
         // rotate the card 180 degrees
-        for (float i = 0; i <= 180; i+=2)
+        for (float i = 0; i <= 180; i += 2)
         {
             // once it reaches halfway (i.e. invisible at the halfway point), show the other side of the card
             if (i == 90)
@@ -68,10 +73,6 @@ public class CardScript : MonoBehaviour
             // wait briefly to allow the rotation to be seen
             yield return new WaitForSeconds(0.001f);
         }
-
-        // wait a few seconds, then turn back
-        yield return new WaitForSeconds(2);
-        StartCoroutine(SpinHide());
     }
 
     /// <summary>
@@ -88,8 +89,8 @@ public class CardScript : MonoBehaviour
         var stringToUse = punchline ? joke.Punchline : joke.Setup;
         JokeText.text = TextFormatter.GetCardJokeString(stringToUse);
 
-        // TODO: Set background image based on setup
-        //CardBack.GetComponent<SpriteRenderer>().sprite = 
+        var imageIndex = IsPunchline() ? 1 : 0;
+        CardBack.GetComponent<SpriteRenderer>().sprite = PunchlineBlingController.Instance.CardBacks[imageIndex];
     }
 
     /// <summary>
@@ -98,7 +99,7 @@ public class CardScript : MonoBehaviour
     private IEnumerator SpinHide()
     {
         // turn from 180 degress back to the start point
-        for (float i = 180; i >= 0; i-=2)
+        for (float i = 180; i >= 0; i -= 2)
         {
             // once it reaches halfway (i.e. invisible at the halfway point), hide the other side of the card
             if (i == 90)
@@ -112,7 +113,7 @@ public class CardScript : MonoBehaviour
         }
 
         // no longer spinning, can begin to spin again
-        _isSpinning = false;
+        _flipped = false;
     }
 
     /// <summary>
@@ -120,6 +121,33 @@ public class CardScript : MonoBehaviour
     /// </summary>
     internal void Flip()
     {
-        StartCoroutine(SpinReveal());
+        if (!_flipped && AppropriateStage_())
+            StartCoroutine(SpinReveal());
+    }
+
+    /// <summary>
+    /// Flip the card to reveal the content
+    /// </summary>
+    internal void FlipBack()
+    {
+        StartCoroutine(SpinHide());
+    }
+
+    /// <summary>
+    /// Is this card appropriate for the current stage
+    /// </summary>
+    /// <returns>Whether this is an appropriate stage<returns>
+    bool AppropriateStage_()
+    {
+        var appropriate = false;
+
+        // if setup stage and this is a setup
+        if (!IsPunchline() && PunchlineBlingController.Instance.GetState() == SelectionState.PickingFirst)
+            appropriate = true;
+        // if punchline stage and this is a punchline
+        else if (IsPunchline() && PunchlineBlingController.Instance.GetState() == SelectionState.PickingSecond)
+            appropriate = true;
+
+        return appropriate;
     }
 }
