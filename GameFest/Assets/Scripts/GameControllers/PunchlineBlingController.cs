@@ -347,6 +347,10 @@ public class PunchlineBlingController : MonoBehaviour
         _overallLimit.Abort();
         _playerLimit.Abort();
 
+        // no player is active at this point
+        foreach (var player in _players)
+            player.ActivePlayer(false);
+
         // TODO: show a transition
         yield return new WaitForSeconds(1);
 
@@ -400,6 +404,9 @@ public class PunchlineBlingController : MonoBehaviour
         PnlTotalPoints.SetActive(true);
         TxtTotalPoints.text = "0";
 
+        _targetScore = 0;
+        _currentDisplayScore = 0;
+
         // if there are jokes to display
         if (_players[_resultsPlayerIndex].GetJokes().Count > 0)
         {
@@ -417,17 +424,15 @@ public class PunchlineBlingController : MonoBehaviour
                 // punchline
                 Speak(joke.Punchline);
 
-                // add to total score 
-                _targetScore += _players[_resultsPlayerIndex].GetPoints();
+                // add points
+                _players[_resultsPlayerIndex].AddPoints();
+                _targetScore = _players[_resultsPlayerIndex].GetPoints();
 
                 yield return new WaitForSeconds(2);
 
                 // Pause
                 HideSpeech();
                 yield return new WaitForSeconds(1);
-
-                // add points
-                _players[_resultsPlayerIndex].AddPoints();
             }
         }
         else
