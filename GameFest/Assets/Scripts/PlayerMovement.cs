@@ -87,7 +87,7 @@ public class PlayerMovement : MonoBehaviour
 
         // if we are on the ground, i.e. walking or idle, update the animation
         if (_onGround)
-            SetAnimation_(xMove == 0 ? "Idle" : "Walk");
+            SetAnimation(xMove == 0 ? "Idle" : "Walk");
 
         UpdateOrientation_(xMove);
     }
@@ -116,7 +116,7 @@ public class PlayerMovement : MonoBehaviour
     /// Sets the animation of the player to the specified trigger
     /// </summary>
     /// <param name="animation">The trigger to set</param>
-    public void SetAnimation_(string animation)
+    public void SetAnimation(string animation)
     {
         // ensure the animator exists
         if (_animator != null)
@@ -138,7 +138,6 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="movement">How much to move by</param>
     public void Move(Vector2 movement)
     {
-        Debug.Log(movement + " in PlayerMovement::Move");
         _movementInput = movement;
     }
 
@@ -152,7 +151,7 @@ public class PlayerMovement : MonoBehaviour
             return;
 
         // set the animation to the jumping animation
-        SetAnimation_("Jump");
+        SetAnimation("Jump");
 
         // might as well JUMP!
         _rigidBody.AddForce(new Vector2(0, JUMP_FORCE));
@@ -184,7 +183,7 @@ public class PlayerMovement : MonoBehaviour
         {
             // they are no longer on the ground
             _onGround = false;
-            SetAnimation_("Jump");
+            SetAnimation("Jump");
         }
     }
 

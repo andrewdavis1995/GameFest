@@ -8,9 +8,52 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     PlayerMovement _movement;
     CardScript _currentCard;
 
+    bool _canMove = true;
+
     bool _isActivePlayer = false;
 
     List<Joke> _jokes = new List<Joke>();
+
+    bool _walkingOn = false;
+    Action _walkOnCallBack;
+    bool _walkingOff = false;
+    Action _walkOffCallBack;
+
+    /// <summary>
+    /// Called once a frame
+    /// </summary>
+    private void Update()
+    {
+        // if walking on
+        if(_walkingOn)
+        {
+            // move to the right
+            _movement.Move(new Vector2(1, 0));
+
+            // if reached the end point, stop
+            if(_movement.transform.position.x > PunchlineBlingController.Instance.ResultPlayerReadingPosition)
+            {
+                // tell the controller they are done
+                _walkingOn = false;
+                _walkOnCallBack?.Invoke();
+                _movement.Move(new Vector2(0, 0));
+            }
+        }
+        else if (_walkingOff)
+        {
+            // move to the left
+            _movement.Move(new Vector2(-1, 0));
+
+            // if reached the end point, stop
+            if (_movement.transform.position.x < PunchlineBlingController.Instance.ResultPlayerPosition.x)
+            {
+                // tell the controller they are done
+                _walkingOff = false;
+                _walkOffCallBack?.Invoke();
+                _movement.Move(new Vector2(0, 0));
+            }
+        }
+    }
 
     /// <summary>
     /// Creates the specified object for the player attached to this object
@@ -70,6 +113,8 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// <param name="ctx">The context of the movement</param>
     public override void OnMove(InputAction.CallbackContext ctx)
     {
+        if (!_canMove) return;
+
         // move the player
         _movement.Move(ctx.ReadValue<Vector2>());
     }
@@ -79,6 +124,8 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCross()
     {
+        if (!_canMove) return;
+
         _movement.Jump();
     }
 
@@ -87,6 +134,8 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// </summary>
     public override void OnTriangle()
     {
+        if (!_canMove) return;
+
         // flip the selected card
         if (_currentCard != null && _isActivePlayer)
             _currentCard.Flip();
@@ -137,5 +186,50 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     public void JokeEarned(Joke joke)
     {
         _jokes.Add(joke);
+    }
+
+    /// <summary>
+    /// Get the list of jokes that the player has won
+    /// </summary>
+    /// <returns>The list of jokes matched by the player</returns>
+    public List<Joke> GetJokes()
+    {
+        return _jokes;
+    }
+
+    /// <summary>
+    /// Gets the player ready for the results reveal
+    /// </summary>
+    /// <param name="resultPlayerPosition">The position at which to place the player</param>
+    internal void MoveToEnd(Vector2 resultPlayerPosition)
+    {
+        _movement.transform.position = resultPlayerPosition;
+
+        // disable movement
+        _canMove = false;
+
+        // disable movement
+        _movement.Move(new Vector2(0, 0));
+        _movement.SetAnimation("Idle");
+    }
+
+    /// <summary>
+    /// Walk on until the player reaches the specified point
+    /// </summary>
+    /// <param name="callback">The function to call when walked on</param>
+    internal void WalkOn(Action callback)
+    {
+        _walkingOn = true;
+        _walkOnCallBack = callback;
+    }
+
+    /// <summary>
+    /// Walk off until the player reaches the specified point
+    /// </summary>
+    /// <param name="callback">The function to call when walked off</param>
+    internal void WalkOff(Action callback)
+    {
+        _walkingOff = true;
+        _walkOffCallBack = callback;
     }
 }

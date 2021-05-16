@@ -30,7 +30,7 @@ public abstract class GenericInputHandler : MonoBehaviour
         {
             // Andrew
             case 0:
-                size += 0.05f;
+                size += 0.031f;
                 break;
                 // Rachel
             case 1:
@@ -42,7 +42,7 @@ public abstract class GenericInputHandler : MonoBehaviour
                 break;
                 // Heather
             case 3:
-                size -= 0.05f;
+                size -= 0.019f;
                 break;
                 // Mum & Dad
             case 4:

@@ -22,9 +22,6 @@ public class CardScript : MonoBehaviour
     /// <param name="inZone"></param>
     public void InZone(bool inZone)
     {
-        Debug.Log("FLIPPED " + _flipped);
-        Debug.Log("State " + PunchlineBlingController.Instance.GetState());
-
         // don't do this if it is already turning
         if (!_flipped && AppropriateStage_())
         {

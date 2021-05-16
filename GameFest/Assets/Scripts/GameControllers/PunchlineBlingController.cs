@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum SelectionState { PickingFirst, PickingSecond, Resetting }
 
@@ -14,18 +15,23 @@ public class PunchlineBlingController : MonoBehaviour
     public Sprite[] CardBacks;          // The images to use on the back of cards (Setup then punchline)
 
     // config
-    public Vector2[] StartPositions;    // Where the players should spawn
-    public Vector2 ResultScreenPosition;
+    public Vector2[] StartPositions;         // Where the players should spawn
+    public Vector3 ResultScreenPosition;     // Where the camera moves to for the results
+    public Vector2 ResultPlayerPosition;     // Where the players move to for the results
+    public int ResultPlayerReadingPosition;  // Where the players move to for the results
 
     // links to other scripts
     JokeManager _jokeManager;
     CardScript[] _cards;
     PunchlineBlingInputHandler[] _players;
+    TimeLimit _overallLimit;
+    TimeLimit _playerLimit;
 
     // member variables
     SelectionState _state = SelectionState.PickingFirst;
     CardScript[] _selectedCards = new CardScript[2];
     int _activePlayerIndex = 0;
+    int _resultsPlayerIndex = 0;
 
     // static link to self
     public static PunchlineBlingController Instance;
@@ -58,8 +64,68 @@ public class PunchlineBlingController : MonoBehaviour
         }
 
         CreateCards_();
+
+        // set up the timers
+        _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+
+        _overallLimit.Initialise(300, OverallTickCallback, PlayerTimeoutCallback);
+        _playerLimit.Initialise(25, OverallTickCallback, PlayerTimeoutCallback);
+
+        // start te game
+        StartGame();
     }
 
+    /// <summary>
+    /// Start the game and start the countdown timers
+    /// </summary>
+    private void StartGame()
+    {
+        _overallLimit.StartTimer();
+        _playerLimit.StartTimer();
+    }
+
+    /// <summary>
+    /// The callback to display the per player time
+    /// </summary>
+    /// <param name="seconds">The seconds remaining</param>
+    public void PlayerTickCallback(int seconds)
+    {
+        // TODO: Display
+        Debug.Log(seconds);
+    }
+
+    /// <summary>
+    /// The callback for when timeout occurs on the per player timer
+    /// </summary>
+    public void PlayerTimeoutCallback()
+    {
+        _state = SelectionState.Resetting;
+        StartCoroutine(Reset());
+    }
+
+    /// <summary>
+    /// The callback to display the overall time
+    /// </summary>
+    /// <param name="seconds">The seconds remaining</param>
+    public void OverallTickCallback(int seconds)
+    {
+        // TODO: Display
+        Debug.Log(seconds);
+    }
+
+    /// <summary>
+    /// The callback for when timeout occurs on the overall timer
+    /// </summary>
+    public void OverallTimeoutCallback()
+    {
+        StartCoroutine(GoToEndScene());
+    }
+
+    /// <summary>
+    /// Gets the current state of the joke selection
+    /// </summary>
+    /// <returns>The state</returns>
     public SelectionState GetState()
     {
         return _state;
@@ -142,12 +208,16 @@ public class PunchlineBlingController : MonoBehaviour
         switch (_state)
         {
             case SelectionState.PickingFirst:
+                // display the first card, and move to next state
                 SetCard_(card, 0);
                 _state = SelectionState.PickingSecond;
                 break;
             case SelectionState.PickingSecond:
+                // display the second card, and move to next state
                 SetCard_(card, 1);
                 _state = SelectionState.Resetting;
+
+                // swap the cards back, or remove them
                 StartCoroutine(Reset());
                 break;
         }
@@ -167,7 +237,7 @@ public class PunchlineBlingController : MonoBehaviour
         yield return new WaitForSeconds(2);
 
         // if the answer is correct...
-        if (_selectedCards[0].GetJoke() == _selectedCards[1].GetJoke())
+        if (_selectedCards[0] != null && _selectedCards[1] != null && _selectedCards[0].GetJoke() == _selectedCards[1].GetJoke())
         {
             // TODO: if correct, award points
             foreach (var card in _selectedCards)
@@ -177,11 +247,8 @@ public class PunchlineBlingController : MonoBehaviour
 
             // TODO: Add to UI
 
-            // check for remaining cards
-            var remaining = _cards.Count(c => c.gameObject.activeInHierarchy);
-
             // if none remaining, end game
-            if (remaining == 0)
+            if (!CardsRemaining_())
             {
                 StartCoroutine(GoToEndScene());
             }
@@ -190,12 +257,16 @@ public class PunchlineBlingController : MonoBehaviour
         {
             // if wrong, flip cards back
             foreach (var card in _selectedCards)
-                card.FlipBack();
+                card?.FlipBack();
 
             // set next player to active
             _activePlayerIndex++;
             if (_activePlayerIndex >= _players.Length) _activePlayerIndex = 0;
         }
+
+        // clear out the selection
+        for (int i = 0; i < _selectedCards.Length; i++)
+            _selectedCards[i] = null;
 
         // set the active player
         _players[_activePlayerIndex].ActivePlayer(true);
@@ -204,9 +275,25 @@ public class PunchlineBlingController : MonoBehaviour
         foreach (var txt in NoteBookTexts)
             txt.text = "";
 
-
         // back to the first one
         _state = SelectionState.PickingFirst;
+
+        if (CardsRemaining_())
+        {
+            // restart the player countdown
+            _playerLimit.StartTimer();
+        }
+    }
+
+    /// <summary>
+    /// Looks for remaining cards
+    /// </summary>
+    /// <returns>Whether there are any cards left to clear</returns>
+    private bool CardsRemaining_()
+    {
+        // check for remaining cards
+        var remaining = _cards.Count(c => c.gameObject.activeInHierarchy);
+        return remaining > 0;
     }
 
     /// <summary>
@@ -215,9 +302,102 @@ public class PunchlineBlingController : MonoBehaviour
     /// <returns></returns>
     private IEnumerator GoToEndScene()
     {
+        // stop timeouts
+        _overallLimit.Abort();
+        _playerLimit.Abort();
+
         // TODO: show a transition
         yield return new WaitForSeconds(1);
+
+        // move to the end position
+        SetEndPositions_();
+
+        // tell the jokes
+        StartResults_();
+    }
+
+    /// <summary>
+    /// Makes each player walk on in turn, read their jokes out, then walk off
+    /// </summary>
+    private void StartResults_()
+    {
+        _players[_resultsPlayerIndex].WalkOn(ReadJokes);
+    }
+
+    /// <summary>
+    /// Starts a coroutine to read out all jokes for the current player
+    /// </summary>
+    void ReadJokes()
+    {
+        StartCoroutine(CurrentPlayerReadJokes());
+    }
+
+    /// <summary>
+    /// Reads out the jokes for current player - includes pauses
+    /// </summary>
+    IEnumerator CurrentPlayerReadJokes()
+    {
+        yield return new WaitForSeconds(1);
+
+        if(_players[_resultsPlayerIndex].GetJokes().Count > 0)
+        {
+            foreach(var joke in _players[_resultsPlayerIndex].GetJokes())
+            {
+                // TODO: Display on screen
+                Debug.Log(joke.Setup);
+                yield return new WaitForSeconds(2);
+
+                // TODO: Display on screen
+                Debug.Log(joke.Punchline);
+
+                yield return new WaitForSeconds(2);
+
+                // TODO: Clear screen/hide bubble
+
+                // TODO: points tick up
+            }
+        }
+        else
+        {
+            // no jokes for this player
+            Debug.Log("I got nothing");
+            yield return new WaitForSeconds(2);
+        }
+
+        // TODO: "Thank you and good night!" message
+
+        // finished
+        _players[_resultsPlayerIndex].WalkOff(NextPlayerResults);
+    }
+
+    /// <summary>
+    /// Once player has walked off, move to the next player
+    /// </summary>
+    void NextPlayerResults()
+    {
+        _resultsPlayerIndex++;
+
+        // if there is a player left, show them
+        if (_resultsPlayerIndex < _players.Length)
+        {
+            StartResults_();
+        }
+        else
+        {
+            // when no more players, move to the central page
+            SceneManager.LoadScene(1);
+        }
+    }
+
+    /// <summary>
+    /// Sets the position of players and camera for the results
+    /// </summary>
+    void SetEndPositions_()
+    {
         Camera.main.transform.localPosition = ResultScreenPosition;
+        Camera.main.orthographicSize = 4.5f;
+        foreach (var player in _players)
+            player.MoveToEnd(ResultPlayerPosition);
     }
 
     /// <summary>
