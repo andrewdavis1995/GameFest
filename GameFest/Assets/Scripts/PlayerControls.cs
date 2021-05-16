@@ -34,7 +34,7 @@ public class PlayerControls : MonoBehaviour
         _activeHandler = GetComponent<LobbyInputHandler>();
 
         // work out which colour to assign to this player
-        GetColour_();
+        _colour = ColourFetcher.GetColour(PlayerInput.playerIndex);
 
         // display the player on UI
         UpdateMenu();
@@ -82,35 +82,6 @@ public class PlayerControls : MonoBehaviour
 
         // connects the input handler to the display
         (_activeHandler as LobbyInputHandler).SetDisplay(lobbyDisplay, (x, y) => { _playerName = x; _characterIndex = y; }, PlayerInput.playerIndex == 0);
-    }
-
-    /// <summary>
-    /// Gets the colour for this player
-    /// </summary>
-    void GetColour_()
-    {
-        float r = 0, g = 0, b = 0;
-
-        // based on the player index, set the colour of the player
-        switch (PlayerInput.playerIndex)
-        {
-            case 0:
-                r = .8f;        // red
-                break;
-            case 1:
-                b = .8f;        // blue
-                break;
-            case 2:
-                g = .8f;        // green
-                break;
-            case 3:
-                r = 1;          // yellow
-                g = .8f;
-                break;
-        }
-
-        // set the colour
-        _colour = new Color(r, g, b);
     }
 
     /// <summary>

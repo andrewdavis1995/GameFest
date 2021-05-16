@@ -14,6 +14,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     bool _isActivePlayer = false;
     bool _walkingOn = false;
     bool _walkingOff = false;
+    int _characterIndex = 0;
 
     // jokes and points
     List<Joke> _jokes = new List<Joke>();
@@ -67,6 +68,8 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// <param name="characterIndex">The index of the selected character</param>
     public override void Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName)
     {
+        _characterIndex = characterIndex;
+
         // create the player display
         var spawned = Instantiate(prefab, position, Quaternion.identity);
 
@@ -100,6 +103,15 @@ public class PunchlineBlingInputHandler : GenericInputHandler
 
         // show/hide the active icon
         _movement.SetActiveIcon(active);
+    }
+
+    /// <summary>
+    /// The character index used by this player
+    /// </summary>
+    /// <returns>The character index</returns>
+    internal int CharacterIndex()
+    {
+        return _characterIndex;
     }
 
     /// <summary>
@@ -213,8 +225,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         _canMove = false;
 
         // disable movement
-        _movement.Move(new Vector2(0, 0));
-        _movement.SetAnimation("Idle");
+        _movement.DisableMovement();
     }
 
     /// <summary>

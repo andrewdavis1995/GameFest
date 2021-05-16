@@ -66,4 +66,30 @@ public static class TextFormatter
         return strOutput;
     }
 
+    /// <summary>
+    /// Gets a string which formats an integer to mm:ss
+    /// </summary>
+    /// <param name="totalSeconds">The total number of seconds</param>
+    /// <returns>The formatted string</returns>
+    public static string GetTimeString(int totalSeconds)
+    {
+        var minutes = totalSeconds / 60;
+        var seconds = totalSeconds - (minutes * 60);
+
+        // get the formatted string
+        return GetIntValue_(minutes) + ":" + GetIntValue_(seconds);
+    }
+
+    /// <summary>
+    /// Adds a 0 to the start of value if it's less than 10
+    /// </summary>
+    /// <param name="value">The value to format</param>
+    /// <returns>The formatted string</returns>
+    static string GetIntValue_(int value)
+    {
+        // add a zero if appropriateS
+        if (value < 10)
+            return "0" + value;
+        else return value.ToString();
+    }
 }

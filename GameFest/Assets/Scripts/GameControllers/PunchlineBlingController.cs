@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public enum SelectionState { PickingFirst, PickingSecond, Resetting }
 
@@ -15,12 +16,18 @@ public class PunchlineBlingController : MonoBehaviour
     public Sprite[] CardBacks;          // The images to use on the back of cards (Setup then punchline)
     public GameObject SpeechBubble;     // Speech bubble display
     public TextMesh SpeechBubbleText;   // Speech bubble text
+    public Text TxtOverallTime;         // The text for displaying the overall time
+    public Text TxtPlayerTime;          // The text for displaying the round time
+    public Transform[] PlayerDisplays;  // The displays for showing how many jokes each player has earned
+    public GameObject PnlTotalPoints;   // Displays the score during reading the results
+    public Text TxtTotalPoints;         // Displays the score during reading the results
 
     // config
     public Vector2[] StartPositions;         // Where the players should spawn
     public Vector3 ResultScreenPosition;     // Where the camera moves to for the results
     public Vector2 ResultPlayerPosition;     // Where the players move to for the results
     public int ResultPlayerReadingPosition;  // Where the players move to for the results
+    public Sprite[] CharacterIcons;            // The icons for the characters
 
     // links to other scripts
     JokeManager _jokeManager;
@@ -34,6 +41,8 @@ public class PunchlineBlingController : MonoBehaviour
     CardScript[] _selectedCards = new CardScript[2];
     int _activePlayerIndex = 0;
     int _resultsPlayerIndex = 0;
+    int _targetScore = 0;
+    int _currentDisplayScore = 0;
 
     // static link to self
     public static PunchlineBlingController Instance;
@@ -65,17 +74,47 @@ public class PunchlineBlingController : MonoBehaviour
             NoteBookTexts[i].text = "";
         }
 
+        // hide end UI
+        PnlTotalPoints.SetActive(false);
+
+        // configure the points display controls
+        for (int i = 0; i < _players.Length; i++)
+        {
+            var images = PlayerDisplays[i].GetComponentsInChildren<Image>();
+            images[0].color = ColourFetcher.GetColour(i);
+            images[1].sprite = CharacterIcons[_players[i].CharacterIndex()];
+        }
+
+        // hide unused controls
+        for (int i = _players.Length; i < PlayerDisplays.Length; i++)
+        {
+            PlayerDisplays[i].gameObject.SetActive(false);
+        }
+
         CreateCards_();
 
         // set up the timers
         _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
 
-        _overallLimit.Initialise(300, OverallTickCallback, PlayerTimeoutCallback);
-        _playerLimit.Initialise(25, OverallTickCallback, PlayerTimeoutCallback);
+        _overallLimit.Initialise(300, OverallTickCallback, OverallTimeoutCallback);
+        _playerLimit.Initialise(25, PlayerTickCallback, PlayerTimeoutCallback);
 
-        // start te game
+        // start the game
         StartGame();
+    }
+
+    private void Update()
+    {
+        if (!CardsRemaining_())
+        {
+            // count up until the target score is met
+            if (_currentDisplayScore < _targetScore)
+            {
+                _currentDisplayScore++;
+            }
+            TxtTotalPoints.text = _currentDisplayScore.ToString();
+        }
     }
 
     /// <summary>
@@ -93,8 +132,7 @@ public class PunchlineBlingController : MonoBehaviour
     /// <param name="seconds">The seconds remaining</param>
     public void PlayerTickCallback(int seconds)
     {
-        // TODO: Display
-        Debug.Log(seconds);
+        TxtPlayerTime.text = TextFormatter.GetTimeString(seconds);
     }
 
     /// <summary>
@@ -112,8 +150,7 @@ public class PunchlineBlingController : MonoBehaviour
     /// <param name="seconds">The seconds remaining</param>
     public void OverallTickCallback(int seconds)
     {
-        // TODO: Display
-        Debug.Log(seconds);
+        TxtOverallTime.text = TextFormatter.GetTimeString(seconds);
     }
 
     /// <summary>
@@ -230,7 +267,7 @@ public class PunchlineBlingController : MonoBehaviour
     /// </summary>
     private IEnumerator Reset()
     {
-        var activePlayer = _players.Where(p => p.ActivePlayer());
+        var activePlayer = _players.Where(p => p.ActivePlayer()).First();
 
         // no player is active at this point
         foreach (var player in _players)
@@ -241,13 +278,15 @@ public class PunchlineBlingController : MonoBehaviour
         // if the answer is correct...
         if (_selectedCards[0] != null && _selectedCards[1] != null && _selectedCards[0].GetJoke() == _selectedCards[1].GetJoke())
         {
-            // TODO: if correct, award points
+            // disable both cards
             foreach (var card in _selectedCards)
                 card.gameObject.SetActive(false);
 
-            _players[_activePlayerIndex].JokeEarned(_selectedCards.First().GetJoke());
+            // add a joke to the players list
+            activePlayer.JokeEarned(_selectedCards.First().GetJoke());
 
-            // TODO: Add to UI
+            // set display text
+            PlayerDisplays[_activePlayerIndex].GetComponentInChildren<Text>().text = activePlayer.GetJokes().Count.ToString();
 
             // if none remaining, end game
             if (!CardsRemaining_())
@@ -358,6 +397,8 @@ public class PunchlineBlingController : MonoBehaviour
     IEnumerator CurrentPlayerReadJokes()
     {
         yield return new WaitForSeconds(1);
+        PnlTotalPoints.SetActive(true);
+        TxtTotalPoints.text = "0";
 
         // if there are jokes to display
         if (_players[_resultsPlayerIndex].GetJokes().Count > 0)
@@ -375,6 +416,10 @@ public class PunchlineBlingController : MonoBehaviour
 
                 // punchline
                 Speak(joke.Punchline);
+
+                // add to total score 
+                _targetScore += _players[_resultsPlayerIndex].GetPoints();
+
                 yield return new WaitForSeconds(2);
 
                 // Pause
@@ -383,8 +428,6 @@ public class PunchlineBlingController : MonoBehaviour
 
                 // add points
                 _players[_resultsPlayerIndex].AddPoints();
-
-                // TODO: points tick up
             }
         }
         else
@@ -393,6 +436,8 @@ public class PunchlineBlingController : MonoBehaviour
             Speak("I got nothing...");
             yield return new WaitForSeconds(2);
         }
+
+        PnlTotalPoints.SetActive(false);
 
         // exit speech
         Speak("Thank you! Good night!");

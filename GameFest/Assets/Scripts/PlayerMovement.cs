@@ -133,6 +133,15 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
+    /// Stops movement from the player
+    /// </summary>
+    internal void DisableMovement()
+    {
+        _movementInput = new Vector2(0, 0);
+        SetAnimation("Idle");
+    }
+
+    /// <summary>
     /// Sets how much to move - comes from the Input
     /// </summary>
     /// <param name="movement">How much to move by</param>
