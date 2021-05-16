@@ -5,18 +5,22 @@ using UnityEngine.InputSystem;
 
 public class PunchlineBlingInputHandler : GenericInputHandler
 {
+    // links to other scripts
     PlayerMovement _movement;
     CardScript _currentCard;
 
+    // status members
     bool _canMove = true;
-
     bool _isActivePlayer = false;
-
-    List<Joke> _jokes = new List<Joke>();
-
     bool _walkingOn = false;
-    Action _walkOnCallBack;
     bool _walkingOff = false;
+
+    // jokes and points
+    List<Joke> _jokes = new List<Joke>();
+    int _points = 0;
+
+    // callback functions
+    Action _walkOnCallBack;
     Action _walkOffCallBack;
 
     /// <summary>
@@ -231,5 +235,24 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     {
         _walkingOff = true;
         _walkOffCallBack = callback;
+    }
+
+    /// <summary>
+    /// Add points for a joke
+    /// </summary>
+    internal void AddPoints()
+    {
+        // generate a random value for the points and add it to the list
+        var points = UnityEngine.Random.Range(200, 215);
+        _points += points;
+    }
+
+    /// <summary>
+    /// Returns the number of points won by this player
+    /// </summary>
+    /// <returns>Points earned</returns>
+    public int GetPoints()
+    {
+        return _points;
     }
 }

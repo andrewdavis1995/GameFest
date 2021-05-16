@@ -3,6 +3,7 @@ public static class TextFormatter
 {
     const int MAX_CARD_JOKE_LENGTH = 20;
     const int MAX_NOTEPAD_JOKE_LENGTH = 24;
+    const int MAX_BUBBLE_JOKE_LENGTH = 25;
 
     /// <summary>
     /// Used to format the string of a joke so that it fits on a card
@@ -22,6 +23,16 @@ public static class TextFormatter
     public static string GetNotepadJokeString(string original)
     {
         return GetString(original, MAX_NOTEPAD_JOKE_LENGTH);
+    }
+
+    /// <summary>
+    /// Used to format the string of a joke so that it fits on the speech bubble
+    /// </summary>
+    /// <param name="original">The string to be formatted</param>
+    /// <returns>The formatted string</returns>
+    public static string GetBubbleJokeString(string original)
+    {
+        return GetString(original, MAX_BUBBLE_JOKE_LENGTH);
     }
 
     /// <summary>

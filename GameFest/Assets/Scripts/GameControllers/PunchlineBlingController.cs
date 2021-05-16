@@ -13,6 +13,8 @@ public class PunchlineBlingController : MonoBehaviour
     public Transform PlayerPrefab;      // The prefab to create
     public TextMesh[] NoteBookTexts;    // The text meshes used to display cards
     public Sprite[] CardBacks;          // The images to use on the back of cards (Setup then punchline)
+    public GameObject SpeechBubble;     // Speech bubble display
+    public TextMesh SpeechBubbleText;   // Speech bubble text
 
     // config
     public Vector2[] StartPositions;         // Where the players should spawn
@@ -333,26 +335,54 @@ public class PunchlineBlingController : MonoBehaviour
     }
 
     /// <summary>
+    /// Displays a message in the speech bubble
+    /// </summary>
+    /// <param name="msg">The message to display</param>
+    void Speak(string msg)
+    {
+        SpeechBubble.SetActive(true);
+        SpeechBubbleText.text = TextFormatter.GetBubbleJokeString(msg);
+    }
+
+    /// <summary>
+    /// Hides the speech bubble
+    /// </summary>
+    void HideSpeech()
+    {
+        SpeechBubble.SetActive(false);
+    }
+
+    /// <summary>
     /// Reads out the jokes for current player - includes pauses
     /// </summary>
     IEnumerator CurrentPlayerReadJokes()
     {
         yield return new WaitForSeconds(1);
 
-        if(_players[_resultsPlayerIndex].GetJokes().Count > 0)
+        // if there are jokes to display
+        if (_players[_resultsPlayerIndex].GetJokes().Count > 0)
         {
-            foreach(var joke in _players[_resultsPlayerIndex].GetJokes())
+            // loop through each joke
+            foreach (var joke in _players[_resultsPlayerIndex].GetJokes())
             {
-                // TODO: Display on screen
-                Debug.Log(joke.Setup);
+                // setup
+                Speak(joke.Setup);
                 yield return new WaitForSeconds(2);
 
-                // TODO: Display on screen
-                Debug.Log(joke.Punchline);
+                // Pause
+                HideSpeech();
+                yield return new WaitForSeconds(1);
 
+                // punchline
+                Speak(joke.Punchline);
                 yield return new WaitForSeconds(2);
 
-                // TODO: Clear screen/hide bubble
+                // Pause
+                HideSpeech();
+                yield return new WaitForSeconds(1);
+
+                // add points
+                _players[_resultsPlayerIndex].AddPoints();
 
                 // TODO: points tick up
             }
@@ -360,11 +390,17 @@ public class PunchlineBlingController : MonoBehaviour
         else
         {
             // no jokes for this player
-            Debug.Log("I got nothing");
+            Speak("I got nothing...");
             yield return new WaitForSeconds(2);
         }
 
-        // TODO: "Thank you and good night!" message
+        // exit speech
+        Speak("Thank you! Good night!");
+        yield return new WaitForSeconds(2);
+
+        // walk off
+        HideSpeech();
+        yield return new WaitForSeconds(1);
 
         // finished
         _players[_resultsPlayerIndex].WalkOff(NextPlayerResults);
