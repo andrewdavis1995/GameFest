@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -45,7 +46,7 @@ public class PlayerManagerScript : MonoBehaviour
     /// <returns>List of players who are in the game</returns>
     public List<PlayerControls> GetPlayers()
     {
-        return _players;
+        return _players.OrderBy(p => p.PlayerInput.playerIndex).ToList();
     }
 
     /// <summary>

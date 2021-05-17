@@ -37,9 +37,9 @@ public class GameCentralController : MonoBehaviour
 
     private IEnumerator LoadMiniGame()
     {
-        yield return new WaitForSeconds(4);
+        yield return new WaitForSeconds(1.2f);
 
         // TODO: get this from _manager
-        PlayerManagerScript.Instance.NextScene(2);
+        PlayerManagerScript.Instance.NextScene(3);
     }
 }
