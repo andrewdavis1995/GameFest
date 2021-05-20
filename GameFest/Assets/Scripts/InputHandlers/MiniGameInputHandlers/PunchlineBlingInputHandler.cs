@@ -18,7 +18,6 @@ public class PunchlineBlingInputHandler : GenericInputHandler
 
     // jokes and points
     List<Joke> _jokes = new List<Joke>();
-    int _points = 0;
 
     // callback functions
     Action _walkOnCallBack;
@@ -246,24 +245,5 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     {
         _walkingOff = true;
         _walkOffCallBack = callback;
-    }
-
-    /// <summary>
-    /// Add points for a joke
-    /// </summary>
-    internal void AddPoints()
-    {
-        // generate a random value for the points and add it to the list
-        var points = UnityEngine.Random.Range(200, 215);
-        _points += points;
-    }
-
-    /// <summary>
-    /// Returns the number of points won by this player
-    /// </summary>
-    /// <returns>Points earned</returns>
-    public int GetPoints()
-    {
-        return _points;
     }
 }

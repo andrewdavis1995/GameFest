@@ -17,7 +17,6 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody2D _rigidBody;
     Animator _animator;
     SpriteRenderer _renderer;
-    Transform[] _paddles;
 
     // public objects
     public TextMesh TxtPlayerName;
@@ -31,16 +30,14 @@ public class PlayerMovement : MonoBehaviour
     Action<Collider2D> _triggerEnterCallback;
     Action<Collider2D> _triggerExitCallback;
 
+    public PlayerAnimation PlayerAnimator;
+
     void Start()
     {
         // find necessary components
         _renderer = GetComponent<SpriteRenderer>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
-
-        // TODO: only get paddles assigned to the player
-        // TODO: Temp - move elsewhere
-        _paddles = GameObject.FindGameObjectsWithTag("Paddle").Select(e => e.transform).ToArray();
     }
 
     /// <summary>
@@ -87,7 +84,7 @@ public class PlayerMovement : MonoBehaviour
 
         // if we are on the ground, i.e. walking or idle, update the animation
         if (_onGround)
-            SetAnimation(xMove == 0 ? "Idle" : "Walk");
+            PlayerAnimator.SetAnimation(xMove == 0 ? "Idle" : "Walk");
 
         UpdateOrientation_(xMove);
     }
@@ -113,32 +110,12 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
-    /// Sets the animation of the player to the specified trigger
-    /// </summary>
-    /// <param name="animation">The trigger to set</param>
-    public void SetAnimation(string animation)
-    {
-        // ensure the animator exists
-        if (_animator != null)
-        {
-            // reset all triggers
-            _animator.ResetTrigger("Jump");
-            _animator.ResetTrigger("Walk");
-            _animator.ResetTrigger("Idle");
-            _animator.ResetTrigger("Celebrate");
-
-            // set the specified trigger
-            _animator.SetTrigger(animation);
-        }
-    }
-
-    /// <summary>
     /// Stops movement from the player
     /// </summary>
     internal void DisableMovement()
     {
         _movementInput = new Vector2(0, 0);
-        SetAnimation("Idle");
+        PlayerAnimator.SetAnimation("Idle");
     }
 
     /// <summary>
@@ -160,7 +137,7 @@ public class PlayerMovement : MonoBehaviour
             return;
 
         // set the animation to the jumping animation
-        SetAnimation("Jump");
+        PlayerAnimator.SetAnimation("Jump");
 
         // might as well JUMP!
         _rigidBody.AddForce(new Vector2(0, JUMP_FORCE));
@@ -192,7 +169,7 @@ public class PlayerMovement : MonoBehaviour
         {
             // they are no longer on the ground
             _onGround = false;
-            SetAnimation("Jump");
+            PlayerAnimator.SetAnimation("Jump");
         }
     }
 

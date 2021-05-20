@@ -425,7 +425,7 @@ public class PunchlineBlingController : MonoBehaviour
                 Speak(joke.Punchline);
 
                 // add points
-                _players[_resultsPlayerIndex].AddPoints();
+                _players[_resultsPlayerIndex].AddPoints(UnityEngine.Random.Range(200, 215));
                 _targetScore = _players[_resultsPlayerIndex].GetPoints();
 
                 yield return new WaitForSeconds(2);

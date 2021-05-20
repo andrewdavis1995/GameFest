@@ -1,8 +1,11 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public abstract class GenericInputHandler : MonoBehaviour
 {
+    private int _points = 0;
+
     public virtual void Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName) { }
 
     public virtual void OnMove(InputAction.CallbackContext ctx) { }
@@ -16,6 +19,24 @@ public abstract class GenericInputHandler : MonoBehaviour
 
     public virtual void TriggerEnter(Collision2D collision) { }
     public virtual void TriggerExit(Collision2D collision) { }
+
+    /// <summary>
+    /// Add points for the current game
+    /// </summary>
+    /// <param name="points">The points to add</param>
+    public virtual void AddPoints(int points)
+    {
+        _points = points;
+    }
+
+    /// <summary>
+    /// Returns the number of points won by this player
+    /// </summary>
+    /// <returns>Points earned</returns>
+    public int GetPoints()
+    {
+        return _points;
+    }
 
     /// <summary>
     /// Set the height of the player based on the selected character

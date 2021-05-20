@@ -192,10 +192,9 @@ GameObject:
   - component: {fileID: 74487401}
   - component: {fileID: 74487400}
   - component: {fileID: 1263884819520890295}
-  - component: {fileID: -7332691259193248773}
-  - component: {fileID: -1293348675240407854}
+  - component: {fileID: -4355692091158339364}
   m_Layer: 6
-  m_Name: PlayerDisplay
+  m_Name: PlayerAnimationOnly
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -335,23 +334,7 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &-7332691259193248773
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8475240428089446558}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90105842c18158842b0c9e0b7d05b22d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Speed: 5
-  TxtPlayerName: {fileID: 5314997412158928466}
-  ActivePlayerIcon: {fileID: 4004152496688009746}
-  PlayerAnimator: {fileID: -1293348675240407854}
---- !u!114 &-1293348675240407854
+--- !u!114 &-4355692091158339364
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

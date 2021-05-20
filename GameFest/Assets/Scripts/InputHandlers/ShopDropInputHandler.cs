@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,15 +13,65 @@ public class ShopDropInputHandler : GenericInputHandler
     // the paddles assigned to this player
     PaddleScript[] _paddles;
 
-    // the player to be shown at the bottom
-    Transform playerTransform_;
+    // other linked objects
+    Transform _playerTransform;
+    Transform _trolley;
+
+    // links to other scripts
+    List<ShopDropBallScript> _foodCollected = new List<ShopDropBallScript>();
+    PlayerAnimation _animator;
+
+    // how many coroutines are running (for celebration animation)
+    int _animationCoroutines = 0;
 
     /// <summary>
     /// Finds the paddles assigned to this player
     /// </summary>
     public void AssignPaddles(int playerIndex)
     {
+        // fetch paddles associated with the player
         _paddles = FindObjectsOfType<PaddleScript>().Where(t => t.gameObject.name == "PADDLE_" + playerIndex).ToArray();
+
+        // link to trolley, and show it
+        _trolley = ShopDropController.Instance.Trolleys[playerIndex];
+        _trolley.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// When food lands in one of the players slots
+    /// </summary>
+    /// <param name="ball">The ball that landed</param>
+    internal void FoodCollected(ShopDropBallScript ball)
+    {
+        // add to the list
+        _foodCollected.Add(ball);
+
+        // add points to player
+        AddPoints(ball.Points);
+
+        // put in trolley
+        ball.MoveToTrolley(_trolley);
+
+        // trigger the celebration animation
+        StartCoroutine(Celebrate());
+    }
+
+    /// <summary>
+    /// Celebration animation for one second, then reset
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator Celebrate()
+    {
+        _animationCoroutines++;
+
+        // start celebrating
+        _animator.SetAnimation("Celebrate");
+        yield return new WaitForSeconds(1f);
+        _animationCoroutines--;
+
+        // if there are no other coroutines waiting, reset to Idle
+        if (_animationCoroutines == 0)
+            _animator.SetAnimation("Idle");
     }
 
     /// <summary>
@@ -27,6 +80,8 @@ public class ShopDropInputHandler : GenericInputHandler
     /// <param name="ctx">The context of the movement</param>
     public override void OnMove(InputAction.CallbackContext ctx)
     {
+        if (!ShopDropController.Instance.GameRunning()) return;
+
         // the vector of the movement input from the user
         var movement = ctx.ReadValue<Vector2>();
 
@@ -47,12 +102,16 @@ public class ShopDropInputHandler : GenericInputHandler
     public override void Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName)
     {
         // create the player display
-        playerTransform_ = Instantiate(prefab, position, Quaternion.identity);
+        _playerTransform = Instantiate(prefab, position, Quaternion.identity);
 
         // set the height of the object
-        SetHeight(playerTransform_, characterIndex);
+        SetHeight(_playerTransform, characterIndex);
+        _playerTransform.localScale /= 1.5f;
 
         // use the correct animation controller
-        SetAnimation(playerTransform_, characterIndex);
+        SetAnimation(_playerTransform, characterIndex);
+
+        // get animator and set player to idle
+        _animator = _playerTransform.GetComponent<PlayerAnimation>();
     }
 }

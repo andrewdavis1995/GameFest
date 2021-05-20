@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -8,22 +9,37 @@ public class ShopDropController : MonoBehaviour
 {
     // configuration
     public Vector2[] StartPositions;
-    public int LeftBound;
-    public int RightBound;
-    public int BallDropHeight;
+    public float LeftBound;
+    public float RightBound;
+    public float BallDropHeight;
+
+    // objects
+    public Transform[] Trolleys;
+
+    // links to other scripts
+    public FoodFetcher Fetcher;
 
     // prefabs
     public Transform PlayerPrefab;
     public Transform BallPrefab;
 
+    // time out
+    TimeLimit _overallLimit;
+
     // state variables
     private bool _gameRunning = false;
+
+    // easy access
+    public static ShopDropController Instance;
 
     /// <summary>
     /// Runs at start
     /// </summary>
     void Start()
     {
+        // store a static instance of this script
+        Instance = this;
+
         // assign paddles to players
         SetPaddles_();
 
@@ -32,6 +48,10 @@ public class ShopDropController : MonoBehaviour
 
         // create players
         SpawnPlayers_();
+
+        // setup the timeout
+        _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _overallLimit.Initialise(90, OnTimeLimitTick, OnTimeUp);
 
         // start the game
         StartGame_();
@@ -46,6 +66,7 @@ public class ShopDropController : MonoBehaviour
 
         // find all paddles
         PaddleScript[] paddles = GameObject.FindObjectsOfType<PaddleScript>();
+        Debug.Log(paddles.Length);
 
         // loop through each paddle
         for (int i = 0; i < paddles.Length; i++)
@@ -70,14 +91,15 @@ public class ShopDropController : MonoBehaviour
         int playerIndex = 0;
 
         // find all paddles
-        GameObject[] paddles = GameObject.FindGameObjectsWithTag("AreaTrigger");
+        GameObject[] zones = GameObject.FindGameObjectsWithTag("AreaTrigger");
+        zones = zones.OrderBy(p => Random.Range(0, 10)).ToArray();
 
         // loop through each paddle
-        for (int i = 0; i < paddles.Length; i++)
+        for (int i = 0; i < zones.Length; i++)
         {
             // assign to current player, and set colour accordingly
-            paddles[i].name = "AREA_" + playerIndex;
-            paddles[i].GetComponentInChildren<SpriteRenderer>().color = ColourFetcher.GetColour(playerIndex);
+            zones[i].name = "AREA_" + playerIndex;
+            zones[i].GetComponentInChildren<SpriteRenderer>().color = ColourFetcher.GetColour(playerIndex);
 
             // move to the next player, and loop around if at end
             playerIndex++;
@@ -89,12 +111,22 @@ public class ShopDropController : MonoBehaviour
     }
 
     /// <summary>
+    /// Is the game active (can players move)?
+    /// </summary>
+    /// <returns>Whether the game is active</returns>
+    public bool GameRunning()
+    {
+        return _gameRunning;
+    }
+
+    /// <summary>
     /// Starts the game
     /// </summary>
     void StartGame_()
     {
         _gameRunning = true;
         StartCoroutine(GenerateBalls_());
+        _overallLimit.StartTimer();
     }
 
     /// <summary>
@@ -119,6 +151,7 @@ public class ShopDropController : MonoBehaviour
     /// </summary>
     private IEnumerator GenerateBalls_()
     {
+        // create balls until time up
         while (_gameRunning)
         {
             CreateBall_();
@@ -132,7 +165,8 @@ public class ShopDropController : MonoBehaviour
     void CreateBall_()
     {
         var left = Random.Range(LeftBound, RightBound);
-        Instantiate(BallPrefab, new Vector2(left, BallDropHeight), Quaternion.identity);
+        var ball = Instantiate(BallPrefab, new Vector2(left, BallDropHeight), Quaternion.identity);
+        Fetcher.GetFood(ball.GetComponent<ShopDropBallScript>());
     }
 
     /// <summary>
