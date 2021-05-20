@@ -29,17 +29,23 @@ public class GameCentralController : MonoBehaviour
 
             // move to next position
             left += POSITION_GAP;
+
+            // get the latest points
+            player.UpdatePoints();
+            Debug.Log(player.GetPoints());
         }
 
-
-        StartCoroutine(LoadMiniGame());
+        // TODO: get from enum
+        StartCoroutine(LoadMiniGame(2));
     }
 
-    private IEnumerator LoadMiniGame()
+    /// <summary>
+    /// Loads the specified game
+    /// </summary>
+    /// <param name="gameIndex">The index of the scene to load</param>
+    private IEnumerator LoadMiniGame(int gameIndex)
     {
         yield return new WaitForSeconds(1.2f);
-
-        // TODO: get this from _manager
-        PlayerManagerScript.Instance.NextScene(3);
+        PlayerManagerScript.Instance.NextScene(gameIndex);
     }
 }

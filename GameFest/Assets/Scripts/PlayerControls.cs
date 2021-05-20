@@ -16,10 +16,10 @@ public class PlayerControls : MonoBehaviour
 
     // player information
     InputDevice _device;
-
     Color _colour;
     string _playerName = "";
     int _characterIndex = 0;
+    private int _points = 0;
 
     /// <summary>
     /// Called when the object is created
@@ -43,6 +43,19 @@ public class PlayerControls : MonoBehaviour
         SetLightbarColour_();
     }
 
+    /// <summary>
+    /// Gets the total points the player has earned
+    /// </summary>
+    /// <returns>Points earned by the player</returns>
+    internal int GetPoints()
+    {
+        return _points;
+    }
+
+    /// <summary>
+    /// Removes the current input handler and adds the specified type
+    /// </summary>
+    /// <param name="type">The type of handler to add</param>
     internal void SetActiveScript(Type type)
     {
         Destroy(gameObject.GetComponent<GenericInputHandler>());
@@ -56,6 +69,16 @@ public class PlayerControls : MonoBehaviour
     public string GetPlayerName()
     {
         return _playerName;
+    }
+
+    /// <summary>
+    /// Adds the points from the current script
+    /// </summary>
+    public void UpdatePoints()
+    {
+        // add points from the current input handler
+        if (gameObject.GetComponent<GenericInputHandler>() != null)
+            _points += gameObject.GetComponent<GenericInputHandler>().GetPoints();
     }
 
     /// <summary>
@@ -122,6 +145,10 @@ public class PlayerControls : MonoBehaviour
             _activeHandler.OnTouchpad();
     }
 
+    /// <summary>
+    /// When the L1 input is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
     public void OnL1(InputAction.CallbackContext ctx)
     {
         // only handle it once
@@ -150,6 +177,11 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnSquare(InputAction.CallbackContext ctx)
     {
+        // only handle it once
+        if (!ctx.performed) return;
+
+        if (_activeHandler != null)
+            _activeHandler.OnSquare();
     }
 
     /// <summary>
@@ -176,21 +208,5 @@ public class PlayerControls : MonoBehaviour
 
         if (_activeHandler != null)
             _activeHandler.OnCircle();
-    }
-
-    /// <summary>
-    /// When the right paddle trigger is sent
-    /// </summary>
-    /// <param name="ctx">The context of the input</param>
-    public void PaddleRight(InputAction.CallbackContext ctx)
-    {
-    }
-
-    /// <summary>
-    /// When the left paddle trigger is sent
-    /// </summary>
-    /// <param name="ctx">The context of the input</param>
-    public void PaddleLeft(InputAction.CallbackContext ctx)
-    {
     }
 }

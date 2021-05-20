@@ -26,7 +26,7 @@ public abstract class GenericInputHandler : MonoBehaviour
     /// <param name="points">The points to add</param>
     public virtual void AddPoints(int points)
     {
-        _points = points;
+        _points += points;
     }
 
     /// <summary>

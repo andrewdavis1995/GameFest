@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Controls the flow of the "Shop Drop" mini game
@@ -92,7 +94,7 @@ public class ShopDropController : MonoBehaviour
 
         // find all paddles
         GameObject[] zones = GameObject.FindGameObjectsWithTag("AreaTrigger");
-        zones = zones.OrderBy(p => Random.Range(0, 10)).ToArray();
+        zones = zones.OrderBy(p => UnityEngine.Random.Range(0, 10)).ToArray();
 
         // loop through each paddle
         for (int i = 0; i < zones.Length; i++)
@@ -125,7 +127,11 @@ public class ShopDropController : MonoBehaviour
     void StartGame_()
     {
         _gameRunning = true;
+
+        // start creating balls
         StartCoroutine(GenerateBalls_());
+
+        // start the timer
         _overallLimit.StartTimer();
     }
 
@@ -135,6 +141,37 @@ public class ShopDropController : MonoBehaviour
     void OnTimeUp()
     {
         _gameRunning = false;
+
+        // show results
+        StartCoroutine(ShowResults());
+    }
+
+    /// <summary>
+    /// Shows the results, one player at a time
+    /// </summary>
+    private IEnumerator ShowResults()
+    {
+        yield return new WaitForSeconds(2);
+
+        // remove stray balls
+        TidyUpBalls_();
+
+        // when no more players, move to the central page
+        SceneManager.LoadScene(1);
+    }
+
+    /// <summary>
+    /// Removes any balls which did not make it to a trolley
+    /// </summary>
+    private void TidyUpBalls_()
+    {
+        // find all balls
+        var balls = FindObjectsOfType<ShopDropBallScript>();
+
+        // if the parent of the ball is not set, destroy the ball
+        foreach (var ball in balls)
+            if (ball.transform.parent == null)
+                Destroy(ball.gameObject);
     }
 
     /// <summary>
@@ -155,7 +192,7 @@ public class ShopDropController : MonoBehaviour
         while (_gameRunning)
         {
             CreateBall_();
-            yield return new WaitForSeconds(Random.Range(0.5f, 3f));
+            yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 3f));
         }
     }
 
@@ -164,7 +201,7 @@ public class ShopDropController : MonoBehaviour
     /// </summary>
     void CreateBall_()
     {
-        var left = Random.Range(LeftBound, RightBound);
+        var left = UnityEngine.Random.Range(LeftBound, RightBound);
         var ball = Instantiate(BallPrefab, new Vector2(left, BallDropHeight), Quaternion.identity);
         Fetcher.GetFood(ball.GetComponent<ShopDropBallScript>());
     }
