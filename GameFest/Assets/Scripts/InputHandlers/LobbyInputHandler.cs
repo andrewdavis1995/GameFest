@@ -187,7 +187,7 @@ public class LobbyInputHandler : GenericInputHandler
             // ...store the player list in the manager
             PlayerManagerScript.Instance.SetPlayers(allPlayers.Select(p => p.GetComponent<PlayerControls>()).ToList());
             // move to the game central scene
-            PlayerManagerScript.Instance.NextScene(1);
+            PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
         }
         else
         {

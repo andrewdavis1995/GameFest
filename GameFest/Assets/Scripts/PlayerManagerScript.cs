@@ -52,9 +52,9 @@ public class PlayerManagerScript : MonoBehaviour
     /// <summary>
     /// Move to the "Home" page where scores etc are shown
     /// </summary>
-    public void NextScene(int index)
+    public void NextScene(Scene index)
     {
         // TODO: Fade out
-        SceneManager.LoadScene(index);
+        SceneManager.LoadScene((int)index);
     }
 }

@@ -14,12 +14,15 @@ public class ShopDropController : MonoBehaviour
     public float LeftBound;
     public float RightBound;
     public float BallDropHeight;
+    private float _ballDelayUpper = 3f;
+    private const int GAME_TIMEOUT = 10;      // TODO: Make 90 after testing
 
     // objects
     public Transform[] Trolleys;
 
     // links to other scripts
     public FoodFetcher Fetcher;
+    public CameraMovement CameraScript;
 
     // prefabs
     public Transform PlayerPrefab;
@@ -33,6 +36,9 @@ public class ShopDropController : MonoBehaviour
 
     // easy access
     public static ShopDropController Instance;
+
+    // all game controls - paddles, pegs, walls, zones etc.
+    public GameObject GameArea;
 
     /// <summary>
     /// Runs at start
@@ -53,7 +59,7 @@ public class ShopDropController : MonoBehaviour
 
         // setup the timeout
         _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
-        _overallLimit.Initialise(90, OnTimeLimitTick, OnTimeUp);
+        _overallLimit.Initialise(GAME_TIMEOUT, OnTimeLimitTick, OnTimeUp);
 
         // start the game
         StartGame_();
@@ -140,6 +146,7 @@ public class ShopDropController : MonoBehaviour
     /// </summary>
     void OnTimeUp()
     {
+        // disables all controls
         _gameRunning = false;
 
         // show results
@@ -155,6 +162,14 @@ public class ShopDropController : MonoBehaviour
 
         // remove stray balls
         TidyUpBalls_();
+
+        // hide game controls
+        GameArea.SetActive(false);
+
+        // move camera
+        CameraScript.StartMovement(new Vector2(-5.6f, -3.9f), 1.4f);
+
+        yield return new WaitForSeconds(10);
 
         // when no more players, move to the central page
         SceneManager.LoadScene(1);
@@ -192,7 +207,8 @@ public class ShopDropController : MonoBehaviour
         while (_gameRunning)
         {
             CreateBall_();
-            yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 3f));
+            yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, _ballDelayUpper));
+            _ballDelayUpper -= 0.0001f;
         }
     }
 

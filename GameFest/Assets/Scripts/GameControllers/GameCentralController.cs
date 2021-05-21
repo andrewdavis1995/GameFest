@@ -1,7 +1,8 @@
-using System;
 using System.Collections;
 using Assets;
 using UnityEngine;
+
+public enum Scene { Lobby, GameCentral, PunchlineBling, ShopDrop }
 
 public class GameCentralController : MonoBehaviour
 {
@@ -35,17 +36,16 @@ public class GameCentralController : MonoBehaviour
             Debug.Log(player.GetPoints());
         }
 
-        // TODO: get from enum
-        StartCoroutine(LoadMiniGame(2));
+        StartCoroutine(LoadMiniGame(Scene.ShopDrop));
     }
 
     /// <summary>
     /// Loads the specified game
     /// </summary>
     /// <param name="gameIndex">The index of the scene to load</param>
-    private IEnumerator LoadMiniGame(int gameIndex)
+    private IEnumerator LoadMiniGame(Scene game)
     {
         yield return new WaitForSeconds(1.2f);
-        PlayerManagerScript.Instance.NextScene(gameIndex);
+        PlayerManagerScript.Instance.NextScene(game);
     }
 }

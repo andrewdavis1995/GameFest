@@ -309,6 +309,9 @@ public class PunchlineBlingController : MonoBehaviour
         for (int i = 0; i < _selectedCards.Length; i++)
             _selectedCards[i] = null;
 
+        // back to the first one
+        _state = SelectionState.PickingFirst;
+
         // set the active player
         _players[_activePlayerIndex].ActivePlayer(true);
 
@@ -316,8 +319,6 @@ public class PunchlineBlingController : MonoBehaviour
         foreach (var txt in NoteBookTexts)
             txt.text = "";
 
-        // back to the first one
-        _state = SelectionState.PickingFirst;
 
         if (CardsRemaining_())
         {
