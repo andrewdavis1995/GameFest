@@ -13,8 +13,5 @@ public class GameCentralInputHandler : GenericInputHandler
         // create the object
         var spawned = Instantiate(prefab, position, Quaternion.identity);
         SetAnimation(spawned, characterIndex);
-
-        // do a little jump - TODO: remove when we have a proper flow set up
-        spawned.GetComponent<Rigidbody2D>().AddForce(new Vector2(100, 100));
     }
 }

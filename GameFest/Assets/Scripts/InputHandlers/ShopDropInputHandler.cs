@@ -56,6 +56,15 @@ public class ShopDropInputHandler : GenericInputHandler
     }
 
     /// <summary>
+    /// Returns the list of food collected by this player
+    /// </summary>
+    /// <returns>The list of food</returns>
+    public List<ShopDropBallScript> GetFood()
+    {
+        return _foodCollected;
+    }
+
+    /// <summary>
     /// Celebration animation for one second, then reset
     /// </summary>
     /// <returns></returns>

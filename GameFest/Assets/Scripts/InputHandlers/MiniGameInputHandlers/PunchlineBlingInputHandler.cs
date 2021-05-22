@@ -24,6 +24,14 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     Action _walkOffCallBack;
 
     /// <summary>
+    /// Called when the item is created
+    /// </summary>
+    private void Start()
+    {
+        _movement.transform.position -= new Vector3(0, 0, GetComponentInParent<PlayerInput>().playerIndex / 10);
+    }
+
+    /// <summary>
     /// Called once a frame
     /// </summary>
     private void Update()

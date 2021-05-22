@@ -38,26 +38,26 @@ public class FoodFetcher : MonoBehaviour
             case FoodType.BreadRoll:
                 foodName = "Bread";
                 offset = new Vector2(-.05f, -.05f);
-                points = UnityEngine.Random.Range(15, 25);
+                points = 21;
                 break;
             case FoodType.Melon:
                 foodName = "Melon";
                 offset = new Vector2(+.095f, .025f);
-                points = UnityEngine.Random.Range(25, 40);
+                points = 32;
                 break;
             case FoodType.Orange:
                 foodName = "Orange";
                 offset = new Vector2(-.11f, -.11f);
-                points = UnityEngine.Random.Range(10, 20);
+                points = 15;
                 break;
             case FoodType.ToiletRoll:
                 foodName = "Toilet Roll";
                 offset = new Vector2(-.07f, -.07f);
-                points = UnityEngine.Random.Range(-5, 5);
+                points = 1;
                 break;
             case FoodType.Lettuce:
                 foodName = "Lettuce";
-                points = UnityEngine.Random.Range(5, 15);
+                points = 10;
                 break;
         }
 

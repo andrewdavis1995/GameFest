@@ -13,6 +13,9 @@ public class GameCentralController : MonoBehaviour
 
     MiniGameManager _manager;   // the manager to handle mini games
 
+    public TextMesh[] NameTexts;
+    public TextMesh[] ScoreTexts;
+
     /// <summary>
     /// Called when item is created
     /// </summary>
@@ -33,10 +36,13 @@ public class GameCentralController : MonoBehaviour
 
             // get the latest points
             player.UpdatePoints();
-            Debug.Log(player.GetPoints());
+
+            // display player info
+            NameTexts[player.PlayerInput.playerIndex].text = player.GetPlayerName();
+            ScoreTexts[player.PlayerInput.playerIndex].text = player.GetPoints().ToString();
         }
 
-        StartCoroutine(LoadMiniGame(Scene.ShopDrop));
+        StartCoroutine(LoadMiniGame(Scene.PunchlineBling));
     }
 
     /// <summary>

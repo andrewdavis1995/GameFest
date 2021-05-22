@@ -13,6 +13,11 @@ public class PlayerAnimation : MonoBehaviour
         _animator = GetComponent<Animator>();
     }
 
+    private void Update()
+    {
+        transform.eulerAngles = new Vector3(0, 0, 0);
+    }
+
     /// <summary>
     /// Sets the animation of the player to the specified trigger
     /// </summary>
