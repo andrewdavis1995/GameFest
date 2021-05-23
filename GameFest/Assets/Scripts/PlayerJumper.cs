@@ -30,9 +30,9 @@ public class PlayerJumper : MonoBehaviour
         }
     }
 
-    private void Jump()
+    public void Jump()
     {
-        gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(50, 55));
+        gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(120, 150));
         Animator.SetAnimation("Jump");
     }
 
