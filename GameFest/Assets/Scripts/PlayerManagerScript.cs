@@ -50,6 +50,15 @@ public class PlayerManagerScript : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the number of stored players
+    /// </summary>
+    /// <returns>Number of players who are in the game</returns>
+    public int GetPlayerCount()
+    {
+        return _players.Count;
+    }
+
+    /// <summary>
     /// Move to the "Home" page where scores etc are shown
     /// </summary>
     public void NextScene(Scene index)

@@ -107,11 +107,35 @@ MonoBehaviour:
     m_ActionId: 0f171e50-2435-42b0-b461-cc0578902e88
     m_ActionName: Gameplay/Jump[/Keyboard/space]
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2432584173636143568}
+        m_TargetAssemblyTypeName: PlayerControls, Assembly-CSharp
+        m_MethodName: OnR2
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: 1d8c3995-3c67-4f70-9a29-73b3d80d14dd
     m_ActionName: Gameplay/PaddleRight[/DualShock4GamepadHID/rightTrigger]
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2432584173636143568}
+        m_TargetAssemblyTypeName: PlayerControls, Assembly-CSharp
+        m_MethodName: OnL2
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: cb2310e9-9dd2-4f28-a989-550b3d8dff7c
     m_ActionName: Gameplay/PaddleLeft[/DualShock4GamepadHID/leftTrigger]
   - m_PersistentCalls:
@@ -131,7 +155,19 @@ MonoBehaviour:
     m_ActionId: d98a69bc-80f3-4720-80f9-78a1c3f94d58
     m_ActionName: Gameplay/Triangle[/Keyboard/t]
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2432584173636143568}
+        m_TargetAssemblyTypeName: PlayerControls, Assembly-CSharp
+        m_MethodName: OnSquare
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: 552956ac-4d1f-4cb2-8e3a-a053ba6c91b5
     m_ActionName: Gameplay/Square[/Keyboard/a]
   - m_PersistentCalls:
@@ -167,7 +203,19 @@ MonoBehaviour:
     m_ActionId: f2e2b5e8-682a-4788-bd94-d80625cae7f7
     m_ActionName: Gameplay/L1[/Keyboard/q]
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2432584173636143568}
+        m_TargetAssemblyTypeName: PlayerControls, Assembly-CSharp
+        m_MethodName: OnR1
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: be7ac5e1-dd97-4abc-be15-ca3af412baed
     m_ActionName: Gameplay/R1[/Keyboard/p]
   m_NeverAutoSwitchControlSchemes: 0

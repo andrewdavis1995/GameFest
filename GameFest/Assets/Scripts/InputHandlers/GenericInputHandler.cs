@@ -6,7 +6,7 @@ public abstract class GenericInputHandler : MonoBehaviour
 {
     private int _points = 0;
 
-    public virtual void Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName) { }
+    public virtual Transform Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName, int playerIndex) { return null; }
 
     public virtual void OnMove(InputAction.CallbackContext ctx) { }
     public virtual void OnCross() { }
@@ -16,6 +16,8 @@ public abstract class GenericInputHandler : MonoBehaviour
     public virtual void OnTouchpad() { }
     public virtual void OnL1() { }
     public virtual void OnR1() { }
+    public virtual void OnL2() { }
+    public virtual void OnR2() { }
 
     public virtual void TriggerEnter(Collision2D collision) { }
     public virtual void TriggerExit(Collision2D collision) { }

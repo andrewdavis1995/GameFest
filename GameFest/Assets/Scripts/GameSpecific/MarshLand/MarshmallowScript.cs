@@ -1,11 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MarshmallowScript : MonoBehaviour
 {
     float xPos = 0;
     Vector3 _angle;
+
+    public int OffsetX;
 
     // Start is called before the first frame update
     void Start()

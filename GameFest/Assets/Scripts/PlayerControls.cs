@@ -86,9 +86,10 @@ public class PlayerControls : MonoBehaviour
     /// </summary>
     /// <param name="playerPrefab">The prefab to spawn</param>
     /// <param name="position">Where to spawn</param>
-    internal void Spawn(Transform playerPrefab, Vector2 position)
+    /// <returns>The spawned item</returns>
+    internal Transform Spawn(Transform playerPrefab, Vector2 position)
     {
-        _activeHandler.Spawn(playerPrefab, position, _characterIndex, _playerName);
+        return _activeHandler.Spawn(playerPrefab, position, _characterIndex, _playerName, PlayerInput.playerIndex);
     }
 
     /// <summary>
@@ -158,6 +159,20 @@ public class PlayerControls : MonoBehaviour
             _activeHandler.OnL1();
     }
 
+
+    /// <summary>
+    /// When the R1 input is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
+    public void OnR1(InputAction.CallbackContext ctx)
+    {
+        // only handle it once
+        if (!ctx.performed) return;
+
+        if (_activeHandler != null)
+            _activeHandler.OnR1();
+    }
+
     /// <summary>
     /// When the Cross input is triggered
     /// </summary>
@@ -198,7 +213,7 @@ public class PlayerControls : MonoBehaviour
     }
 
     /// <summary>
-    /// When the OnCircle input is triggered
+    /// When the Circle input is triggered
     /// </summary>
     /// <param name="ctx">The context of the input</param>
     public void OnCircle(InputAction.CallbackContext ctx)
@@ -208,5 +223,31 @@ public class PlayerControls : MonoBehaviour
 
         if (_activeHandler != null)
             _activeHandler.OnCircle();
+    }
+
+    /// <summary>
+    /// When the L2 input is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
+    public void OnL2(InputAction.CallbackContext ctx)
+    {
+        // only handle it once
+        if (!ctx.performed) return;
+
+        if (_activeHandler != null)
+            _activeHandler.OnL2();
+    }
+
+    /// <summary>
+    /// When the R2 input is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
+    public void OnR2(InputAction.CallbackContext ctx)
+    {
+        // only handle it once
+        if (!ctx.performed) return;
+
+        if (_activeHandler != null)
+            _activeHandler.OnR2();
     }
 }

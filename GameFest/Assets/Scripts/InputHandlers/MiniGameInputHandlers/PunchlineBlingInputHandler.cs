@@ -73,7 +73,8 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// <param name="prefab">The prefab to instantiate</param>
     /// <param name="position">The location at which to spawn the item</param>
     /// <param name="characterIndex">The index of the selected character</param>
-    public override void Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName)
+    /// <param name="playerIndex">The index of the player</param>
+    public override Transform Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName, int playerIndex)
     {
         _characterIndex = characterIndex;
 
@@ -91,7 +92,10 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         // use the correct animation controller
         SetAnimation(spawned, characterIndex);
 
+        // sets the player name
         _movement.SetPlayerName(true, playerName);
+
+        return spawned;
     }
 
     /// <summary>

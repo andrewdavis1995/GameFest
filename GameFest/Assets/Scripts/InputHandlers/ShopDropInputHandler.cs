@@ -107,7 +107,7 @@ public class ShopDropInputHandler : GenericInputHandler
     /// <param name="position">The location at which to spawn the item</param>
     /// <param name="characterIndex">The index of the selected character</param>
     /// <param name="playerName">The index of the selected character</param>
-    public override void Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName)
+    public override Transform Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName, int playerIndex)
     {
         // create the player display
         _playerTransform = Instantiate(prefab, position, Quaternion.identity);
@@ -121,5 +121,7 @@ public class ShopDropInputHandler : GenericInputHandler
 
         // get animator and set player to idle
         _animator = _playerTransform.GetComponent<PlayerAnimation>();
+
+        return _playerTransform;
     }
 }
