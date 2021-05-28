@@ -89,6 +89,9 @@ public class MarshLandInputHandler : GenericInputHandler
     {
         yield return new WaitForSeconds(0.6f);
         _jumpScript.SetAnimation("Celebrate");
+
+        // check if there are any players remaining
+        MarshLandController.Instance.CheckComplete();
     }
 
     /// <summary>
