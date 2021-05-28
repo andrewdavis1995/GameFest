@@ -10,6 +10,7 @@ public class PlayerJumper : MonoBehaviour
     MarshmallowScript _platformScript;
     PlayerAnimation _animator;
     Rigidbody2D _rigidBody;
+    Action<Collision2D> _onCollisionCallback;
 
     // Runs once when player is created
     void Start()
@@ -30,6 +31,16 @@ public class PlayerJumper : MonoBehaviour
         {
             transform.position = new Vector3(_platform.position.x + _platformScript.OffsetX, transform.position.y, transform.position.z);
         }
+    }
+
+    public void SetAnimation(string animation)
+    {
+        _animator.SetAnimation(animation);
+    }
+
+    public void SetCollisionCallback(Action<Collision2D> action)
+    {
+        _onCollisionCallback = action;
     }
 
     /// <summary>
@@ -84,6 +95,7 @@ public class PlayerJumper : MonoBehaviour
         if (collision.gameObject.tag == "Ground")
         {
             Attach_(collision.transform);
+            _onCollisionCallback?.Invoke(collision);
         }
     }
 

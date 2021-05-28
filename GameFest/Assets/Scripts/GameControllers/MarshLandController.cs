@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +14,13 @@ public class MarshLandController : MonoBehaviour
     public Transform PlayerPrefab;
     public CameraFollow CameraFollowScript;
     public Text CountdownTimer;
+    public MarshLandInputDisplay[] InputDisplays;
 
     // time out
     TimeLimit _overallLimit;
 
+    // static instance
     public static MarshLandController Instance;
-
-    public MarshLandInputDisplay[] InputDisplays;
 
     // Start is called before the first frame update
     void Start()
@@ -88,7 +87,6 @@ public class MarshLandController : MonoBehaviour
             // create action list, based on how many marshmallows this player must jump
             var marshmallows = FindObjectsOfType<MarshmallowScript>();
             var playerMarshmallows = marshmallows.Where(m => m.name.Contains((player.PlayerInput.playerIndex + 1).ToString()));
-            Debug.Log(playerMarshmallows.Count() + "marshes");
             player.GetComponent<MarshLandInputHandler>().SetActionList(playerMarshmallows.Count() - 1);
 
             index++;
@@ -97,6 +95,50 @@ public class MarshLandController : MonoBehaviour
         return playerTransforms;
     }
 
+    /// <summary>
+    /// Checks if all players are complete
+    /// </summary>
+    public void CheckComplete()
+    {
+        var allComplete = true;
+
+        // loop through each player
+        foreach (var player in PlayerManagerScript.Instance.GetPlayers())
+        {
+            // look for any players that are not complete
+            if(!player.GetComponent<MarshLandInputHandler>().Active())
+            {
+                allComplete = false;
+            }
+        }
+
+        // hides player displays for those players who are complete
+        UpdateDisplays_();
+
+        // if all complete, end the game
+        if (allComplete)
+        {
+            StartCoroutine(EndGame_());
+        }
+    }
+
+    /// <summary>
+    /// Ends the game
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator EndGame_()
+    {
+        // TODO: display results
+        yield return new WaitForSeconds(4);
+
+        // return to home
+        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+    }
+
+    /// <summary>
+    /// Hides the specified display
+    /// </summary>
+    /// <param name="playerIndex">The index of the player</param>
     internal void HideDisplay(int playerIndex)
     {
         InputDisplays[playerIndex].gameObject.SetActive(false);
@@ -127,16 +169,29 @@ public class MarshLandController : MonoBehaviour
     /// </summary>
     void OnTimeUp()
     {
+        // disable all player
+        foreach(var player in PlayerManagerScript.Instance.GetPlayers())
+        {
+            player.GetComponent<MarshLandInputHandler>().Active(false);
+        }
+
+        // hide all displays
+        UpdateDisplays_();
+
         // show results
-        StartCoroutine(ShowResults());
+        StartCoroutine(EndGame_());
     }
 
     /// <summary>
-    /// Shows the results, one player at a time
+    /// Shows/hides displays the input action based on whether the player is active
     /// </summary>
-    private IEnumerator ShowResults()
+    private void UpdateDisplays_()
     {
-        yield return new WaitForSeconds(2);
+        // hide unused
+        for (int i = 0; i < PlayerManagerScript.Instance.Manager.maxPlayerCount; i++)
+        {
+            InputDisplays[i].gameObject.SetActive(PlayerManagerScript.Instance.GetPlayers()[i].GetComponent<MarshLandInputHandler>().Active());
+        }
     }
 
     /// <summary>
@@ -149,9 +204,13 @@ public class MarshLandController : MonoBehaviour
         CountdownTimer.text = seconds <= 10 ? seconds.ToString() : "";
     }
 
+    /// <summary>
+    /// Displays the action for a player
+    /// </summary>
+    /// <param name="index">The player index</param>
+    /// <param name="action">The action to display</param>
     public void SetAction(int index, MarshLandInputAction action)
     {
         InputDisplays[index].SetAction(action, PlayerManagerScript.Instance.GetPlayers()[index].PlayerInput.devices.FirstOrDefault());
     }
-
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,6 +12,7 @@ public class MarshLandInputHandler : GenericInputHandler
     PlayerJumper _jumpScript;
     bool _inWater = false;
     int _playerIndex;
+    bool _active = false;
 
     /// <summary>
     /// Creates the specified object for the player attached to this object
@@ -34,13 +36,59 @@ public class MarshLandInputHandler : GenericInputHandler
         SetAnimation(spawned, characterIndex);
 
         // set the layers
-        spawned.gameObject.layer = LayerMask.NameToLayer("Player" + (playerIndex+1));
-        spawned.GetComponent<SpriteRenderer>().sortingLayerName = "Player" + (playerIndex+1);
+        spawned.gameObject.layer = LayerMask.NameToLayer("Player" + (playerIndex+1) + "A");
+        spawned.GetComponent<SpriteRenderer>().sortingLayerName = "Player" + (playerIndex + 1);
+        spawned.GetComponent<SpriteRenderer>().maskInteraction = SpriteMaskInteraction.VisibleOutsideMask;
 
         // get the jump script
         _jumpScript = spawned.GetComponent<PlayerJumper>();
+        _jumpScript.SetCollisionCallback(CheckFinish_);
 
         return spawned;
+    }
+
+    /// <summary>
+    /// Checks if the current player can move
+    /// </summary>
+    /// <returns>Whether the player can move</returns>
+    public bool Active()
+    {
+        return _active;
+    }
+
+    /// <summary>
+    /// Sets if the current player can move
+    /// </summary>
+    /// <param name="active">If the player is active</param>
+    public void Active(bool active)
+    {
+        _active = active;
+    }
+
+    /// <summary>
+    /// Checks if the player has collided with a finish platform
+    /// </summary>
+    /// <param name="collision"></param>
+    void CheckFinish_(Collision2D collision)
+    {
+        // if the new platform is the finish
+        if (collision.gameObject.name.Contains("End"))
+        {
+            // disable the player
+            Active(false);
+
+            // celebrate
+            StartCoroutine(Celebrate());
+        }
+    }
+
+    /// <summary>
+    /// Celebrates at the finish line
+    /// </summary>
+    private IEnumerator Celebrate()
+    {
+        yield return new WaitForSeconds(0.6f);
+        _jumpScript.SetAnimation("Celebrate");
     }
 
     /// <summary>
@@ -49,8 +97,6 @@ public class MarshLandInputHandler : GenericInputHandler
     /// <param name="numMarshmallows">How many actions are required</param>
     public void SetActionList(int numMarshmallows)
     {
-        Debug.Log(numMarshmallows + "marshers");
-
         for(int i = 0; i < numMarshmallows; i++)
         {
             // add a random action
@@ -58,10 +104,31 @@ public class MarshLandInputHandler : GenericInputHandler
             _actions.Add((MarshLandInputAction)action);
         }
 
+        // move to the next action
+        NextAction_();
+
+        Active(true);
+    }
+
+    /// <summary>
+    /// Move to the next action in the list
+    /// </summary>
+    void NextAction_()
+    {
+        // if there are any left, usse this one
         if (_actions.Count > 0)
             MarshLandController.Instance.SetAction(_playerIndex, _actions.First());
         else
+        {
+            // otherwise, done
             MarshLandController.Instance.HideDisplay(_playerIndex);
+
+            // disable the player
+            Active(false);
+
+            // celebrate
+            StartCoroutine(Celebrate());
+        }
     }
 
     /// <summary>
@@ -69,15 +136,16 @@ public class MarshLandInputHandler : GenericInputHandler
     /// </summary>
     void Jump_()
     {
+        // only jump if on ground
         if (_jumpScript.OnGround())
         {
+            // move to next action
             _actions.RemoveAt(0);
+
+            // move to next platform
             _jumpScript.Jump();
 
-            if (_actions.Count > 0)
-                MarshLandController.Instance.SetAction(_playerIndex, _actions.First());
-            else
-                MarshLandController.Instance.HideDisplay(_playerIndex);
+            NextAction_();
         }
     }
 
@@ -105,6 +173,9 @@ public class MarshLandInputHandler : GenericInputHandler
     /// <param name="action">The entered action</param>
     void InputReceived_(MarshLandInputAction action)
     {
+        // if not playing yet/finished, just stop
+        if (!_active) return;
+
         // if in the game, not frozen
         if (!_inWater)
         {
