@@ -16,10 +16,28 @@ public class CameraFollow : MonoBehaviour
 
         // find the furthest forward player
         var leader = GetLeader_();
-        if(leader != null)
+        if (leader != null)
         {
             // set the camera position to be in line with the current leader
             transform.position = new Vector3(leader.position.x, transform.position.y, transform.position.z);
+        }
+    }
+
+    /// <summary>
+    /// Removes a player from the list of players to follow
+    /// </summary>
+    /// <param name="player"></param>
+    public void RemovePlayer(Transform player)
+    {
+        // loop through all
+        for(int i = 0; i < _players.Count; i++)
+        {
+            // if there is a match, remove it
+            if(_players[i] == player)
+            {
+                _players.RemoveAt(i);
+                break;
+            }
         }
     }
 

@@ -34,7 +34,7 @@ public class PlayerJumper : MonoBehaviour
         transform.eulerAngles = new Vector3(0, 0, 0);
 
         // if the player is on a platform, set the player's position to the platform position
-        if(_platform != null)
+        if(_platform != null && _platformScript != null)
         {
             transform.position = new Vector3(_platform.position.x + _platformScript.OffsetX, transform.position.y, transform.position.z);
         }

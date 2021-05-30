@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public enum MarshLandInputAction { Triangle, Circle, Cross, Square, L1, L2, R1, R2 }
+public enum MarshLandInputAction { Triangle, Circle, Cross, Square, L1, R1 }
 
 public class MarshLandInputHandler : GenericInputHandler
 {
@@ -13,6 +13,7 @@ public class MarshLandInputHandler : GenericInputHandler
 
     // links to other scripts
     PlayerJumper _jumpScript;
+    PlayerMovement _movement;
     Transform _player;
     MarshmallowScript _currentPlatform;
 
@@ -22,7 +23,60 @@ public class MarshLandInputHandler : GenericInputHandler
     bool _active = false;
     bool _leftStartPoint = false;
     int _recoveryPressesRemaining = 0;
+    bool _walkingOn = false;
+    bool _walkingOnComplete = false;
+    Action _walkOnCallBack;
+    string _playerName;
     List<MarshLandInputAction> _actions = new List<MarshLandInputAction>();
+
+    // called once per frame
+    private void Update()
+    {
+        if (_walkingOn)
+        {
+            // move to the right
+            _movement.Move(new Vector2(1, 0));
+
+            // if reached the end point, stop
+            if (_movement.transform.position.x > MarshLandController.Instance.ServingPosition && !_walkingOnComplete)
+            {
+                StartCoroutine(GetServed_());
+            }
+        }
+    }
+
+    /// <summary>
+    /// Returns the name of the player linked to this handler
+    /// </summary>
+    /// <returns>The player's name</returns>
+    public string PlayerName()
+    {
+        return _playerName;
+    }
+
+    /// <summary>
+    /// Gets the transform of the player output/display
+    /// </summary>
+    /// <returns></returns>
+    public Transform GetPlayerTransform()
+    {
+        return _player;
+    }
+
+    /// <summary>
+    /// Handles the pause, then walk off
+    /// </summary>
+    IEnumerator GetServed_()
+    {
+        _walkingOn = false;
+        _movement.Move(new Vector2(0, 0));
+        _walkingOnComplete = true;
+        yield return new WaitForSeconds(2);
+
+        // tell the controller they are done
+        _walkOnCallBack?.Invoke();
+        _movement.Move(new Vector2(1, 0));
+    }
 
     /// <summary>
     /// Creates the specified object for the player attached to this object
@@ -35,6 +89,7 @@ public class MarshLandInputHandler : GenericInputHandler
     public override Transform Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName, int playerIndex)
     {
         _playerIndex = playerIndex;
+        _playerName = playerName;
 
         // create the player display
         _player = Instantiate(prefab, position, Quaternion.identity);
@@ -50,9 +105,13 @@ public class MarshLandInputHandler : GenericInputHandler
         _jumpScript = _player.GetComponent<PlayerJumper>();
         _jumpScript.SetCollisionCallback(CheckFinish_);
 
+        // get the movement script - disable it to stop the animations getting in each others way
+        _movement = _player.GetComponent<PlayerMovement>();
+        _movement.enabled = false;
+
         // set the layers
-        _player.gameObject.layer = LayerMask.NameToLayer("Player" + (playerIndex+1) + "A");
-        _jumpScript.ColliderB.gameObject.layer = LayerMask.NameToLayer("Player" + (playerIndex+1) + "C");
+        _player.gameObject.layer = LayerMask.NameToLayer("Player" + (playerIndex + 1) + "A");
+        _jumpScript.ColliderB.gameObject.layer = LayerMask.NameToLayer("Player" + (playerIndex + 1) + "C");
 
         // sprite renderer updates
         var sr = _player.GetComponent<SpriteRenderer>();
@@ -118,7 +177,7 @@ public class MarshLandInputHandler : GenericInputHandler
     /// <param name="numMarshmallows">How many actions are required</param>
     public void SetActionList(int numMarshmallows)
     {
-        for(int i = 0; i < numMarshmallows; i++)
+        for (int i = 0; i < numMarshmallows; i++)
         {
             // add a random action
             var action = UnityEngine.Random.Range(0, Enum.GetValues(typeof(MarshLandInputAction)).Length);
@@ -166,6 +225,7 @@ public class MarshLandInputHandler : GenericInputHandler
             // move to next platform
             _jumpScript.Jump();
 
+            // sets the next action
             NextAction_();
 
             // can now fall in
@@ -222,10 +282,10 @@ public class MarshLandInputHandler : GenericInputHandler
         else
         {
             // try to recover
-            if(action == RECOVERY_ACTION)
+            if (action == RECOVERY_ACTION)
             {
                 _recoveryPressesRemaining--;
-                if(_recoveryPressesRemaining == 0)
+                if (_recoveryPressesRemaining == 0)
                 {
                     StartCoroutine(Recover());
                 }
@@ -240,9 +300,21 @@ public class MarshLandInputHandler : GenericInputHandler
     {
         _inWater = false;
         _jumpScript.Recover();
+
+        // allow time to get above marshmallow
         yield return new WaitForSeconds(0.5f);
-        // TODO: move to separate function
         _jumpScript.RecoveryComplete(true);
+    }
+
+    /// <summary>
+    /// Walk on until the player reaches the specified point
+    /// </summary>
+    /// <param name="callback">The function to call when walked on</param>
+    internal void WalkOn(Action callback)
+    {
+        _walkingOn = true;
+        _walkOnCallBack = callback;
+        _movement.enabled = true;
     }
 
     #region Input Handlers - all pass through to InputRecieved_
@@ -271,20 +343,10 @@ public class MarshLandInputHandler : GenericInputHandler
         InputReceived_(MarshLandInputAction.L1);
     }
 
-    public override void OnL2()
-    {
-        InputReceived_(MarshLandInputAction.L2);
-    }
-
     public override void OnR1()
     {
         InputReceived_(MarshLandInputAction.R1);
     }
-
-    public override void OnR2()
-    {
-        InputReceived_(MarshLandInputAction.R2);
-    }
-#endregion
+    #endregion
 
 }

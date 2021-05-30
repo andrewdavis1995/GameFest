@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MarshLandController : MonoBehaviour
@@ -14,11 +15,17 @@ public class MarshLandController : MonoBehaviour
 
     // Unity configuration
     public Vector2[] PlayerSpawnPositions;
+    public Vector2 PlayerEndPositionStart;
     public Transform PlayerPrefab;
     public CameraFollow CameraFollowScript;
     public Text CountdownTimer;
     public MarshLandInputDisplay[] InputDisplays;
     public Text PointsCountdown;
+    public Vector3 ResultScreenCameraPosition;
+    public GameObject UI;
+    public int ServingPosition;
+    public GameObject SpeechBubble;
+    public TextMesh SpeechBubbleText;
 
     // time out
     TimeLimit _overallLimit;
@@ -30,6 +37,7 @@ public class MarshLandController : MonoBehaviour
     // race status
     List<int> _completedPlayers = new List<int>();
     int _remainingPoints;
+    int _resultsPlayerIndex = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -134,9 +142,10 @@ public class MarshLandController : MonoBehaviour
             var handler = player.GetComponent<MarshLandInputHandler>();
 
             // if this player is the one who just completed
-            if (player.PlayerInput.playerIndex == index)
+            if (player.PlayerInput.playerIndex == index && handler.GetPoints() == 0)
             {
-            // add however many points are left in countdown
+                CameraFollowScript.RemovePlayer(handler.GetPlayerTransform());
+                // add however many points are left in countdown
                 handler.AddPoints(_remainingPoints);
                 // add points based on position finished
                 handler.AddPoints(POSITIONAL_POINTS[_completedPlayers.Count - 1]);
@@ -165,11 +174,40 @@ public class MarshLandController : MonoBehaviour
     /// <returns></returns>
     private IEnumerator EndGame_()
     {
-        // TODO: display results
-        yield return new WaitForSeconds(4);
+        CameraFollowScript.enabled = false;
 
-        // return to home
-        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        // kill timers
+        _overallLimit.Abort();
+        _pointCountdown.Abort();
+
+        // hide the UI
+        UI.SetActive(false);
+
+        yield return new WaitForSeconds(1);
+
+        // move players to correct position
+        SetEndPositions_();
+
+        yield return new WaitForSeconds(2f);
+
+        StartCoroutine(CallNextPlayer());
+    }
+
+    /// <summary>
+    /// Moves all players to the end position
+    /// </summary>
+    private void SetEndPositions_()
+    {
+        Camera.main.transform.position = ResultScreenCameraPosition;
+
+        var allPlayers = FindObjectsOfType<PlayerJumper>();
+        int index = 0;
+
+        // loop through playerSSS
+        foreach (var player in allPlayers)
+        {
+            player.transform.position = PlayerEndPositionStart + new Vector2(index++, 0);
+        }
     }
 
     /// <summary>
@@ -250,5 +288,69 @@ public class MarshLandController : MonoBehaviour
     public void SetAction(int index, MarshLandInputAction action)
     {
         InputDisplays[index].SetAction(action, PlayerManagerScript.Instance.GetPlayers()[index].PlayerInput.devices.FirstOrDefault());
+    }
+
+    /// <summary>
+    /// Called when a player has received their points and walked off
+    /// </summary>
+    void PlayerOrderComplete()
+    {
+        _resultsPlayerIndex++;
+
+        // if there is a player left, show them
+        if (_resultsPlayerIndex < PlayerManagerScript.Instance.GetPlayerCount())
+        {
+            StartCoroutine(CallNextPlayer());
+        }
+        else
+        {
+            // otherwise, go back to central page
+            StartCoroutine(ReturnToCentral());
+        }
+    }
+
+    /// <summary>
+    /// Returns to the central page, after a short delay
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator ReturnToCentral()
+    {
+        yield return new WaitForSeconds(2);
+
+        // Move to the central page
+        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+    }
+
+    /// <summary>
+    /// The "barista" calls a player to get their points, and the player walks on
+    /// </summary>
+    IEnumerator CallNextPlayer()
+    {
+        yield return new WaitForSeconds(1.5f);
+        var handler = PlayerManagerScript.Instance.GetPlayers()[_resultsPlayerIndex].GetComponent<MarshLandInputHandler>();
+        Speak(handler.GetPoints() + " points\nfor\n" + handler.PlayerName());
+        // wait a second, then make the player walk on
+        yield return new WaitForSeconds(1f);
+        handler.WalkOn(PlayerOrderComplete);
+        yield return new WaitForSeconds(2.5f);
+        HideSpeech();
+    }
+
+    /// <summary>
+    /// Displays a message in the speech bubble
+    /// </summary>
+    /// <param name="msg">The message to display</param>
+    void Speak(string msg)
+    {
+        SpeechBubble.SetActive(true);
+        SpeechBubbleText.text = TextFormatter.GetBubbleJokeString(msg);
+    }
+
+    /// <summary>
+    /// Hides the speech bubble
+    /// </summary>
+    void HideSpeech()
+    {
+        SpeechBubble.SetActive(false);
     }
 }

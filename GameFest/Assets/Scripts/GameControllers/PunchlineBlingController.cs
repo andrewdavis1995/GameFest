@@ -472,7 +472,7 @@ public class PunchlineBlingController : MonoBehaviour
         else
         {
             // when no more players, move to the central page
-            SceneManager.LoadScene(1);
+            PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
         }
     }
 
