@@ -8,6 +8,7 @@ public class TimeLimit : MonoBehaviour
     int _timeLimit;
     Action<int> _onTick;
     Action _onTimeout;
+    float _interval;
 
     // status variables
     int _currentTime = 0;
@@ -20,11 +21,13 @@ public class TimeLimit : MonoBehaviour
     /// <param name="limit">How many seconds the timeout is</param>
     /// <param name="tickCallback">The function to call every second</param>
     /// <param name="timeoutCallback">The function to call upon timeout</param>
-    public void Initialise(int limit, Action<int> tickCallback, Action timeoutCallback)
+    /// <param name="interval">The time to wait (seconds)</param>
+    public void Initialise(int limit, Action<int> tickCallback, Action timeoutCallback, float interval = 1f)
     {
         _timeLimit = limit;
         _onTick = tickCallback;
         _onTimeout = timeoutCallback;
+        _interval = interval;
     }
 
     /// <summary>
@@ -68,7 +71,7 @@ public class TimeLimit : MonoBehaviour
         while (_currentTime >= 0 && !_aborted)
         {
             // tick callback every second
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(_interval);
             _onTick?.Invoke(_currentTime);
             _currentTime--;
         }

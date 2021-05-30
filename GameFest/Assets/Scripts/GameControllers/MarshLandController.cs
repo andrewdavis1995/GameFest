@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,8 @@ public class MarshLandController : MonoBehaviour
 {
     // configuration
     private const int GAME_TIMEOUT = 120;
+    private const int MAX_POINTS = 1200;
+    private int[] POSITIONAL_POINTS = { 250, 100, 25 };
 
     // Unity configuration
     public Vector2[] PlayerSpawnPositions;
@@ -15,12 +18,18 @@ public class MarshLandController : MonoBehaviour
     public CameraFollow CameraFollowScript;
     public Text CountdownTimer;
     public MarshLandInputDisplay[] InputDisplays;
+    public Text PointsCountdown;
 
     // time out
     TimeLimit _overallLimit;
+    TimeLimit _pointCountdown;
 
     // static instance
     public static MarshLandController Instance;
+
+    // race status
+    List<int> _completedPlayers = new List<int>();
+    int _remainingPoints;
 
     // Start is called before the first frame update
     void Start()
@@ -42,9 +51,22 @@ public class MarshLandController : MonoBehaviour
         // setup the timeout
         _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _overallLimit.Initialise(GAME_TIMEOUT, OnTimeLimitTick, OnTimeUp);
+        _pointCountdown = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _pointCountdown.Initialise(MAX_POINTS, OnPointsTick, null, 0.1f);
 
         // start the timer
         _overallLimit.StartTimer();
+        _pointCountdown.StartTimer();
+    }
+
+    /// <summary>
+    /// Called every 0.1 seconds
+    /// </summary>
+    /// <param name="seconds">How many points are left</param>
+    private void OnPointsTick(int points)
+    {
+        _remainingPoints = points;
+        PointsCountdown.text = points.ToString();
     }
 
     /// <summary>
@@ -98,15 +120,30 @@ public class MarshLandController : MonoBehaviour
     /// <summary>
     /// Checks if all players are complete
     /// </summary>
-    public void CheckComplete()
+    /// <param name="index">The index of the newly completed player</param>
+    public void CheckComplete(int index)
     {
+        // store the player who is complete
+        _completedPlayers.Add(index);
+
         var allComplete = true;
 
         // loop through each player
         foreach (var player in PlayerManagerScript.Instance.GetPlayers())
         {
+            var handler = player.GetComponent<MarshLandInputHandler>();
+
+            // if this player is the one who just completed
+            if (player.PlayerInput.playerIndex == index)
+            {
+            // add however many points are left in countdown
+                handler.AddPoints(_remainingPoints);
+                // add points based on position finished
+                handler.AddPoints(POSITIONAL_POINTS[_completedPlayers.Count - 1]);
+            }
+
             // look for any players that are not complete
-            if(!player.GetComponent<MarshLandInputHandler>().Active())
+            if (handler.Active())
             {
                 allComplete = false;
             }
@@ -170,7 +207,7 @@ public class MarshLandController : MonoBehaviour
     void OnTimeUp()
     {
         // disable all player
-        foreach(var player in PlayerManagerScript.Instance.GetPlayers())
+        foreach (var player in PlayerManagerScript.Instance.GetPlayers())
         {
             player.GetComponent<MarshLandInputHandler>().Active(false);
         }
@@ -190,7 +227,8 @@ public class MarshLandController : MonoBehaviour
         // hide unused
         for (int i = 0; i < PlayerManagerScript.Instance.Manager.maxPlayerCount; i++)
         {
-            InputDisplays[i].gameObject.SetActive(PlayerManagerScript.Instance.GetPlayers()[i].GetComponent<MarshLandInputHandler>().Active());
+            var playerExists = i < PlayerManagerScript.Instance.GetPlayerCount();
+            InputDisplays[i].gameObject.SetActive(playerExists && PlayerManagerScript.Instance.GetPlayers()[i].GetComponent<MarshLandInputHandler>().Active());
         }
     }
 

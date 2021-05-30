@@ -6,11 +6,18 @@ using UnityEngine;
 /// </summary>
 public class PlayerJumper : MonoBehaviour
 {
+    // links to objects
     Transform _platform;
     MarshmallowScript _platformScript;
     PlayerAnimation _animator;
     Rigidbody2D _rigidBody;
+
+    // callback functions
     Action<Collision2D> _onCollisionCallback;
+
+    // unity configuration
+    public BoxCollider2D ColliderA;
+    public BoxCollider2D ColliderB;
 
     // Runs once when player is created
     void Start()
@@ -33,11 +40,46 @@ public class PlayerJumper : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets whether to lock the X position of the player
+    /// </summary>
+    /// <param name="state">Whether to lock the X position of the player</param>
+    public void SetPositionLock_(bool state)
+    {
+        _rigidBody.constraints = state ? RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation : RigidbodyConstraints2D.FreezeRotation;
+    }
+
+    /// <summary>
+    /// Sets the state of the first collider
+    /// </summary>
+    /// <param name="state">Whether the collider is enabled</param>
+    public void SetColliderA_(bool state)
+    {
+        ColliderA.enabled = state;
+    }
+
+    /// <summary>
+    /// Sets the state of the first collider
+    /// </summary>
+    /// <param name="state">Whether the collider is enabled</param>
+    public void SetColliderB_(bool state)
+    {
+        ColliderB.enabled = state;
+    }
+
+    /// <summary>
+    /// Sets the animation on the linked animator
+    /// </summary>
+    /// <param name="animation">The animation to be set</param>
     public void SetAnimation(string animation)
     {
         _animator.SetAnimation(animation);
     }
 
+    /// <summary>
+    /// Sets the function to call when the player collides with another object
+    /// </summary>
+    /// <param name="action">The function to call</param>
     public void SetCollisionCallback(Action<Collision2D> action)
     {
         _onCollisionCallback = action;
@@ -110,5 +152,24 @@ public class PlayerJumper : MonoBehaviour
         {
             Detach_();
         }
+    }
+
+    /// <summary>
+    /// Pops the player up - after recovering from falling in
+    /// </summary>
+    internal void Recover()
+    {
+        _rigidBody.AddForce(new Vector2(0, 215f));
+    }
+
+    /// <summary>
+    /// Sets the variables after falling in/recovering
+    /// </summary>
+    /// <param name="state"></param>
+    internal void RecoveryComplete(bool state)
+    {
+        SetColliderA_(state);
+        SetColliderB_(!state);
+        SetPositionLock_(!state);
     }
 }

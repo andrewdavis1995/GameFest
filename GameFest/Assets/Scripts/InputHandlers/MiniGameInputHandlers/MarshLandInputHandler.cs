@@ -8,11 +8,21 @@ public enum MarshLandInputAction { Triangle, Circle, Cross, Square, L1, L2, R1, 
 
 public class MarshLandInputHandler : GenericInputHandler
 {
-    List<MarshLandInputAction> _actions = new List<MarshLandInputAction>();
+    // the button to be used to recover
+    const MarshLandInputAction RECOVERY_ACTION = MarshLandInputAction.Cross;
+
+    // links to other scripts
     PlayerJumper _jumpScript;
+    Transform _player;
+    MarshmallowScript _currentPlatform;
+
+    // status values
     bool _inWater = false;
     int _playerIndex;
     bool _active = false;
+    bool _leftStartPoint = false;
+    int _recoveryPressesRemaining = 0;
+    List<MarshLandInputAction> _actions = new List<MarshLandInputAction>();
 
     /// <summary>
     /// Creates the specified object for the player attached to this object
@@ -27,24 +37,30 @@ public class MarshLandInputHandler : GenericInputHandler
         _playerIndex = playerIndex;
 
         // create the player display
-        var spawned = Instantiate(prefab, position, Quaternion.identity);
+        _player = Instantiate(prefab, position, Quaternion.identity);
 
         // set the height of the object
-        SetHeight(spawned, characterIndex);
+        SetHeight(_player, characterIndex);
 
         // use the correct animation controller
-        SetAnimation(spawned, characterIndex);
+        SetAnimation(_player, characterIndex);
 
-        // set the layers
-        spawned.gameObject.layer = LayerMask.NameToLayer("Player" + (playerIndex+1) + "A");
-        spawned.GetComponent<SpriteRenderer>().sortingLayerName = "Player" + (playerIndex + 1);
-        spawned.GetComponent<SpriteRenderer>().maskInteraction = SpriteMaskInteraction.VisibleOutsideMask;
 
         // get the jump script
-        _jumpScript = spawned.GetComponent<PlayerJumper>();
+        _jumpScript = _player.GetComponent<PlayerJumper>();
         _jumpScript.SetCollisionCallback(CheckFinish_);
 
-        return spawned;
+        // set the layers
+        _player.gameObject.layer = LayerMask.NameToLayer("Player" + (playerIndex+1) + "A");
+        _jumpScript.ColliderB.gameObject.layer = LayerMask.NameToLayer("Player" + (playerIndex+1) + "C");
+
+        // sprite renderer updates
+        var sr = _player.GetComponent<SpriteRenderer>();
+        sr.sortingLayerName = "Player" + (playerIndex + 1) + "B";
+        sr.sortingOrder = 1;
+        sr.maskInteraction = SpriteMaskInteraction.VisibleOutsideMask;
+
+        return _player;
     }
 
     /// <summary>
@@ -71,6 +87,8 @@ public class MarshLandInputHandler : GenericInputHandler
     /// <param name="collision"></param>
     void CheckFinish_(Collision2D collision)
     {
+        _currentPlatform = collision.gameObject.GetComponent<MarshmallowScript>();
+
         // if the new platform is the finish
         if (collision.gameObject.name.Contains("End"))
         {
@@ -91,7 +109,7 @@ public class MarshLandInputHandler : GenericInputHandler
         _jumpScript.SetAnimation("Celebrate");
 
         // check if there are any players remaining
-        MarshLandController.Instance.CheckComplete();
+        MarshLandController.Instance.CheckComplete(_playerIndex);
     }
 
     /// <summary>
@@ -118,7 +136,7 @@ public class MarshLandInputHandler : GenericInputHandler
     /// </summary>
     void NextAction_()
     {
-        // if there are any left, usse this one
+        // if there are any left, use this one
         if (_actions.Count > 0)
             MarshLandController.Instance.SetAction(_playerIndex, _actions.First());
         else
@@ -149,6 +167,9 @@ public class MarshLandInputHandler : GenericInputHandler
             _jumpScript.Jump();
 
             NextAction_();
+
+            // can now fall in
+            _leftStartPoint = true;
         }
     }
 
@@ -157,7 +178,14 @@ public class MarshLandInputHandler : GenericInputHandler
     /// </summary>
     void Fall_()
     {
+        // can't fall off fof start
+        if (!_leftStartPoint) return;
 
+        // start the recoveryy process
+        _recoveryPressesRemaining = 20;
+        _inWater = true;
+
+        _jumpScript.RecoveryComplete(false);
     }
 
     /// <summary>
@@ -194,7 +222,27 @@ public class MarshLandInputHandler : GenericInputHandler
         else
         {
             // try to recover
+            if(action == RECOVERY_ACTION)
+            {
+                _recoveryPressesRemaining--;
+                if(_recoveryPressesRemaining == 0)
+                {
+                    StartCoroutine(Recover());
+                }
+            }
         }
+    }
+
+    /// <summary>
+    /// Recover after falling in
+    /// </summary>
+    private IEnumerator Recover()
+    {
+        _inWater = false;
+        _jumpScript.Recover();
+        yield return new WaitForSeconds(0.5f);
+        // TODO: move to separate function
+        _jumpScript.RecoveryComplete(true);
     }
 
     #region Input Handlers - all pass through to InputRecieved_
