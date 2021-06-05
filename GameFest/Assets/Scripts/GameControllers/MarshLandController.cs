@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MarshLandController : MonoBehaviour
@@ -171,7 +170,6 @@ public class MarshLandController : MonoBehaviour
     /// <summary>
     /// Ends the game
     /// </summary>
-    /// <returns></returns>
     private IEnumerator EndGame_()
     {
         CameraFollowScript.enabled = false;
