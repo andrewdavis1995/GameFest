@@ -220,6 +220,24 @@ public class PlayerClimber : MonoBehaviour
     }
 
     /// <summary>
+    /// When the player hits a trigger
+    /// </summary>
+    /// <param name="collision">The trigger the player collided with</param>
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        // if it was the end point
+        if(collision.gameObject.name == "End Point")
+        {
+            // the player is complete
+            _active = false;
+            _animation.SetAnimation("Celebrate");
+
+            // check if all players are complete
+            LandslideController.Instance.CheckForFinish();
+        }
+    }
+
+    /// <summary>
     /// Moves the player
     /// </summary>
     private void Move()

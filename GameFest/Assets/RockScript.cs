@@ -100,7 +100,7 @@ public class RockScript : MonoBehaviour
             // fall through in each case
             case RockAction.KnockDown:
                 // disable movement
-                player.GetComponent<PlayerClimber>().Disable();
+                player.GetComponent<PlayerClimber>().Disable(_sizeFactor * 4);
                 goto case RockAction.KnockBack;
             case RockAction.KnockBack:
                 // knockback

@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LandslideController : MonoBehaviour
@@ -8,32 +10,36 @@ public class LandslideController : MonoBehaviour
     bool _active = true;
 
     // unity configuration
-    [SerializeField]
-    Transform RockPrefab;
-    [SerializeField]
-    Vector2 SpawnPosition;
     public Text TxtCountdown;
+    public RockSpawner[] RockSpawners;
 
     // constant config
     const int TIME_LIMIT = 120;
-    const float MIN_PAUSE_TIME = 0.1f;
-    const float MAX_PAUSE_TIME = 5f;
 
     // links to other scripts/components
     PlayerAnimation _animation;
     TimeLimit _playerLimit;
+
+    // static instance
+    public static LandslideController Instance;
 
     /// <summary>
     /// Called once on creation
     /// </summary>
     private void Start()
     {
+        Instance = this;
+
         // initialise the timeout
         _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _playerLimit.Initialise(TIME_LIMIT, PlayerTickCallback, PlayerTimeoutCallback);
 
+        // start the timer
+        _playerLimit.StartTimer();
+
         // start spawning rocks
-        StartCoroutine(SpawnRocks_());
+        foreach(var spawner in RockSpawners)
+            spawner.Enable();
     }
 
     /// <summary>
@@ -42,7 +48,7 @@ public class LandslideController : MonoBehaviour
     private void PlayerTimeoutCallback()
     {
         _active = false;
-        // TODO: show results
+        StartCoroutine(EndGame_());
     }
 
     /// <summary>
@@ -56,27 +62,38 @@ public class LandslideController : MonoBehaviour
     }
 
     /// <summary>
-    /// Spawns rocks while the game is ongoing
+    /// Ends the game, shows results, returns to Central screen
     /// </summary>
-    private IEnumerator SpawnRocks_()
+    IEnumerator EndGame_()
     {
-        // continue while the game is going on
-        while (_active)
-        {
-            // wait a random amount of time, then spawn a rock
-            yield return new WaitForSeconds(Random.Range(MIN_PAUSE_TIME, MAX_PAUSE_TIME));
-            SpawnRock_();
-        }
+        // start spawning rocks
+        foreach (var spawner in RockSpawners)
+            spawner.Disable();
+
+        yield return new WaitForSeconds(5);
+        // TODO: remove this
+        SceneManager.LoadScene(1);
+        //PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }
 
     /// <summary>
-    /// Creates a rock
+    /// Checks if all players are complete
     /// </summary>
-    private void SpawnRock_()
+    internal void CheckForFinish()
     {
-        // spawn the rock
-        var rock = Instantiate(RockPrefab, SpawnPosition, Quaternion.identity);
-        // randomise the size and other attributes of the rock
-        rock.GetComponent<RockScript>().Initialise();
+        bool finished = true;
+
+        // TODO: add back in once proper controls are done
+        //foreach(var player in _players)
+        {
+            // if (player.IsActive())
+            //finished = false;
+        }
+
+        // if finished, end the game
+        if (finished)
+        {
+            StartCoroutine(EndGame_());
+        }
     }
 }
