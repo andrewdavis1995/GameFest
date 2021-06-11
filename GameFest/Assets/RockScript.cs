@@ -21,6 +21,8 @@ public class RockScript : MonoBehaviour
     Collider2D PlayerTrigger;
     [SerializeField]
     CircleCollider2D CircleCollider;
+    [SerializeField]
+    SpriteRenderer ColourRenderer;
 
     /// <summary>
     /// Called on startup
@@ -54,6 +56,21 @@ public class RockScript : MonoBehaviour
         // TODO: change image randomly
 
         SetRockAction_();
+    }
+
+    /// <summary>
+    /// Set the rock to be specific to one player
+    /// </summary>
+    /// <param name="playerIndex">THe index of the player</param>
+    public void SetPlayerIndex(int playerIndex)
+    {
+        // sets the colour
+        ColourRenderer.gameObject.SetActive(true);
+        var col = ColourFetcher.GetColour(playerIndex);
+        ColourRenderer.color = new Color(col.r, col.g, col.b, .8f);
+
+        // esnure this player cannot be hit
+        gameObject.name = "Rock" + playerIndex;
     }
 
     /// <summary>

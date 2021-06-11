@@ -73,9 +73,11 @@ public class RockSpawner : MonoBehaviour
             // spawn the rock
             var rock = Instantiate(RockPrefab, SpawnPosition, Quaternion.identity);
             // make a big rock
-            rock.GetComponent<RockScript>().Initialise(RockScript.MIN_ROCK_SIZE / 1.1f, RockScript.MAX_ROCK_SIZE / 1.25f);
-            // esnure this player cannot be hit
-            rock.gameObject.name = "Rock" + playerIndex;
+            var rockScript = rock.GetComponent<RockScript>();
+            rockScript.Initialise(RockScript.MIN_ROCK_SIZE / 1.1f, RockScript.MAX_ROCK_SIZE / 1.25f);
+
+            // sets the player index of the rock
+            rockScript.SetPlayerIndex(playerIndex);
         }
     }
 
@@ -89,9 +91,11 @@ public class RockSpawner : MonoBehaviour
         {
             // spawn the rock
             var rock = Instantiate(RockPrefab, SpawnPosition, Quaternion.identity);
-            rock.GetComponent<RockScript>().Initialise(RockScript.MIN_ROCK_SIZE / 1.4f, RockScript.MAX_ROCK_SIZE / 1.8f);
-            // esnure this player cannot be hit
-            rock.gameObject.name = "Rock" + playerIndex;
+            var rockScript = rock.GetComponent<RockScript>();
+            rockScript.Initialise(RockScript.MIN_ROCK_SIZE / 1.4f, RockScript.MAX_ROCK_SIZE / 1.8f);
+
+            // sets the player index of the rock
+            rockScript.SetPlayerIndex(playerIndex);
         }
     }
 
@@ -102,8 +106,12 @@ public class RockSpawner : MonoBehaviour
     {
         // spawn the rock
         var rock = Instantiate(RockPrefab, SpawnPosition, Quaternion.identity);
+        var rockScript = rock.GetComponent<RockScript>();
         // make a big rock
-        rock.GetComponent<RockScript>().Initialise(RockScript.GIANT_ROCK_SIZE);
+        rockScript.Initialise(RockScript.GIANT_ROCK_SIZE);
+
+        // sets the player index of the rock
+        rockScript.SetPlayerIndex(playerIndex);
         rock.gameObject.name = "GiantRock" + playerIndex;
     }
 }
