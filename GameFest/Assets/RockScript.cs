@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public enum RockAction { LosePowerUp, KnockBack, KnockDown };
@@ -5,8 +6,9 @@ public enum RockAction { LosePowerUp, KnockBack, KnockDown };
 public class RockScript : MonoBehaviour
 {
     // constraints
-    const float MIN_ROCK_SIZE = 0.3f;
-    const float MAX_ROCK_SIZE = 1f;
+    public const float MIN_ROCK_SIZE = 0.3f;
+    public const float MAX_ROCK_SIZE = 1f;
+    public const float GIANT_ROCK_SIZE = 2.4f;
 
     // configuration of the rock
     RockAction _action;
@@ -17,6 +19,8 @@ public class RockScript : MonoBehaviour
     Rigidbody2D Rigidbody;
     [SerializeField]
     Collider2D PlayerTrigger;
+    [SerializeField]
+    CircleCollider2D CircleCollider;
 
     /// <summary>
     /// Called on startup
@@ -32,6 +36,15 @@ public class RockScript : MonoBehaviour
     public void Initialise(float minSize = MIN_ROCK_SIZE, float maxSize = MAX_ROCK_SIZE)
     {
         _sizeFactor = Random.Range(MIN_ROCK_SIZE, MAX_ROCK_SIZE);
+        Initialise(_sizeFactor);
+    }
+
+    /// <summary>
+    /// Sets the state of the rock - random
+    /// </summary>
+    public void Initialise(float size)
+    {
+        _sizeFactor = size;
         transform.localScale *= _sizeFactor;
         // give random force to keep things interesting
         Rigidbody.AddForce(new Vector2(Random.Range(-5, 5), Random.Range(-1, 20)));
@@ -66,7 +79,7 @@ public class RockScript : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         // if the collision came from hitting the end point, destroy the rock
-        if(collision.gameObject.tag == "AreaTrigger")
+        if (collision.gameObject.tag == "AreaTrigger")
         {
             Destroy(gameObject);
         }
@@ -79,14 +92,61 @@ public class RockScript : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         // if the collision came from a player, handle it
-        if (collision.gameObject.tag.Contains("Player") && collision.gameObject.GetComponent<PlayerClimber>().IsActive())
+        if (collision.gameObject.tag.Contains("Player"))
         {
-            // handle the tock action
-            PerformAction_(collision.transform);
+            var playerScript = collision.gameObject.GetComponent<PlayerClimber>();
 
-            // disable collisions between this player and the rock so that the event does not occur
-            Physics2D.IgnoreCollision(collision, PlayerTrigger);
+            bool performAction = false;
+
+            // do not affect the player if they are already disabled
+            if (playerScript != null && playerScript.IsActive())
+            {
+                // check if this rock is specific to a certain player
+                if (gameObject.name.Contains("Rock") && gameObject.name.Length == 5)
+                {
+                    // get the player index
+                    var playerIndex = int.Parse(gameObject.name.Replace("Rock", ""));
+
+                    // only affect player if this player did NOT spawn it
+                    if (playerIndex != playerScript.GetPlayerIndex())
+                        performAction = true;
+                }
+                else
+                    performAction = true;
+            }
+
+            // apply the action if appropriate
+            if (performAction)
+            {
+                // handle the tock action
+                PerformAction_(collision.transform);
+
+                // disable collisions between this player and the rock so that the event does not occur
+                Physics2D.IgnoreCollision(collision, PlayerTrigger);
+
+                // when hit player loses power up
+                playerScript.DecreasePowerUpLevel();
+            }
         }
+        // when the rock hits a point, make sure it falls down a hole
+        else if(collision.gameObject.tag == "RockStop")
+        {
+            // slow the rock
+            Rigidbody.velocity.Set(0, Rigidbody.velocity.y);
+
+            // destroy the object after a while
+            StartCoroutine(HandleDestruction_());
+        }
+    }
+
+    /// <summary>
+    /// Temporarily disable the collider, then destroy the collider
+    /// </summary>
+    IEnumerator HandleDestruction_()
+    {
+        CircleCollider.enabled = false;
+        yield return new WaitForSeconds(4f);
+        Destroy(gameObject);
     }
 
     /// <summary>
@@ -95,7 +155,7 @@ public class RockScript : MonoBehaviour
     /// <param name="player">The player that the rock hit</param>
     private void PerformAction_(Transform player)
     {
-        switch(_action)
+        switch (_action)
         {
             // fall through in each case
             case RockAction.KnockDown:

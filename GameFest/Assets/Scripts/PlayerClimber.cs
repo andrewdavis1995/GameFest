@@ -5,13 +5,18 @@ using UnityEngine;
 public class PlayerClimber : MonoBehaviour
 {
     // status
+    [SerializeField]
     bool _onSlope;
+    [SerializeField]
     bool _onGround;
     float _slopeDownAngle;
     Vector2 _slopeNormalPerp;
     float _movementX = 0;
     bool _active = true;
     Vector2 _newVelocity = new Vector2();
+    bool _inSludge = false;
+    [SerializeField]
+    int _powerUpLevel;
 
     // Unity config
     [SerializeField]
@@ -34,6 +39,8 @@ public class PlayerClimber : MonoBehaviour
 
     // stored information
     Vector2 _colliderSize;
+
+    int playerIndex = 0;    // TODO: replace with stuff from input handler
 
     // Start is called before the first frame update
     void Start()
@@ -113,6 +120,15 @@ public class PlayerClimber : MonoBehaviour
     }
 
     /// <summary>
+    /// Gets the player index associated with this player
+    /// </summary>
+    /// <returns>The index of this player</returns>
+    internal int GetPlayerIndex()
+    {
+        return playerIndex;
+    }
+
+    /// <summary>
     /// Check downwards for a collision
     /// </summary>
     /// <param name="checkPos">Where to check from</param>
@@ -133,11 +149,20 @@ public class PlayerClimber : MonoBehaviour
         }
 
         // if the player is not moving, and is on the ground, set the material to one with high friction, to avoid sliding
-        if (_onGround && _movementX == 0f)
+        if (_onGround && _movementX == 0f && _onSlope)
             _rigidbody.sharedMaterial = StaticMaterial;
         else
             // otherwise, move freely
             _rigidbody.sharedMaterial = null;
+    }
+
+    /// <summary>
+    /// Players power up goes to zero when hit by rock
+    /// </summary>
+    internal void DecreasePowerUpLevel()
+    {
+        if (_powerUpLevel > 0)
+            _powerUpLevel--;
     }
 
     /// <summary>
@@ -174,29 +199,64 @@ public class PlayerClimber : MonoBehaviour
         // check if we are on a slope
         SlopeCheck_();
 
+        float sludgeAffector = _inSludge ? 0.4f : 1f;
+
         // TODO: Replace this with an input handler ############
         if (Input.GetKey(KeyCode.RightArrow))
         {
-            _movementX = MOVE_SPEED;
+            _movementX = MOVE_SPEED * sludgeAffector;
             moving = true;
         }
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            _movementX = -MOVE_SPEED;
+            _movementX = -MOVE_SPEED * sludgeAffector;
             moving = true;
         }
 
         if (!moving)
             _movementX = 0;
 
-        if (Input.GetKey(KeyCode.Space) && _onGround)
+        if (Input.GetKey(KeyCode.Space) && _onGround && !_inSludge)
         {
             Jump();
+        }
+
+        if (Input.GetKey(KeyCode.KeypadEnter))
+        {
+            PerformPowerUpAction_(_powerUpLevel);
         }
         // #####################################################
 
         // move the player
         Move();
+    }
+
+    /// <summary>
+    /// Performs the action based on the power up level
+    /// </summary>
+    /// <param name="powerUpLevel">The power up level the player has reached</param>
+    private void PerformPowerUpAction_(int powerUpLevel)
+    {
+        switch (powerUpLevel)
+        {
+            case 0:
+                // do nothing
+                break;
+            case 1:
+                // spawn a few small rocks
+                LandslideController.Instance.RockBarageSmall(playerIndex);
+                break;
+            case 2:
+                // spawn a mixture of small and bigger rocks
+                LandslideController.Instance.RockBarage(playerIndex);
+                break;
+            default:
+                // spawn a giant rock
+                LandslideController.Instance.SpawnGiantRock(playerIndex);
+                break;
+        }
+
+        _powerUpLevel = 0;
     }
 
     /// <summary>
@@ -206,7 +266,7 @@ public class PlayerClimber : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         // if the object is ground, the player is now on the ground
-        if (collision.gameObject.tag == "Ground") _onGround = true;
+        if (collision.gameObject.tag == "Ground" && collision.relativeVelocity.y > 0) _onGround = true;
     }
 
     /// <summary>
@@ -216,7 +276,11 @@ public class PlayerClimber : MonoBehaviour
     private void OnCollisionExit2D(Collision2D collision)
     {
         // if the object was ground, the player is no longer on the ground
-        if (collision.gameObject.tag == "Ground") _onGround = false;
+        if (collision.gameObject.tag == "Ground")
+        {
+            _onGround = false;
+            _rigidbody.sharedMaterial = null;
+        }
     }
 
     /// <summary>
@@ -226,7 +290,7 @@ public class PlayerClimber : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         // if it was the end point
-        if(collision.gameObject.name == "End Point")
+        if (collision.gameObject.name == "End Point")
         {
             // the player is complete
             _active = false;
@@ -234,6 +298,41 @@ public class PlayerClimber : MonoBehaviour
 
             // check if all players are complete
             LandslideController.Instance.CheckForFinish();
+        }
+        // the player is in sludge
+        else if (collision.gameObject.name.Contains("Sludge"))
+        {
+            _inSludge = true;
+        }
+        // the player has picked up a power up
+        else if (collision.gameObject.tag == "PowerUp")
+        {
+            // destroy the object, and increase power up
+            Destroy(collision.gameObject);
+            _powerUpLevel++;
+
+            // remove from the active list
+            LandslideController.Instance.RemoveBoost(collision.transform);
+        }
+        // the player has picked up a power up
+        else if (collision.gameObject.tag == "Checkpoint")
+        {
+            // store the order in which the player reached the checkpoint
+            bool newCheckpoint = collision.GetComponent<CheckpointScript>().AddPlayer(playerIndex);
+            if (newCheckpoint) _powerUpLevel++;
+        }
+    }
+
+    /// <summary>
+    /// When a trigger is exited
+    /// </summary>
+    /// <param name="collision">The object that the player stop colliding with</param>
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        // check if the player has left the sludge
+        if (collision.gameObject.name.Contains("Sludge"))
+        {
+            _inSludge = false;
         }
     }
 

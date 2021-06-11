@@ -9,6 +9,8 @@ public class RockSpawner : MonoBehaviour
     [SerializeField]
     Vector2 SpawnPosition;
 
+    const int ROCK_BARAGE_QUANTITY = 10;
+
     // const configuration
     const float MIN_PAUSE_TIME = 0.1f;
     const float MAX_PAUSE_TIME = 5f;
@@ -52,11 +54,56 @@ public class RockSpawner : MonoBehaviour
     /// <summary>
     /// Creates a rock
     /// </summary>
-    private void SpawnRock_()
+    void SpawnRock_()
     {
         // spawn the rock
         var rock = Instantiate(RockPrefab, SpawnPosition, Quaternion.identity);
         // randomise the size and other attributes of the rock
         rock.GetComponent<RockScript>().Initialise();
+    }
+
+    /// <summary>
+    /// Spawn a lot of rocks
+    /// </summary>
+    public void RockBarage(int playerIndex)
+    {
+        // create 10 rocks
+        for (int i = 0; i < ROCK_BARAGE_QUANTITY; i++)
+        {
+            // spawn the rock
+            var rock = Instantiate(RockPrefab, SpawnPosition, Quaternion.identity);
+            // make a big rock
+            rock.GetComponent<RockScript>().Initialise(RockScript.MIN_ROCK_SIZE / 1.1f, RockScript.MAX_ROCK_SIZE / 1.25f);
+            // esnure this player cannot be hit
+            rock.gameObject.name = "Rock" + playerIndex;
+        }
+    }
+
+    /// <summary>
+    /// Spawn a lot of rocks (little ones)
+    /// </summary>
+    public void RockBarageSmall(int playerIndex)
+    {
+        // create 10 rocks
+        for (int i = 0; i < ROCK_BARAGE_QUANTITY; i++)
+        {
+            // spawn the rock
+            var rock = Instantiate(RockPrefab, SpawnPosition, Quaternion.identity);
+            rock.GetComponent<RockScript>().Initialise(RockScript.MIN_ROCK_SIZE / 1.4f, RockScript.MAX_ROCK_SIZE / 1.8f);
+            // esnure this player cannot be hit
+            rock.gameObject.name = "Rock" + playerIndex;
+        }
+    }
+
+    /// <summary>
+    /// Creates a rock
+    /// </summary>
+    public void SpawnGiantRock(int playerIndex)
+    {
+        // spawn the rock
+        var rock = Instantiate(RockPrefab, SpawnPosition, Quaternion.identity);
+        // make a big rock
+        rock.GetComponent<RockScript>().Initialise(RockScript.GIANT_ROCK_SIZE);
+        rock.gameObject.name = "GiantRock" + playerIndex;
     }
 }
