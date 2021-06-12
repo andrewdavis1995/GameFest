@@ -9,20 +9,24 @@ public class PlayerClimber : MonoBehaviour
     bool _onSlope;
     [SerializeField]
     bool _onGround;
+    bool _isComplete = false;
     float _slopeDownAngle;
     Vector2 _slopeNormalPerp;
+    [SerializeField]
     float _movementX = 0;
     bool _active = true;
     Vector2 _newVelocity = new Vector2();
     bool _inSludge = false;
-    [SerializeField]
-    int _powerUpLevel;
+    bool _inWater = false;
+    int _recoveryPressesRemaining = 0;
 
     // Unity config
     [SerializeField]
     float MOVE_SPEED = 7;
     [SerializeField]
     float JUMP_FORCE = 200;
+    public TextMesh PlayerNameText;
+
     [SerializeField]
     float _slopeCheckDistance = 0.25f;
 
@@ -30,6 +34,7 @@ public class PlayerClimber : MonoBehaviour
     [SerializeField]
     PhysicsMaterial2D StaticMaterial;
     public LayerMask WhatIsGround;
+    public GameObject WaterCollider;
 
     // links to other objects
     CapsuleCollider2D _collider;
@@ -39,8 +44,12 @@ public class PlayerClimber : MonoBehaviour
 
     // stored information
     Vector2 _colliderSize;
+    int _playerIndex = 0;
 
-    int playerIndex = 0;    // TODO: replace with stuff from input handler
+    // callbacks
+    Action _clearPowerupCallback;
+    Action _increasePowerupCallback;
+    Action _decreasePowerupCallback;
 
     // Start is called before the first frame update
     void Start()
@@ -77,6 +86,15 @@ public class PlayerClimber : MonoBehaviour
         // only do this if currently active - we don't want multiple co-routines going at once
         if (_active)
             StartCoroutine(HandleDisable_(duration));
+    }
+
+    /// <summary>
+    /// Sets the speed at which the player is moving
+    /// </summary>
+    /// <param name="movementX">How much they are moving</param>
+    internal void SetMovementVector(float movementX)
+    {
+        _movementX = movementX;
     }
 
     /// <summary>
@@ -120,12 +138,40 @@ public class PlayerClimber : MonoBehaviour
     }
 
     /// <summary>
-    /// Gets the player index associated with this player
+    /// Checks if the player has reached the top
     /// </summary>
-    /// <returns>The index of this player</returns>
+    /// <returns>Whether the player is complete</returns>
+    internal bool IsComplete()
+    {
+        return _isComplete;
+    }
+
+    /// <summary>
+    /// Sets up the callbacks and other info for the player
+    /// </summary>
+    /// <param name="playerIndex">The index of the player</param>
+    /// <param name="playerName">The name of the player</param>
+    /// <param name="increasePowerup">Callback function for increasing the power up</param>
+    /// <param name="clearPowerup">Callback function for clearing the power up</param>
+    /// <param name="decreasePowerup">Callback function for decreasing the power up</param>
+    public void Initialise(int playerIndex, string playerName, Action increasePowerup, Action clearPowerup, Action decreasePowerup)
+    {
+        _playerIndex = playerIndex;
+        _increasePowerupCallback = increasePowerup;
+        _clearPowerupCallback = clearPowerup;
+        _decreasePowerupCallback = decreasePowerup;
+
+        // set player text
+        PlayerNameText.text = name;
+    }
+
+    /// <summary>
+    /// Gets the player index associated with the player
+    /// </summary>
+    /// <returns>The player index</returns>
     internal int GetPlayerIndex()
     {
-        return playerIndex;
+        return _playerIndex;
     }
 
     /// <summary>
@@ -157,21 +203,20 @@ public class PlayerClimber : MonoBehaviour
     }
 
     /// <summary>
-    /// Players power up goes to zero when hit by rock
+    /// Decreases the power up level of the player
     /// </summary>
     internal void DecreasePowerUpLevel()
     {
-        if (_powerUpLevel > 0)
-            _powerUpLevel--;
+        _decreasePowerupCallback();
     }
 
     /// <summary>
     /// Causes the player to jump
     /// </summary>
-    void Jump()
+    public void Jump()
     {
         // can only jump if on ground
-        if (_onGround)
+        if (_onGround && !_inSludge && _active)
         {
             _onGround = false;
             _rigidbody.AddForce(new Vector2(0, JUMP_FORCE));
@@ -194,69 +239,31 @@ public class PlayerClimber : MonoBehaviour
         // if not active, we can't do anything
         if (!_active) return;
 
-        bool moving = false;
-
         // check if we are on a slope
         SlopeCheck_();
-
-        float sludgeAffector = _inSludge ? 0.4f : 1f;
-
-        // TODO: Replace this with an input handler ############
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-            _movementX = MOVE_SPEED * sludgeAffector;
-            moving = true;
-        }
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            _movementX = -MOVE_SPEED * sludgeAffector;
-            moving = true;
-        }
-
-        if (!moving)
-            _movementX = 0;
-
-        if (Input.GetKey(KeyCode.Space) && _onGround && !_inSludge)
-        {
-            Jump();
-        }
-
-        if (Input.GetKey(KeyCode.KeypadEnter))
-        {
-            PerformPowerUpAction_(_powerUpLevel);
-        }
-        // #####################################################
 
         // move the player
         Move();
     }
 
     /// <summary>
-    /// Performs the action based on the power up level
+    /// Recovery from falling into the water
     /// </summary>
-    /// <param name="powerUpLevel">The power up level the player has reached</param>
-    private void PerformPowerUpAction_(int powerUpLevel)
+    public void RecoveryKeyPressed()
     {
-        switch (powerUpLevel)
+        // if the player is in the water, and recovery still to do
+        if (_inWater && _recoveryPressesRemaining > 0)
         {
-            case 0:
-                // do nothing
-                break;
-            case 1:
-                // spawn a few small rocks
-                LandslideController.Instance.RockBarageSmall(playerIndex);
-                break;
-            case 2:
-                // spawn a mixture of small and bigger rocks
-                LandslideController.Instance.RockBarage(playerIndex);
-                break;
-            default:
-                // spawn a giant rock
-                LandslideController.Instance.SpawnGiantRock(playerIndex);
-                break;
-        }
+            _recoveryPressesRemaining--;
 
-        _powerUpLevel = 0;
+            // try to recover
+            if (_recoveryPressesRemaining <= 0)
+            {
+                // recover when we reach 0
+                StartCoroutine(WaterRecovery_());
+                _recoveryPressesRemaining = 0;
+            }
+        }
     }
 
     /// <summary>
@@ -294,6 +301,7 @@ public class PlayerClimber : MonoBehaviour
         {
             // the player is complete
             _active = false;
+            _isComplete = true;
             _animation.SetAnimation("Celebrate");
 
             // check if all players are complete
@@ -309,7 +317,7 @@ public class PlayerClimber : MonoBehaviour
         {
             // destroy the object, and increase power up
             Destroy(collision.gameObject);
-            _powerUpLevel++;
+            _increasePowerupCallback();
 
             // remove from the active list
             LandslideController.Instance.RemoveBoost(collision.transform);
@@ -318,9 +326,31 @@ public class PlayerClimber : MonoBehaviour
         else if (collision.gameObject.tag == "Checkpoint")
         {
             // store the order in which the player reached the checkpoint
-            bool newCheckpoint = collision.GetComponent<CheckpointScript>().AddPlayer(playerIndex);
-            if (newCheckpoint) _powerUpLevel++;
+            bool newCheckpoint = collision.GetComponent<CheckpointScript>().AddPlayer(_playerIndex);
+            if (newCheckpoint)
+                _increasePowerupCallback();
         }
+        // the player has picked up a power up
+        else if (collision.gameObject.tag == "Water" && !_inWater)
+        {
+            _inWater = true;
+            _recoveryPressesRemaining = 20;
+            WaterCollider.SetActive(true);
+            _rigidbody.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
+            StartCoroutine(FreezeYPosition());
+        }
+    }
+
+    /// <summary>
+    /// Waits two seconds after falling to the water, the freezes the player
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator FreezeYPosition()
+    {
+        yield return new WaitForSeconds(4);
+        _rigidbody.constraints = RigidbodyConstraints2D.FreezeAll;
+        WaterCollider.SetActive(false);
+        _collider.enabled = false;
     }
 
     /// <summary>
@@ -337,44 +367,73 @@ public class PlayerClimber : MonoBehaviour
     }
 
     /// <summary>
+    /// Removes player from the water and re-enables them
+    /// </summary>
+    IEnumerator WaterRecovery_()
+    {
+        _rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
+        _rigidbody.AddForce(new Vector2(-200, JUMP_FORCE));
+
+        yield return new WaitForSeconds(.5f);
+
+        _collider.enabled = true;
+        _inWater = false;
+    }
+
+    /// <summary>
     /// Moves the player
     /// </summary>
     private void Move()
     {
-        // if on the ground, but not a slope, walk normally
-        if (_onGround && !_onSlope)
+        Debug.Log(_movementX + " top");
+        if (_active)
         {
-            _newVelocity.Set(_movementX, 0);
-        }
-        // if on a slope, do some maths to work out the force to add
-        else if (_onGround && _onSlope)
-        {
-            _newVelocity.Set(-_movementX * _slopeNormalPerp.x, -_movementX * _slopeNormalPerp.y);
-        }
-        // otherwise (i.e. mid-air), move freely
-        else if (!_onGround)
-        {
-            _newVelocity.Set(_movementX, _rigidbody.velocity.y);
+            var moveSpeed = _movementX * MOVE_SPEED;
+            // slow down if in sludge
+            if (_inSludge) moveSpeed *= 0.4f;
+
+            if (!_inWater)
+            {
+                // if on the ground, but not a slope, walk normally
+                if (_onGround && !_onSlope)
+                {
+                    _newVelocity.Set(moveSpeed, 0);
+                }
+                // if on a slope, do some maths to work out the force to add
+                else if (_onGround && _onSlope)
+                {
+                    _newVelocity.Set(-moveSpeed * _slopeNormalPerp.x, -moveSpeed * _slopeNormalPerp.y);
+                }
+                // otherwise (i.e. mid-air), move freely
+                else if (!_onGround)
+                {
+                    _newVelocity.Set(moveSpeed, _rigidbody.velocity.y);
+                }
+
+                // set the velocity of the player
+                _rigidbody.velocity = _newVelocity;
+
+                // set the sprite renderer direction
+                if (_movementX > 0)
+                {
+                    _renderer.flipX = false;
+                }
+                else if (_movementX < 0)
+                {
+                    _renderer.flipX = true;
+                }
+            }
         }
 
-        // set the velocity of the player
-        _rigidbody.velocity = _newVelocity;
-
-        // set the sprite renderer direction
-        if (_movementX > 0)
-        {
-            _renderer.flipX = false;
-        }
-        else if (_movementX < 0)
-        {
-            _renderer.flipX = true;
-        }
+        Debug.Log("In here!");
 
         // set the correct animation
         if (_onGround)
         {
+            Debug.Log("In there!");
+            Debug.Log(_movementX);
             // walking
-            if (Math.Abs(_rigidbody.velocity.x) > 0.15f)
+            if (Math.Abs(_movementX) > 0.15f)
             {
                 _animation.SetAnimation("Walk");
             }
@@ -383,6 +442,11 @@ public class PlayerClimber : MonoBehaviour
             {
                 _animation.SetAnimation("Idle");
             }
+        }
+        else if (_inWater)
+        {
+            // TODO: Another animation for water
+            _animation.SetAnimation("Jump");
         }
     }
 }

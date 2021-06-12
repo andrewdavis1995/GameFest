@@ -15,6 +15,9 @@ public class LandslideController : MonoBehaviour
     public RockSpawner[] RockSpawners;
     public Vector2[] PowerUpSpawnPositions;
     public Transform PowerUpPrefab;
+    public Transform PlayerPrefab;
+    public Vector2 StartPosition;
+    public CameraFollow FollowScript;
 
     // constant config
     const int TIME_LIMIT = 120;
@@ -22,6 +25,7 @@ public class LandslideController : MonoBehaviour
     // links to other scripts/components
     PlayerAnimation _animation;
     TimeLimit _playerLimit;
+    List<LandslideInputHandler> _players = new List<LandslideInputHandler>();
 
     List<Transform> _powerUpBoosts = new List<Transform>();
 
@@ -34,6 +38,10 @@ public class LandslideController : MonoBehaviour
     private void Start()
     {
         Instance = this;
+
+        var players = SpawnPlayers_();
+
+        FollowScript.SetPlayers(players, FollowDirection.Right);
 
         // initialise the timeout
         _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
@@ -118,15 +126,40 @@ public class LandslideController : MonoBehaviour
         var checkpoints = GameObject.FindObjectsOfType<CheckpointScript>();
         foreach (var checkpoint in checkpoints)
         {
-            // TODO: loop through all players
-            int i = 0;
-            var points = checkpoint.GetPlayerPoints(i);
+            foreach (var player in _players)
+            {
+                // get the points for each player for this checkpoint
+                var playerIndex = player.GetPlayerIndex();
+                var points = checkpoint.GetPlayerPoints(playerIndex);
+                player.AddPoints(points);
+            }
             // TODO: Add points
         }
 
-        // TODO: remove this
-        SceneManager.LoadScene(1);
-        //PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+    }
+
+    /// <summary>
+    /// Creates the player objects and assigns required script
+    /// </summary>
+    private List<Transform> SpawnPlayers_()
+    {
+        var playerTransforms = new List<Transform>();
+
+        // loop through all players
+        var index = 0;
+        foreach (var player in PlayerManagerScript.Instance.GetPlayers())
+        {
+            // switch to use an input handler suitable for this scene
+            player.SetActiveScript(typeof(LandslideInputHandler));
+
+            // create the "visual" player at the start point
+            var spawned = player.Spawn(PlayerPrefab, StartPosition + new Vector2(0.2f * index++, 0));
+            playerTransforms.Add(spawned);
+            _players.Add(spawned.GetComponent<LandslideInputHandler>());
+        }
+
+        return playerTransforms;
     }
 
     /// <summary>
@@ -136,14 +169,15 @@ public class LandslideController : MonoBehaviour
     {
         bool finished = true;
 
-        // TODO: add back in once proper controls are done
-        //foreach(var player in _players)
+        // check all players to see if they are complete
+        foreach(var player in _players)
         {
-            // if (player.IsActive())
-            //finished = false;
+            // if not, then record this
+            if (player.IsComplete())
+                finished = false;
         }
 
-        // if finished, end the game
+        // if all finished, end the game
         if (finished)
         {
             StartCoroutine(EndGame_());

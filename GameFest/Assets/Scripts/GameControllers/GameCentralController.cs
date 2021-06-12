@@ -2,7 +2,7 @@ using System.Collections;
 using Assets;
 using UnityEngine;
 
-public enum Scene { Lobby, GameCentral, PunchlineBling, ShopDrop, MarshLand }
+public enum Scene { Lobby, GameCentral, PunchlineBling, ShopDrop, MarshLand, Landslide }
 
 public class GameCentralController : MonoBehaviour
 {
@@ -42,7 +42,7 @@ public class GameCentralController : MonoBehaviour
             ScoreTexts[player.PlayerInput.playerIndex].text = player.GetPoints().ToString();
         }
 
-        StartCoroutine(LoadMiniGame(Scene.ShopDrop));
+        StartCoroutine(LoadMiniGame(Scene.Landslide));
     }
 
     /// <summary>

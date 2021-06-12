@@ -8,6 +8,7 @@ public class CameraFollow : MonoBehaviour
 {
     List<Transform> _players = new List<Transform>();
     FollowDirection _direction;
+    public bool FollowY = false;
 
     private void Update()
     {
@@ -19,7 +20,7 @@ public class CameraFollow : MonoBehaviour
         if (leader != null)
         {
             // set the camera position to be in line with the current leader
-            transform.position = new Vector3(leader.position.x, transform.position.y, transform.position.z);
+            transform.position = new Vector3(leader.position.x, FollowY ? leader.position.y : transform.position.y, transform.position.z);
         }
     }
 

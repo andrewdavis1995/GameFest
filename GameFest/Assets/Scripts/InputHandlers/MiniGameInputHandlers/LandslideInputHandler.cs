@@ -1,0 +1,144 @@
+using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class LandslideInputHandler : GenericInputHandler
+{
+    private PlayerClimber _climber;
+    int _playerIndex;
+    int _powerUpLevel;
+
+    /// <summary>
+    /// Creates the specified object for the player attached to this object
+    /// </summary>
+    /// <param name="prefab">The prefab to instantiate</param>
+    /// <param name="position">The location at which to spawn the item</param>
+    /// <param name="characterIndex">The index of the selected character</param>
+    /// <param name="playerIndex">The index of the player</param>
+    /// <returns>The transform that was created</returns>
+    public override Transform Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName, int playerIndex)
+    {
+        _playerIndex = playerIndex;
+
+        // create the player display
+        var player = Instantiate(prefab, position, Quaternion.identity);
+
+        // set the height of the object
+        SetHeight(player, characterIndex);
+
+        // use the correct animation controller
+        SetAnimation(player, characterIndex);
+
+        // get the jump script
+        _climber = player.GetComponent<PlayerClimber>();
+        _climber.Initialise(playerIndex, playerName, IncreasePowerUpLevel, ClearPowerUpLevel, DecreasePowerUpLevel);
+
+        return player;
+    }
+
+    /// <summary>
+    /// Returns the index of the player
+    /// </summary>
+    /// <returns>The index of the player</returns>
+    public int GetPlayerIndex()
+    {
+        return _playerIndex;
+    }
+
+    /// <summary>
+    /// When cross is pressed
+    /// </summary>
+    public override void OnCross()
+    {
+        _climber.Jump();
+    }
+
+    /// <summary>
+    /// When square is pressed
+    /// </summary>
+    public override void OnSquare()
+    {
+        _climber.RecoveryKeyPressed();
+    }
+
+    /// <summary>
+    /// When triangle is pressed
+    /// </summary>
+    public override void OnTriangle()
+    {
+        PerformPowerUpAction_(_powerUpLevel);
+    }
+
+    /// <summary>
+    /// When the move event is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the movement</param>
+    public override void OnMove(InputAction.CallbackContext ctx)
+    {
+        // move the player
+        _climber.SetMovementVector(ctx.ReadValue<Vector2>().x);
+    }
+
+    /// <summary>
+    /// Performs the action based on the power up level
+    /// </summary>
+    /// <param name="powerUpLevel">The power up level the player has reached</param>
+    private void PerformPowerUpAction_(int powerUpLevel)
+    {
+        switch (powerUpLevel)
+        {
+            case 0:
+                // do nothing
+                break;
+            case 1:
+                // spawn a few small rocks
+                LandslideController.Instance.RockBarageSmall(_playerIndex);
+                break;
+            case 2:
+                // spawn a mixture of small and bigger rocks
+                LandslideController.Instance.RockBarage(_playerIndex);
+                break;
+            default:
+                // spawn a giant rock
+                LandslideController.Instance.SpawnGiantRock(_playerIndex);
+                break;
+        }
+
+        // go back to zero
+        ClearPowerUpLevel();
+    }
+
+    /// <summary>
+    /// Moves the power up level up by 1
+    /// </summary>
+    void IncreasePowerUpLevel()
+    {
+        _powerUpLevel++;
+    }
+
+    /// <summary>
+    /// Sets the power up layer back to zero
+    /// </summary>
+    void ClearPowerUpLevel()
+    {
+        _powerUpLevel = 0;
+    }
+
+    /// <summary>
+    /// Moves the power up layer down by 1S
+    /// </summary>
+    void DecreasePowerUpLevel()
+    {
+        if (_powerUpLevel > 0)
+            _powerUpLevel--;
+    }
+
+    /// <summary>
+    /// Check if the player can move
+    /// </summary>
+    /// <returns>Whether the player is complete</returns>
+    internal bool IsComplete()
+    {
+        return _climber.IsComplete();
+    }
+}
