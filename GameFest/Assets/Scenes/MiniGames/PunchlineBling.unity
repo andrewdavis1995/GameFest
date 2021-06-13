@@ -836,13 +836,13 @@ TextMesh:
   m_OffsetZ: 0
   m_CharacterSize: 0.1
   m_LineSpacing: 1
-  m_Anchor: 1
+  m_Anchor: 4
   m_Alignment: 1
   m_TabSize: 4
   m_FontSize: 180
   m_FontStyle: 0
   m_RichText: 1
-  m_Font: {fileID: 0}
+  m_Font: {fileID: 12800000, guid: 21cde33d5bb7126469e70f976cb7c217, type: 3}
   m_Color:
     serializedVersion: 2
     rgba: 4278190080
@@ -866,7 +866,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10100, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 2100000, guid: 21cde33d5bb7126469e70f976cb7c217, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -896,8 +896,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 246913554}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.019278951, y: -0.02464713, z: -6}
-  m_LocalScale: {x: 0.046477843, y: 0.04069867, z: 1}
+  m_LocalPosition: {x: 0.36, y: -3.64, z: -6}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_Children: []
   m_Father: {fileID: 1514865676}
   m_RootOrder: 1
@@ -1742,13 +1742,13 @@ TextMesh:
   m_OffsetZ: 0
   m_CharacterSize: 0.1
   m_LineSpacing: 1
-  m_Anchor: 7
+  m_Anchor: 4
   m_Alignment: 1
   m_TabSize: 4
   m_FontSize: 180
   m_FontStyle: 0
   m_RichText: 1
-  m_Font: {fileID: 0}
+  m_Font: {fileID: 12800000, guid: 21cde33d5bb7126469e70f976cb7c217, type: 3}
   m_Color:
     serializedVersion: 2
     rgba: 4278190080
@@ -1772,7 +1772,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10100, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 2100000, guid: 21cde33d5bb7126469e70f976cb7c217, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1802,8 +1802,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 619483382}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.019278951, y: 0.07465761, z: -6}
-  m_LocalScale: {x: 0.046477843, y: 0.04069867, z: 1}
+  m_LocalPosition: {x: 0.36, y: 1.88, z: -6}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_Children: []
   m_Father: {fileID: 1514865676}
   m_RootOrder: 0
@@ -3544,8 +3544,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.8018868, g: 0.69143826, b: 0.69143826, a: 1}
+  m_Sprite: {fileID: 21300000, guid: f39fbb52c43ef0940b05e77d07148bad, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -3563,8 +3563,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1514865674}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.1737, y: -2.0938148, z: 5}
-  m_LocalScale: {x: 5.378907, y: 6.142707, z: 1}
+  m_LocalPosition: {x: -7.945, y: -1.41, z: 1.51}
+  m_LocalScale: {x: 0.5574, y: 0.5574, z: 0.5574}
   m_Children:
   - {fileID: 619483385}
   - {fileID: 246913557}
@@ -3603,18 +3603,18 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 1
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0.47767806}
+  m_Offset: {x: 0.029106855, y: -0.35128546}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 12, y: 14}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1, y: 0.04464385}
+  m_Size: {x: 11.45233, y: 13.297429}
   m_EdgeRadius: 0
 --- !u!1 &1624162853
 GameObject:
@@ -4244,6 +4244,9 @@ MonoBehaviour:
   CardBacks:
   - {fileID: 21300000, guid: da394d59265f0494f90393a7647cf5bd, type: 3}
   - {fileID: 21300000, guid: b773bab5aa983b74b8f971f34453eff8, type: 3}
+  CardFronts:
+  - {fileID: 21300000, guid: f633567ad0a9fd34d8be11a41a461243, type: 3}
+  - {fileID: 21300000, guid: ffd614826ebc56e45854a0fc65ab83f4, type: 3}
   SpeechBubble: {fileID: 914200079}
   SpeechBubbleText: {fileID: 1105062588}
   TxtOverallTime: {fileID: 1815395480}

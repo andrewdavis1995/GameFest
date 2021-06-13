@@ -14,6 +14,7 @@ public class PunchlineBlingController : MonoBehaviour
     public Transform PlayerPrefab;      // The prefab to create
     public TextMesh[] NoteBookTexts;    // The text meshes used to display cards
     public Sprite[] CardBacks;          // The images to use on the back of cards (Setup then punchline)
+    public Sprite[] CardFronts;          // The images to use on the back of cards (Setup then punchline)
     public GameObject SpeechBubble;     // Speech bubble display
     public TextMesh SpeechBubbleText;   // Speech bubble text
     public Text TxtOverallTime;         // The text for displaying the overall time

@@ -17,7 +17,9 @@ public class PlayerClimber : MonoBehaviour
     bool _active = true;
     Vector2 _newVelocity = new Vector2();
     bool _inSludge = false;
+    [SerializeField]
     bool _inWater = false;
+    [SerializeField]
     int _recoveryPressesRemaining = 0;
 
     // Unity config
@@ -127,14 +129,29 @@ public class PlayerClimber : MonoBehaviour
         RaycastHit2D slopeHitBack = Physics2D.Raycast(checkPos, -transform.right, _slopeCheckDistance, WhatIsGround);
 
         // if the front or back hits, we are on a slope
-        if (slopeHitFront || slopeHitBack)
+        if ((slopeHitFront && !slopeHitFront.collider.isTrigger)|| (slopeHitBack && !slopeHitBack.collider.isTrigger))
         {
+            Debug.Log("SETTING ONGROUND");
+            if (slopeHitFront)
+                Debug.Log("FRONT: " + slopeHitFront.collider.gameObject.name);
+            if (slopeHitBack)
+                Debug.Log("BACK: " + slopeHitBack.collider.gameObject.name);
             _onSlope = true;
+            _onGround = true;
         }
         else
         {
             _onSlope = false;
         }
+    }
+
+    /// <summary>
+    /// Accessor for if the player is in water
+    /// </summary>
+    /// <returns>Whether the player is in wayer</returns>
+    internal bool IsInWater()
+    {
+        return _inWater;
     }
 
     /// <summary>
@@ -162,7 +179,7 @@ public class PlayerClimber : MonoBehaviour
         _decreasePowerupCallback = decreasePowerup;
 
         // set player text
-        PlayerNameText.text = name;
+        PlayerNameText.text = playerName;
     }
 
     /// <summary>
@@ -184,7 +201,7 @@ public class PlayerClimber : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(checkPos, Vector2.down, _slopeCheckDistance, WhatIsGround);
 
         // if there was a collision
-        if (hit)
+        if (hit && _onGround)
         {
             // get the angle of the collision
             _slopeNormalPerp = Vector2.Perpendicular(hit.normal).normalized;
@@ -192,6 +209,7 @@ public class PlayerClimber : MonoBehaviour
 
             // the player is on a slope
             _onSlope = true;
+            _onGround = true;
         }
 
         // if the player is not moving, and is on the ground, set the material to one with high friction, to avoid sliding
@@ -218,6 +236,7 @@ public class PlayerClimber : MonoBehaviour
         // can only jump if on ground
         if (_onGround && !_inSludge && _active)
         {
+            Debug.Log("CLEARING ONGROUND");
             _onGround = false;
             _rigidbody.AddForce(new Vector2(0, JUMP_FORCE));
             _animation.SetAnimation("Jump");
@@ -272,6 +291,7 @@ public class PlayerClimber : MonoBehaviour
     /// <param name="collision">The object that the player collided with</param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        Debug.Log("COLLISION ONGROUND");
         // if the object is ground, the player is now on the ground
         if (collision.gameObject.tag == "Ground" && collision.relativeVelocity.y > 0) _onGround = true;
     }
@@ -333,7 +353,7 @@ public class PlayerClimber : MonoBehaviour
         // the player has picked up a power up
         else if (collision.gameObject.tag == "Water" && !_inWater)
         {
-            _inWater = true;
+            Debug.Log("Fell into water");
             _recoveryPressesRemaining = 20;
             WaterCollider.SetActive(true);
             _rigidbody.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
@@ -347,7 +367,9 @@ public class PlayerClimber : MonoBehaviour
     /// <returns></returns>
     private IEnumerator FreezeYPosition()
     {
-        yield return new WaitForSeconds(4);
+        yield return new WaitForSeconds(1.6f);
+        _inWater = true;
+        yield return new WaitForSeconds(2.4f);
         _rigidbody.constraints = RigidbodyConstraints2D.FreezeAll;
         WaterCollider.SetActive(false);
         _collider.enabled = false;
@@ -371,11 +393,14 @@ public class PlayerClimber : MonoBehaviour
     /// </summary>
     IEnumerator WaterRecovery_()
     {
+        // jump
         _rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
         _rigidbody.AddForce(new Vector2(-200, JUMP_FORCE));
 
+        // wait
         yield return new WaitForSeconds(.5f);
 
+        // re-enable collider
         _collider.enabled = true;
         _inWater = false;
     }
@@ -385,7 +410,6 @@ public class PlayerClimber : MonoBehaviour
     /// </summary>
     private void Move()
     {
-        Debug.Log(_movementX + " top");
         if (_active)
         {
             var moveSpeed = _movementX * MOVE_SPEED;
@@ -425,13 +449,9 @@ public class PlayerClimber : MonoBehaviour
             }
         }
 
-        Debug.Log("In here!");
-
         // set the correct animation
         if (_onGround)
         {
-            Debug.Log("In there!");
-            Debug.Log(_movementX);
             // walking
             if (Math.Abs(_movementX) > 0.15f)
             {

@@ -114,15 +114,15 @@ public class RockScript : MonoBehaviour
             var playerScript = collision.gameObject.GetComponent<PlayerClimber>();
 
             bool performAction = false;
+            var playerIndex = -1;
 
             // do not affect the player if they are already disabled
-            if (playerScript != null && playerScript.IsActive())
+            if (playerScript != null && playerScript.IsActive() && !playerScript.IsInWater())
             {
                 // check if this rock is specific to a certain player
                 if (gameObject.name.Contains("Rock") && gameObject.name.Length == 5)
                 {
-                    // get the player index
-                    var playerIndex = int.Parse(gameObject.name.Replace("Rock", ""));
+                    playerIndex = int.Parse(gameObject.name.Replace("Rock", ""));
 
                     // only affect player if this player did NOT spawn it
                     if (playerIndex != playerScript.GetPlayerIndex())
@@ -143,10 +143,13 @@ public class RockScript : MonoBehaviour
 
                 // when hit player loses power up
                 playerScript.DecreasePowerUpLevel();
+
+                if (playerIndex > -1)
+                    LandslideController.Instance.RockHitPoints_(playerIndex);
             }
         }
         // when the rock hits a point, make sure it falls down a hole
-        else if(collision.gameObject.tag == "RockStop")
+        else if (collision.gameObject.tag == "RockStop")
         {
             // slow the rock
             Rigidbody.velocity.Set(0, Rigidbody.velocity.y);

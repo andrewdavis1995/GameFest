@@ -174,14 +174,10 @@ MonoBehaviour:
   _onSlope: 0
   _onGround: 0
   _movementX: 0
-  _active: 1
-  _powerUpLevel: 0
-  _inWater: 0
-  _recoveryPressesRemaining: 0
   MOVE_SPEED: 7
   JUMP_FORCE: 1200
   PlayerNameText: {fileID: 4178304270237126483}
-  _slopeCheckDistance: 0.4
+  _slopeCheckDistance: 0.2
   StaticMaterial: {fileID: 6200000, guid: 2061599d16e7b1f42abec3789269310c, type: 2}
   WhatIsGround:
     serializedVersion: 2

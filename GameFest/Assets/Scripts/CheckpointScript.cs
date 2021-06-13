@@ -32,8 +32,8 @@ public class CheckpointScript : MonoBehaviour
     /// </summary>
     /// <param name="playerIndex">The player to get the value for</param>
     /// <returns>The number of points the player earned at this checkpoint</returns>
-    internal int ? GetPlayerPoints(int playerIndex)
+    internal int GetPlayerPoints(int playerIndex)
     {
-        return _playerInfo.Where(p => p.Item1 == playerIndex).FirstOrDefault()?.Item1;
+        return (int)_playerInfo.Where(p => p.Item1 == playerIndex).FirstOrDefault()?.Item1;
     }
 }

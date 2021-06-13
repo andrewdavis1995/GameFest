@@ -1,12 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LandslideController : MonoBehaviour
 {
+    const int ROCK_HIT_POINTS = 20;
+
     // status variables
     bool _active = true;
 
@@ -20,7 +22,7 @@ public class LandslideController : MonoBehaviour
     public CameraFollow FollowScript;
 
     // constant config
-    const int TIME_LIMIT = 120;
+    const int TIME_LIMIT = 300;
 
     // links to other scripts/components
     PlayerAnimation _animation;
@@ -67,10 +69,10 @@ public class LandslideController : MonoBehaviour
         while (_active)
         {
             // wait some time
-            yield return new WaitForSeconds(Random.Range(5, 12));
+            yield return new WaitForSeconds(UnityEngine.Random.Range(5, 12));
 
             // spawn a boost at a random one of the positions
-            SpawnPowerUp_(Random.Range(0, PowerUpSpawnPositions.Length));
+            SpawnPowerUp_(UnityEngine.Random.Range(0, PowerUpSpawnPositions.Length));
         }
     }
 
@@ -89,7 +91,7 @@ public class LandslideController : MonoBehaviour
         // spawn a boost at each position
         for (int i = 0; i < PowerUpSpawnPositions.Length; i++)
             // spawn a boost at a random one of the positions
-            SpawnPowerUp_(Random.Range(0, PowerUpSpawnPositions.Length));
+            SpawnPowerUp_(UnityEngine.Random.Range(0, PowerUpSpawnPositions.Length));
     }
 
     /// <summary>
@@ -133,7 +135,6 @@ public class LandslideController : MonoBehaviour
                 var points = checkpoint.GetPlayerPoints(playerIndex);
                 player.AddPoints(points);
             }
-            // TODO: Add points
         }
 
         PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
@@ -160,6 +161,15 @@ public class LandslideController : MonoBehaviour
         }
 
         return playerTransforms;
+    }
+
+    /// <summary>
+    /// Assign points to a player after one of their rocks hit a player
+    /// </summary>
+    /// <param name="playerIndex">The index of the player that the rock belonged to</param>
+    internal void RockHitPoints_(int playerIndex)
+    {
+        _players.Where(p => p.GetPlayerIndex() == playerIndex).First().AddPoints(ROCK_HIT_POINTS);
     }
 
     /// <summary>

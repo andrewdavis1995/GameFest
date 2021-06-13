@@ -88,6 +88,7 @@ public class CardScript : MonoBehaviour
 
         var imageIndex = IsPunchline() ? 1 : 0;
         CardBack.GetComponent<SpriteRenderer>().sprite = PunchlineBlingController.Instance.CardBacks[imageIndex];
+        CardFront.GetComponent<SpriteRenderer>().sprite = PunchlineBlingController.Instance.CardFronts[imageIndex];
     }
 
     /// <summary>
@@ -96,7 +97,7 @@ public class CardScript : MonoBehaviour
     private IEnumerator SpinHide()
     {
         // turn from 180 degress back to the start point
-        for (float i = 180; i >= 0; i -= 2)
+        for (float i = 180; i >= 0; i -= 3)
         {
             // once it reaches halfway (i.e. invisible at the halfway point), hide the other side of the card
             if (i == 90)
@@ -106,7 +107,7 @@ public class CardScript : MonoBehaviour
             CardBack.eulerAngles = new Vector3(0, i, 0);
 
             // wait briefly to allow the rotation to be seen
-            yield return new WaitForSeconds(0.001f);
+            yield return new WaitForSeconds(0.0005f);
         }
 
         // no longer spinning, can begin to spin again
