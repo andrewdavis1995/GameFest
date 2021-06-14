@@ -1,9 +1,9 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public abstract class GenericInputHandler : MonoBehaviour
 {
+    [SerializeField]
     private int _points = 0;
 
     public virtual Transform Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName, int playerIndex) { return null; }
@@ -98,30 +98,3 @@ public abstract class GenericInputHandler : MonoBehaviour
         spawned.GetComponent<Animator>().runtimeAnimatorController = PlayerManagerScript.Instance.CharacterControllers[characterIndex];
     }
 }
-
-/* CODE DUMP
- * 
- * Paddle code
- * 
- * 
- *         // paddles - TODO: move to another script
-        Transform[] _paddles;
-        bool _paddleState = false;
-
-        _paddles = GameObject.FindGameObjectsWithTag("Paddle").Select(e => e.transform).ToArray();
-
-    /// <summary>
-    /// Updates the angle of the paddles
-    /// </summary>
-    void SetPaddles_()
-    {
-        var paddleAngle = _paddleState ? 45 : -45;
-
-        // loop through all the paddles
-        foreach (var paddle in _paddles)
-        {
-            // change the angle
-            paddle.eulerAngles = new Vector3(0, 0, paddleAngle);
-        }
-    }
-*/

@@ -12,9 +12,11 @@ public class CheckpointScript : MonoBehaviour
     /// <summary>
     /// Add a player to the checkpoint list, as long as they are not already there
     /// </summary>
-    /// <param name="playerIndex"></param>
+    /// <param name="playerIndex">The index of the player to add</param>
     public bool AddPlayer(int playerIndex)
     {
+        Debug.Log("Adding player!");
+
         bool added = false;
 
         // if the player is not already on the last, add them and store
@@ -34,6 +36,11 @@ public class CheckpointScript : MonoBehaviour
     /// <returns>The number of points the player earned at this checkpoint</returns>
     internal int GetPlayerPoints(int playerIndex)
     {
-        return (int)_playerInfo.Where(p => p.Item1 == playerIndex).FirstOrDefault()?.Item1;
+        var points = 0;
+        var playerMatch = _playerInfo.Where(p => p.Item1 == playerIndex).FirstOrDefault();
+        if (playerMatch != null)
+            points = playerMatch.Item2;
+
+        return points;
     }
 }

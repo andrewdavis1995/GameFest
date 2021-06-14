@@ -15,6 +15,7 @@ public class GameCentralInputHandler : GenericInputHandler
         // create the object
         var spawned = Instantiate(prefab, position, Quaternion.identity);
         SetAnimation(spawned, characterIndex);
+        SetHeight(spawned, characterIndex);
         return spawned;
     }
 }

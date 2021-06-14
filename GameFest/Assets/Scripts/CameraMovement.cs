@@ -17,18 +17,26 @@ enum ZoomDirection { None, In, Out }
 public class CameraMovement : MonoBehaviour
 {
     // directions of movements
+    [SerializeField]
     MovementDirectionX _xMovement = MovementDirectionX.None;
+    [SerializeField]
     MovementDirectionY _yMovement = MovementDirectionY.None;
+    [SerializeField]
     ZoomDirection _zoomDirection = ZoomDirection.None;
 
     // how quickly to move in each direction
+    [SerializeField]
     float _xSpeed = 0;
+    [SerializeField]
     float _ySpeed = 0;
+    [SerializeField]
     float _zoomSpeed = 0;
-    const float SPEED_ADJUSTMENT = 2f;
+    public float SpeedAdjustment = 2f;
 
     // where it should end up
+    [SerializeField]
     Vector2 _targetPosition = new Vector2(0, 0);
+    [SerializeField]
     float _targetZoom;
 
     // link to the camera object
@@ -38,6 +46,7 @@ public class CameraMovement : MonoBehaviour
     Action _callback;
 
     // needed so the callback is only called once
+    [SerializeField]
     bool _callbackCalled = true;
 
     void Update()
@@ -64,14 +73,14 @@ public class CameraMovement : MonoBehaviour
         {
             // move left
             case MovementDirectionX.Left:
-                transform.localPosition -= new Vector3(_xSpeed * Time.deltaTime * SPEED_ADJUSTMENT, 0, 0);
+                transform.localPosition -= new Vector3(_xSpeed * Time.deltaTime * SpeedAdjustment, 0, 0);
                 // stop when target reached
                 if (transform.localPosition.x < _targetPosition.x)
                     _xMovement = MovementDirectionX.None;
                 break;
             // move right
             case MovementDirectionX.Right:
-                transform.localPosition += new Vector3(_xSpeed * Time.deltaTime * SPEED_ADJUSTMENT, 0, 0);
+                transform.localPosition += new Vector3(_xSpeed * Time.deltaTime * SpeedAdjustment, 0, 0);
                 // stop when target reached
                 if (transform.localPosition.x > _targetPosition.x)
                     _xMovement = MovementDirectionX.None;
@@ -88,14 +97,14 @@ public class CameraMovement : MonoBehaviour
         {
             // move up
             case MovementDirectionY.Up:
-                transform.localPosition += new Vector3(0, _ySpeed * Time.deltaTime * SPEED_ADJUSTMENT, 0);
+                transform.localPosition += new Vector3(0, _ySpeed * Time.deltaTime * SpeedAdjustment, 0);
                 // stop when target reached
                 if (transform.localPosition.y > _targetPosition.y)
                     _yMovement = MovementDirectionY.None;
                 break;
             // move down
             case MovementDirectionY.Down:
-                transform.localPosition -= new Vector3(0, _ySpeed * Time.deltaTime * SPEED_ADJUSTMENT, 0);
+                transform.localPosition -= new Vector3(0, _ySpeed * Time.deltaTime * SpeedAdjustment, 0);
                 // stop when target reached
                 if (transform.localPosition.y < _targetPosition.y)
                     _yMovement = MovementDirectionY.None;
@@ -112,14 +121,14 @@ public class CameraMovement : MonoBehaviour
         {
             // zoom in
             case ZoomDirection.In:
-                TheCamera.orthographicSize -= _zoomSpeed * Time.deltaTime * SPEED_ADJUSTMENT;
+                TheCamera.orthographicSize -= _zoomSpeed * Time.deltaTime * SpeedAdjustment;
                 // stop when target reached
                 if (TheCamera.orthographicSize < _targetZoom)
                     _zoomDirection = ZoomDirection.None;
                 break;
             // zoom out
             case ZoomDirection.Out:
-                TheCamera.orthographicSize += _zoomSpeed * Time.deltaTime * SPEED_ADJUSTMENT;
+                TheCamera.orthographicSize += _zoomSpeed * Time.deltaTime * SpeedAdjustment;
                 // stop when target reached
                 if (TheCamera.orthographicSize > _targetZoom)
                     _zoomDirection = ZoomDirection.None;
@@ -162,8 +171,10 @@ public class CameraMovement : MonoBehaviour
         _targetZoom = targetZoom;
 
         // get the original movement
-        _xMovement = _targetPosition.x > transform.localPosition.x ? MovementDirectionX.Right : MovementDirectionX.Left;
-        _yMovement = _targetPosition.y > transform.localPosition.y ? MovementDirectionY.Up : MovementDirectionY.Down;
+        if (_targetPosition.x != transform.localPosition.x)
+            _xMovement = _targetPosition.x > transform.localPosition.x ? MovementDirectionX.Right : MovementDirectionX.Left;
+        if (_targetPosition.y != transform.localPosition.y)
+            _yMovement = _targetPosition.y > transform.localPosition.y ? MovementDirectionY.Up : MovementDirectionY.Down;
         _zoomDirection = _targetZoom < TheCamera.orthographicSize ? ZoomDirection.In : ZoomDirection.Out;
     }
 

@@ -81,7 +81,6 @@ public class ShopDropController : MonoBehaviour
 
         // find all paddles
         PaddleScript[] paddles = GameObject.FindObjectsOfType<PaddleScript>();
-        Debug.Log(paddles.Length);
 
         // loop through each paddle
         for (int i = 0; i < paddles.Length; i++)

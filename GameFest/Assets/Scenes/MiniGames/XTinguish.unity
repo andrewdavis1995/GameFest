@@ -521,6 +521,10 @@ PrefabInstance:
       propertyPath: m_AngularDrag
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1231760112814933481, guid: 4c7e03001c6dda8458188dbf421c0f48, type: 3}
+      propertyPath: _spaceman
+      value: 
+      objectReference: {fileID: 1354069338}
     - target: {fileID: 3150217032043916564, guid: 4c7e03001c6dda8458188dbf421c0f48, type: 3}
       propertyPath: m_LocalScale.x
       value: 1
@@ -645,12 +649,12 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.5
-  m_GravityScale: 0
+  m_GravityScale: 1
   m_Material: {fileID: 6200000, guid: 3fadb4b76ff6b9e4a9d90e6999f2e7a1, type: 2}
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!61 &803283276
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -7,10 +7,11 @@ using UnityEngine.UI;
 
 public class LandslideController : MonoBehaviour
 {
-    const int ROCK_HIT_POINTS = 20;
 
     // status variables
     bool _active = true;
+    List<Transform> _powerUpBoosts = new List<Transform>();
+    int _resultsPlayerIndex = 0;
 
     // unity configuration
     public Text TxtCountdown;
@@ -20,16 +21,20 @@ public class LandslideController : MonoBehaviour
     public Transform PlayerPrefab;
     public Vector2 StartPosition;
     public CameraFollow FollowScript;
+    public CameraMovement CameraMovement;
+    public Transform Sign;
+    public TextMesh SignText;
 
     // constant config
     const int TIME_LIMIT = 300;
+    const int ROCK_HIT_POINTS = 20;
 
     // links to other scripts/components
     PlayerAnimation _animation;
-    TimeLimit _playerLimit;
+    TimeLimit _overallLimit;
+    TimeLimit _endingTimer;
     List<LandslideInputHandler> _players = new List<LandslideInputHandler>();
-
-    List<Transform> _powerUpBoosts = new List<Transform>();
+    List<LandslideInputHandler> _resultPositions = new List<LandslideInputHandler>();
 
     // static instance
     public static LandslideController Instance;
@@ -46,11 +51,15 @@ public class LandslideController : MonoBehaviour
         FollowScript.SetPlayers(players, FollowDirection.Right);
 
         // initialise the timeout
-        _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
-        _playerLimit.Initialise(TIME_LIMIT, PlayerTickCallback, PlayerTimeoutCallback);
+        _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _overallLimit.Initialise(TIME_LIMIT, PlayerTickCallback, PlayerTimeoutCallback);
+
+        // initialise the timeout after a player completes
+        _endingTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _endingTimer.Initialise(10, EndGameTimeoutTick, EndGameTimeout);
 
         // start the timer
-        _playerLimit.StartTimer();
+        _overallLimit.StartTimer();
 
         // start spawning rocks
         foreach (var spawner in RockSpawners)
@@ -114,20 +123,65 @@ public class LandslideController : MonoBehaviour
     }
 
     /// <summary>
+    /// Called once when the time limit has fully expired
+    /// </summary>
+    private void EndGameTimeout()
+    {
+        Complete();
+    }
+
+    /// <summary>
+    /// Disables all players and starts showing results
+    /// </summary>
+    void Complete()
+    {
+        // hide coutdown
+        TxtCountdown.text = "";
+
+        // check all players to see if they are complete
+        foreach (var player in _players)
+        {
+            // only the complete players should celebrate
+            string animation = "Idle";
+            if (player.IsComplete())
+                animation = "Celebrate";
+
+            // complete the player
+            player.Finish();
+            player.SetAnimationTrigger(animation);
+        }
+
+        // end the game
+        StartCoroutine(EndGame_());
+    }
+
+    /// <summary>
+    /// Called each time the time limit ticks - each second in this case
+    /// </summary>
+    /// <param name="seconds">How many seconds are remaining</param>
+    private void EndGameTimeoutTick(int seconds)
+    {
+        // display a countdown for the last 10 seconds
+        TxtCountdown.text =seconds.ToString();
+    }
+
+    /// <summary>
     /// Ends the game, shows results, returns to Central screen
     /// </summary>
     IEnumerator EndGame_()
     {
-        // start spawning rocks
+        // stop spawning rocks
         foreach (var spawner in RockSpawners)
             spawner.Disable();
 
-        yield return new WaitForSeconds(5);
+        // brief pause
+        yield return new WaitForSeconds(2);
 
         // get all checkpoints
-        var checkpoints = GameObject.FindObjectsOfType<CheckpointScript>();
+        var checkpoints = FindObjectsOfType<CheckpointScript>();
         foreach (var checkpoint in checkpoints)
         {
+            // loop through players
             foreach (var player in _players)
             {
                 // get the points for each player for this checkpoint
@@ -137,7 +191,74 @@ public class LandslideController : MonoBehaviour
             }
         }
 
-        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        // disable the script which follows the leader
+        FollowScript.Disable();
+
+        // re-order the player
+        _resultPositions = _players.OrderByDescending(p => p.GetEndPosition().x).ToList();
+
+        // show results
+        ShowPlayerResult_();
+    }
+
+    /// <summary>
+    /// Shows the results of the current player
+    /// </summary>
+    void ShowPlayerResult_()
+    {
+        CameraMovement.SpeedAdjustment = 35;
+        CameraMovement.SetCallback(ResultCallback_);
+        CameraMovement.StartMovement(_resultPositions[_resultsPlayerIndex].GetEndPosition(), 5f);
+    }
+
+    /// <summary>
+    /// When showing the results has occurred
+    /// </summary>
+    void ResultCallback_()
+    {
+        StartCoroutine(ShowResult_());
+    }
+
+    /// <summary>
+    /// Shows the player results, then moves to the next player
+    /// </summary>
+    private IEnumerator ShowResult_()
+    {
+        yield return new WaitForSeconds(1);
+
+        // set sign position and text
+        Sign.gameObject.SetActive(true);
+
+        Sign.transform.position = _resultPositions[_resultsPlayerIndex].GetEndPosition() + new Vector2(-2, 5);
+        SignText.text = _resultPositions[_resultsPlayerIndex].GetPoints().ToString();
+        
+        // display briefly
+        yield return new WaitForSeconds(5);
+
+        // hide the sign and go to the next player
+        Sign.gameObject.SetActive(false);
+        NextPlayerResults_();
+    }
+
+    /// <summary>
+    /// Moves to the next player results
+    /// </summary>
+    private void NextPlayerResults_()
+    {
+        _resultsPlayerIndex++;
+
+        Debug.Log(_resultsPlayerIndex + " vs " + _players.Count);
+        // checks if all players are done
+        if (_resultsPlayerIndex >= _players.Count)
+        {
+            // done
+            PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        }
+        else
+        {
+            // next player
+            ShowPlayerResult_();
+        }
     }
 
     /// <summary>
@@ -155,9 +276,9 @@ public class LandslideController : MonoBehaviour
             player.SetActiveScript(typeof(LandslideInputHandler));
 
             // create the "visual" player at the start point
-            var spawned = player.Spawn(PlayerPrefab, StartPosition + new Vector2(0.2f * index++, 0));
+            var spawned = player.Spawn(PlayerPrefab, StartPosition + new Vector2(-0.15f * index++, 0));
             playerTransforms.Add(spawned);
-            _players.Add(spawned.GetComponent<LandslideInputHandler>());
+            _players.Add(player.GetComponentInChildren<LandslideInputHandler>());
         }
 
         return playerTransforms;
@@ -175,22 +296,21 @@ public class LandslideController : MonoBehaviour
     /// <summary>
     /// Checks if all players are complete
     /// </summary>
-    internal void CheckForFinish()
+    internal void CompleteGame()
     {
-        bool finished = true;
+        // stop the overall time
+        _overallLimit.Abort();
 
-        // check all players to see if they are complete
-        foreach(var player in _players)
+        // if there is still a player playing, give them 10 seconds to complete
+        if(_players.Any(p => !p.IsComplete()))
         {
-            // if not, then record this
-            if (player.IsComplete())
-                finished = false;
+            _endingTimer.StartTimer();
         }
-
-        // if all finished, end the game
-        if (finished)
+        else
         {
-            StartCoroutine(EndGame_());
+            // otherwise, just end the game
+            Complete();
+            _endingTimer.Abort();
         }
     }
 
@@ -221,6 +341,7 @@ public class LandslideController : MonoBehaviour
     /// <param name="playerIndex">The player that triggered it</param>
     public void RockBarageSmall(int playerIndex)
     {
+        // spawn rocks at each spawner
         foreach (var spawner in RockSpawners)
             spawner.RockBarageSmall(playerIndex);
     }

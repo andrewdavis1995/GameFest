@@ -134,11 +134,37 @@ public class LandslideInputHandler : GenericInputHandler
     }
 
     /// <summary>
-    /// Check if the player can move
+    /// Mark the player as completed
+    /// </summary>
+    internal void Finish()
+    {
+        _climber.Complete();
+    }
+
+    /// <summary>
+    /// Checks if the player is complete
     /// </summary>
     /// <returns>Whether the player is complete</returns>
     internal bool IsComplete()
     {
         return _climber.IsComplete();
+    }
+
+    /// <summary>
+    /// Sets the animation of the player
+    /// </summary>
+    /// <param name="animation">The trigger to set</param>
+    internal void SetAnimationTrigger(string animation)
+    {
+        _climber.SetAnimationTrigger(animation);
+    }
+
+    /// <summary>
+    /// Gets the position at which the player ended the game
+    /// </summary>
+    /// <returns>The position of the player</returns>
+    internal Vector2 GetEndPosition()
+    {
+        return _climber.transform.position;
     }
 }

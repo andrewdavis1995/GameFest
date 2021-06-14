@@ -9,9 +9,12 @@ public class CameraFollow : MonoBehaviour
     List<Transform> _players = new List<Transform>();
     FollowDirection _direction;
     public bool FollowY = false;
+    bool _enabled = true;
 
     private void Update()
     {
+        if (!enabled) return;
+
         // if no players, nothing to do here
         if (_players.Count == 0) return;
 
@@ -22,6 +25,15 @@ public class CameraFollow : MonoBehaviour
             // set the camera position to be in line with the current leader
             transform.position = new Vector3(leader.position.x, FollowY ? leader.position.y : transform.position.y, transform.position.z);
         }
+    }
+
+    /// <summary>
+    /// Disables the functionality
+    /// </summary>
+    /// <returns></returns>
+    public void Disable()
+    {
+        enabled = false;
     }
 
     /// <summary>

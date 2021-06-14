@@ -29,7 +29,7 @@ public class GameCentralController : MonoBehaviour
             player.SetActiveScript(typeof(GameCentralInputHandler));
 
             // create the "visual" player
-            player.Spawn(PlayerPrefab, new Vector2(left, 0));
+            var spawned = player.Spawn(PlayerPrefab, new Vector2(left, 0));
 
             // move to next position
             left += POSITION_GAP;
