@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 904933961844857154}
   m_Layer: 0
   m_Name: Battery
-  m_TagString: Untagged
+  m_TagString: PowerUp
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 6434656130477619568}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -10.47, y: 6.01, z: 0}
-  m_LocalScale: {x: 0.54064614, y: 0.60247344, z: 0.7949}
+  m_LocalScale: {x: 0.45, y: 0.45, z: 0.7949}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -102,7 +102,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2.25, y: 2.25}
+    oldSize: {x: 2, y: 2}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -124,13 +124,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BatteryImages:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 858752299c9305546a9859562e56f258, type: 3}
+  - {fileID: 21300000, guid: c698ef56721eb77459ba19691bdd9a6a, type: 3}
+  - {fileID: 21300000, guid: 73cb3b7ebe2f7f24ab4af58f741fffbb, type: 3}
+  - {fileID: 21300000, guid: 774bd9e881227154baefcfc24ed07eb4, type: 3}
+  - {fileID: 21300000, guid: 2d2ab15be9ef569478fb008f570b0b5c, type: 3}
+  - {fileID: 21300000, guid: 32f9ea91d2fa4d54c88306d4be9f0370, type: 3}
+  - {fileID: 21300000, guid: 0e1b2c52d1ee2a2438f053471f0fab3c, type: 3}
+  - {fileID: 21300000, guid: 6af5b91d225c6ae4e9d01ffb55181bcd, type: 3}
+  - {fileID: 21300000, guid: 901fa3d7e17ddfd4ebb1d53e79e16a97, type: 3}
+  - {fileID: 21300000, guid: 4220f58875f66c8449f6023b8831e627, type: 3}
   Renderer: {fileID: 6434656130477619582}
