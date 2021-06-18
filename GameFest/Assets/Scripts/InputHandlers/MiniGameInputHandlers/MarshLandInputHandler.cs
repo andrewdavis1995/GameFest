@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public enum MarshLandInputAction { Triangle, Circle, Cross, Square, L1, R1 }
 
@@ -86,7 +87,7 @@ public class MarshLandInputHandler : GenericInputHandler
     /// <param name="characterIndex">The index of the selected character</param>
     /// <param name="playerIndex">The index of the player</param>
     /// <returns>The transform that was created</returns>
-    public override Transform Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName, int playerIndex)
+    public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
     {
         _playerIndex = playerIndex;
         _playerName = playerName;
@@ -317,7 +318,7 @@ public class MarshLandInputHandler : GenericInputHandler
         _movement.enabled = true;
     }
 
-    #region Input Handlers - all pass through to InputRecieved_
+    #region Input Handlers - all pass through to InputReceived
     public override void OnCircle()
     {
         InputReceived_(MarshLandInputAction.Circle);

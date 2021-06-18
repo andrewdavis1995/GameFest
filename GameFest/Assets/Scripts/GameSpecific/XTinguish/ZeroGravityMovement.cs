@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class ZeroGravityMovement : MonoBehaviour
 {
-    const float MAX_SPEED = 4.5f;
-    const float PROPULSION_FORCE = 16f;
+    const float MAX_SPEED = 5f;
+    const float PROPULSION_FORCE = 15f;
 
     // links to unity objects
     Rigidbody2D _rigidBody;
@@ -16,6 +16,8 @@ public class ZeroGravityMovement : MonoBehaviour
     SpriteRenderer _extinguisher;
     [SerializeField]
     BoxCollider2D _collider;
+    [SerializeField]
+    SpriteRenderer _colourDetails;
 
     // status
     float _xMovement = 0;
@@ -23,6 +25,8 @@ public class ZeroGravityMovement : MonoBehaviour
     List<int> _pointsCollected = new List<int>();
     bool _isComplete = false;
     bool _isDead = false;
+    float _lastXInput = 0;
+    float _lastYInput = 0;
 
     // status
     float _health = 100f;
@@ -35,33 +39,47 @@ public class ZeroGravityMovement : MonoBehaviour
         _rigidBody = GetComponent<Rigidbody2D>();
     }
 
+    /// <summary>
+    /// When the user chooses to move the player left to right
+    /// </summary>
+    /// <param name="xInput">How much they are moving</param>
+    public void X_Movement(float xInput)
+    {
+        _lastXInput = xInput;
+    }
+
+    /// <summary>
+    /// When the user chooses to move the player up
+    /// </summary>
+    /// <param name="xInput">How much they are moving</param>
+    public void Y_Movement(float yInput)
+    {
+        _lastYInput = yInput;
+    }
+
+    /// <summary>
+    /// Sets the colour of the suit details to match the players colour
+    /// </summary>
+    /// <param name="playerIndex"></param>
+    internal void SetPlayerColour(int playerIndex)
+    {
+        _colourDetails.color = ColourFetcher.GetColour(playerIndex);
+    }
+
     // Called once per frame
     private void Update()
     {
         // only update the player if they are not finished
         if (!_isComplete)
         {
-            // TODO: replace with input handler system
-            if (Input.GetKey(KeyCode.Space))
-                _rigidBody.AddForce(new Vector3(0, PROPULSION_FORCE, 0));
-
-            bool moving = false;
-
-            if (Input.GetKey(KeyCode.RightArrow))
-            {
-                moving = true;
-                _xMovement += 0.1f;
-            }
-
-            if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                moving = true;
-                _xMovement -= 0.1f;
-            }
+            // move player
+            _xMovement += 0.1f * _lastXInput;
 
             if (_xMovement > MAX_SPEED) _xMovement = MAX_SPEED;
             if (_xMovement < -MAX_SPEED) _xMovement = -MAX_SPEED;
 
+            // if the user is moving the player, keep updating the player
+            bool moving = _lastXInput > 0.01f || _lastXInput < -0.01f;
             if (!moving)
             {
                 if (_xMovement > 0) _xMovement -= 0.1f;
@@ -69,29 +87,19 @@ public class ZeroGravityMovement : MonoBehaviour
             }
             else
             {
+                // make sure the player is facing the correct way
                 _spaceman.flipX = _xMovement < 0;
                 _extinguisher.flipX = _xMovement < 0;
+                _colourDetails.flipX = _xMovement < 0;
             }
-            // ######################################
 
-            // This can be added in if we want to stop players moving when they are not boosting
-            //if (_rigidBody.velocity.y > 0.005f || _rigidBody.velocity.y < -0.005f)
-            //{
-            //    transform.Translate(new Vector3(_xMovement * Time.deltaTime, 0));
-            //    _spaceman.transform.eulerAngles = new Vector3(0, 0, -_xMovement * 7f);
-            //}
-            //else
-            //{
-            //    _spaceman.transform.eulerAngles = new Vector3(0, 0, 0);
-            //}
+            // boost up
+            if (_lastYInput > 0.2f)
+                Propulsion();
 
-            // TODO: Replace with Input Handler system 
-            // if the player is in the door and chooses to bail, make them exit
-            if (_inDoorZone && Input.GetKeyDown(KeyCode.T))
-            {
-                Escape_();
-            }
-            // ###########################################
+            // move and rotate player
+            transform.Translate(new Vector3(_xMovement * Time.deltaTime, 0));
+            _spaceman.transform.eulerAngles = new Vector3(0, 0, -_xMovement * 7f);
         }
         else if (_isDead)
         {
@@ -103,14 +111,42 @@ public class ZeroGravityMovement : MonoBehaviour
     /// <summary>
     /// Go through the door, and mark as complete
     /// </summary>
-    private void Escape_()
+    public void Escape()
     {
-        // TODO: go through the door
+        // can't escape if not in the correct area
+        if (!_inDoorZone) return;
+
         _isComplete = true;
         enabled = false;
 
+        // show playing escaping
+        StartCoroutine(Teleport());
+
         // inform the controller that this player is finished
         XTinguishController.Instance.CheckForComplete();
+    }
+
+    /// <summary>
+    /// Move the player to behind the window
+    /// </summary>
+    private IEnumerator Teleport()
+    {
+        _rigidBody.velocity = Vector3.zero;
+        _collider.enabled = false;
+        _rigidBody.isKinematic = true;
+        _spaceman.gameObject.SetActive(false);
+        // move behind window
+        transform.position = XTinguishController.Instance.TransportPosition;
+        yield return new WaitForSeconds(1);
+        _spaceman.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// When the player fires the propulsion
+    /// </summary>
+    public void Propulsion()
+    {
+        _rigidBody.AddForce(new Vector3(0, PROPULSION_FORCE, 0));
     }
 
     /// <summary>
@@ -138,17 +174,27 @@ public class ZeroGravityMovement : MonoBehaviour
             StartCoroutine(FlashRed_());
 
             // if the player has no more health left, make them die
-            if(_health <= 0)
+            if (_health <= 0)
             {
-                Die_();
+                Die_(true);
             }
         }
     }
 
     /// <summary>
+    /// The player has run out of time
+    /// </summary>
+    public void Timeout()
+    {
+        // if not complete, make player die
+        if (!_isComplete)
+            Die_(false);
+    }
+
+    /// <summary>
     /// The player has run out of health. They are no longer active
     /// </summary>
-    private void Die_()
+    private void Die_(bool check)
     {
         // keep in the same position
         _rigidBody.constraints = RigidbodyConstraints2D.FreezePosition;
@@ -158,8 +204,9 @@ public class ZeroGravityMovement : MonoBehaviour
         _isComplete = true;
         _isDead = true;
 
-        // inform the controller that this player is complete
-        XTinguishController.Instance.CheckForComplete();
+        if (check)
+            // inform the controller that this player is complete
+            XTinguishController.Instance.CheckForComplete();
     }
 
     /// <summary>
@@ -211,5 +258,14 @@ public class ZeroGravityMovement : MonoBehaviour
             // we have left the exit zone
             _inDoorZone = false;
         }
+    }
+
+    /// <summary>
+    /// Gets a list of the battery values tha have been collected
+    /// </summary>
+    /// <returns>List of points</returns>
+    public List<int> GetBatteryList()
+    {
+        return _pointsCollected;
     }
 }

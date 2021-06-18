@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class XTinguishController : MonoBehaviour
 {
@@ -18,17 +16,33 @@ public class XTinguishController : MonoBehaviour
     public Transform BatteryPrefab;
     public BoxCollider2D[] FireCollidersX;
     public BoxCollider2D[] FireCollidersY;
-    public Vector2[] SpawerPositions;
+    public Transform PlayerPrefab;
+    public Vector3[] SpawnPositions;
+    public Vector3 TransportPosition;
+    public Vector3 ResultsSpawnPositionsTop;
+    public Vector3 ResultCameraPosition;
+    public Transform RocketPrefab;
+
+    // fire encroachment
+    private float _fireMoveX = 0.0015f;
+    private float _fireMoveY = 0.001f;
+
+    // battery spawn times
+    float _minBatteryWait = 4;
+    float _maxBatteryWait = 9;
 
     // static instance
     public static XTinguishController Instance;
 
     // status variables
     bool _active = false;
-    List<ZeroGravityMovement> _players = new List<ZeroGravityMovement>();   // TODO: Convert to input handler
+    List<XTinguishInputHandler> _players = new List<XTinguishInputHandler>();
 
     // time out
     TimeLimit _overallLimit;
+
+    // links to other scripts
+    List<RocketResultScript> _rockets = new List<RocketResultScript>();
 
     // Start is called before the first frame update
     void Start()
@@ -102,7 +116,7 @@ public class XTinguishController : MonoBehaviour
             spawned.GetComponent<BatteryScript>().Initialise(value);
 
             // wait a random amount of time before spawning another
-            yield return new WaitForSeconds(UnityEngine.Random.Range(1, 8));
+            yield return new WaitForSeconds(UnityEngine.Random.Range(_minBatteryWait, _maxBatteryWait));
         }
     }
 
@@ -119,9 +133,29 @@ public class XTinguishController : MonoBehaviour
     /// <summary>
     /// Spawns a player object for each player
     /// </summary>
-    void SpawnPlayers_()
+    private List<Transform> SpawnPlayers_()
     {
-        // TODO: spawn a player for each player
+        var playerTransforms = new List<Transform>();
+
+        // loop through all players
+        var index = 0;
+        foreach (var player in PlayerManagerScript.Instance.GetPlayers())
+        {
+            // switch to use an input handler suitable for this scene
+            player.SetActiveScript(typeof(XTinguishInputHandler));
+
+            // create the "visual" player at the start point
+            var spawned = player.Spawn(PlayerPrefab, SpawnPositions[index]);
+            playerTransforms.Add(spawned);
+            _players.Add(player.GetComponentInChildren<XTinguishInputHandler>());
+            index++;
+        }
+
+        // update spawn time config
+        _minBatteryWait = 4f / _players.Count;
+        _minBatteryWait = 9 - _players.Count;
+
+        return playerTransforms;
     }
 
     /// <summary>
@@ -130,6 +164,12 @@ public class XTinguishController : MonoBehaviour
     void OnTimeUp()
     {
         _active = false;
+
+        // end all active players when time is up
+        foreach (var p in _players)
+        {
+            p.Timeout();
+        }
 
         // show results
         StartCoroutine(EndGame_());
@@ -143,13 +183,13 @@ public class XTinguishController : MonoBehaviour
         // make the left and right edges wider
         foreach (var fire in FireCollidersX)
         {
-            fire.transform.localScale += new Vector3(.0015f, 0);
+            fire.transform.localScale += new Vector3(_fireMoveX, 0);
         }
 
         // make the top and bottom edges taller
         foreach (var fire in FireCollidersY)
         {
-            fire.transform.localScale += new Vector3(0, .001f);
+            fire.transform.localScale += new Vector3(0, _fireMoveY);
         }
     }
 
@@ -171,10 +211,55 @@ public class XTinguishController : MonoBehaviour
     /// </summary>
     IEnumerator EndGame_()
     {
-        // TODO: Show results
-        yield return new WaitForSeconds(7);
+        // fire closes in more quickly
+        _fireMoveX *= 15f;
+        _fireMoveY *= 15f;
 
-        // TODO: Change to other scene management system
-        SceneManager.LoadScene(1);
+        // stop the timer
+        _overallLimit.Abort();
+
+        Debug.Log("Waiting");
+
+        yield return new WaitForSeconds(4.5f);
+
+        Debug.Log("Moving camera position");
+        Camera.main.transform.position = ResultCameraPosition;
+
+        SpawnRockets_();
+
+        // TODO: probably need a delay
+
+        Debug.Log("Spawned. Waiting to move");
+        // move the rockets
+        foreach (var rocket in _rockets)
+        {
+            rocket.StartMove();
+        }
+    }
+
+    /// <summary>
+    /// Spawns the rockets to be used to show the result
+    /// </summary>
+    void SpawnRockets_()
+    {
+        Debug.Log("Spawning rockets");
+        foreach (var p in _players)
+        {
+            var rocket = Instantiate(RocketPrefab, ResultsSpawnPositionsTop - new Vector3(0, 3, 0), Quaternion.identity);
+            var rocketScript = rocket.gameObject.GetComponent<RocketResultScript>();
+            rocketScript.Initialise(p.GetBatteryList(), p.GetPlayerName(), p.GetPlayerIndex());
+            _rockets.Add(rocketScript);
+        }
+    }
+
+    /// <summary>
+    /// Callback function for when a player completes - checks if all complete
+    /// </summary>
+    public void CheckResultsComplete()
+    {
+        Debug.Log("Checking complete");
+
+        if (_rockets.All(r => r.IsComplete()))
+            PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }
 }

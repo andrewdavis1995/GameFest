@@ -6,7 +6,7 @@ public abstract class GenericInputHandler : MonoBehaviour
     [SerializeField]
     private int _points = 0;
 
-    public virtual Transform Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName, int playerIndex) { return null; }
+    public virtual Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex) { return null; }
 
     public virtual void OnMove(InputAction.CallbackContext ctx) { }
     public virtual void OnCross() { }

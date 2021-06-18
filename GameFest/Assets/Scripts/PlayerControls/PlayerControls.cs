@@ -87,7 +87,7 @@ public class PlayerControls : MonoBehaviour
     /// <param name="playerPrefab">The prefab to spawn</param>
     /// <param name="position">Where to spawn</param>
     /// <returns>The spawned item</returns>
-    internal Transform Spawn(Transform playerPrefab, Vector2 position)
+    internal Transform Spawn(Transform playerPrefab, Vector3 position)
     {
         return _activeHandler.Spawn(playerPrefab, position, _characterIndex, _playerName, PlayerInput.playerIndex);
     }

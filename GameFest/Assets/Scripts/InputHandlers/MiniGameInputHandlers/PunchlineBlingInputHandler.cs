@@ -74,7 +74,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// <param name="position">The location at which to spawn the item</param>
     /// <param name="characterIndex">The index of the selected character</param>
     /// <param name="playerIndex">The index of the player</param>
-    public override Transform Spawn(Transform prefab, Vector2 position, int characterIndex, string playerName, int playerIndex)
+    public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
     {
         _characterIndex = characterIndex;
 
