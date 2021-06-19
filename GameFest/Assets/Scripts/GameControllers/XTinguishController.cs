@@ -22,6 +22,8 @@ public class XTinguishController : MonoBehaviour
     public Vector3 ResultsSpawnPositionsTop;
     public Vector3 ResultCameraPosition;
     public Transform RocketPrefab;
+    public CameraFollow CameraFollowScript;
+    public CameraZoomFollow CameraZoomFollowScript;
 
     // fire encroachment
     private float _fireMoveX = 0.0015f;
@@ -218,18 +220,23 @@ public class XTinguishController : MonoBehaviour
         // stop the timer
         _overallLimit.Abort();
 
-        Debug.Log("Waiting");
-
         yield return new WaitForSeconds(4.5f);
 
-        Debug.Log("Moving camera position");
         Camera.main.transform.position = ResultCameraPosition;
+
+        foreach (var v in FireCollidersX)
+            v.gameObject.SetActive(false);
+        foreach (var v in FireCollidersY)
+            v.gameObject.SetActive(false);
 
         SpawnRockets_();
 
         // TODO: probably need a delay
 
-        Debug.Log("Spawned. Waiting to move");
+        // sets the players
+        CameraFollowScript.SetPlayers(_rockets.Select(r => r.transform).ToList(), FollowDirection.Right);
+        CameraZoomFollowScript.SetPlayers(_rockets.Select(r => r.transform).ToList(), FollowDirection.Right);
+
         // move the rockets
         foreach (var rocket in _rockets)
         {
@@ -242,10 +249,9 @@ public class XTinguishController : MonoBehaviour
     /// </summary>
     void SpawnRockets_()
     {
-        Debug.Log("Spawning rockets");
         foreach (var p in _players)
         {
-            var rocket = Instantiate(RocketPrefab, ResultsSpawnPositionsTop - new Vector3(0, 3, 0), Quaternion.identity);
+            var rocket = Instantiate(RocketPrefab, ResultsSpawnPositionsTop - (new Vector3(0, 3, 0) * p.GetPlayerIndex()), Quaternion.identity);
             var rocketScript = rocket.gameObject.GetComponent<RocketResultScript>();
             rocketScript.Initialise(p.GetBatteryList(), p.GetPlayerName(), p.GetPlayerIndex());
             _rockets.Add(rocketScript);
@@ -257,8 +263,6 @@ public class XTinguishController : MonoBehaviour
     /// </summary>
     public void CheckResultsComplete()
     {
-        Debug.Log("Checking complete");
-
         if (_rockets.All(r => r.IsComplete()))
             PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }

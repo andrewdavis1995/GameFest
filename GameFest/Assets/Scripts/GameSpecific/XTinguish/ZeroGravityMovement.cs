@@ -17,6 +17,8 @@ public class ZeroGravityMovement : MonoBehaviour
     [SerializeField]
     BoxCollider2D _collider;
     [SerializeField]
+    BoxCollider2D _triggerCollider;
+    [SerializeField]
     SpriteRenderer _colourDetails;
 
     // status
@@ -27,6 +29,7 @@ public class ZeroGravityMovement : MonoBehaviour
     bool _isDead = false;
     float _lastXInput = 0;
     float _lastYInput = 0;
+    int _playerIndex;
 
     // status
     float _health = 100f;
@@ -63,6 +66,7 @@ public class ZeroGravityMovement : MonoBehaviour
     /// <param name="playerIndex"></param>
     internal void SetPlayerColour(int playerIndex)
     {
+        _playerIndex = playerIndex;
         _colourDetails.color = ColourFetcher.GetColour(playerIndex);
     }
 
@@ -133,10 +137,12 @@ public class ZeroGravityMovement : MonoBehaviour
     {
         _rigidBody.velocity = Vector3.zero;
         _collider.enabled = false;
+        _triggerCollider.enabled = false;
         _rigidBody.isKinematic = true;
+        _spaceman.transform.eulerAngles = new Vector3(0, 0, 0);
         _spaceman.gameObject.SetActive(false);
         // move behind window
-        transform.position = XTinguishController.Instance.TransportPosition;
+        transform.position = XTinguishController.Instance.TransportPosition + (new Vector3(2, 0, 0) * _playerIndex);
         yield return new WaitForSeconds(1);
         _spaceman.gameObject.SetActive(true);
     }

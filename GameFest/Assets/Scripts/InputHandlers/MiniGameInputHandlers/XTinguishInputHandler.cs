@@ -76,7 +76,7 @@ public class XTinguishInputHandler : GenericInputHandler
                 break;
             // Rachel
             case 1:
-                size -= .65f;
+                size += .65f;
                 break;
             // Naomi
             case 2:
@@ -84,7 +84,7 @@ public class XTinguishInputHandler : GenericInputHandler
                 break;
             // Heather
             case 3:
-                size -= 0.75f;
+                size += 0.75f;
                 break;
             // Mum & Dad
             case 4:
