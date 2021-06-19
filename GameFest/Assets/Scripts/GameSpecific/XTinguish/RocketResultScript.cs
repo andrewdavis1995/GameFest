@@ -7,13 +7,16 @@ public class RocketResultScript : MonoBehaviour
 {
     // unity configuration
     public SpriteRenderer Rocket;
+    public TextMesh TxtPlayerName;
+    public TextMesh TxtScore;
 
     // status variables
     bool _started = false;
     bool _complete = false;
     List<int> _values = new List<int>();
-    float _moveSpeed = 5f;
+    float _moveSpeed = 6f;
     bool _powerRemaining = false;
+    int _score = 0;
 
     // Update is called once per frame
     void Update()
@@ -29,7 +32,7 @@ public class RocketResultScript : MonoBehaviour
             {
                 // TODO: Change animation image (splutter then die)
 
-                _moveSpeed -= 0.05f;
+                _moveSpeed -= 0.03f;
 
                 // stop once no more battery
                 if (_moveSpeed <= 0f)
@@ -47,7 +50,6 @@ public class RocketResultScript : MonoBehaviour
     /// <returns></returns>
     private IEnumerator DelayBeforeComplete()
     {
-        Debug.Log("Completed");
         yield return new WaitForSeconds(2);
         XTinguishController.Instance.CheckResultsComplete();
     }
@@ -60,10 +62,9 @@ public class RocketResultScript : MonoBehaviour
     /// <param name="playerIndex">Index of the player</param>
     internal void Initialise(List<int> points, string playerName, int playerIndex)
     {
-        Debug.Log("Init");
         Rocket.color = ColourFetcher.GetColour(playerIndex);
         _values = points;
-        // TODO: Set name
+        TxtPlayerName.text = playerName;
     }
 
     /// <summary>
@@ -95,11 +96,13 @@ public class RocketResultScript : MonoBehaviour
                 // deplete value
                 currentValue -= 10;
 
+                // display score
+                _score += 10;
+                TxtScore.text = _score.ToString();
+
                 // wait briefly - speed should be adjustable
                 yield return new WaitForSeconds(.3f);
             } while (currentValue > 0);
-
-            Debug.Log("Processed " + index);
 
             // TODO: make output grey/disabled
             index++;
