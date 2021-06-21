@@ -1,9 +1,7 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public enum SelectionState { PickingFirst, PickingSecond, Resetting }
@@ -22,6 +20,7 @@ public class PunchlineBlingController : MonoBehaviour
     public Transform[] PlayerDisplays;  // The displays for showing how many jokes each player has earned
     public GameObject PnlTotalPoints;   // Displays the score during reading the results
     public Text TxtTotalPoints;         // Displays the score during reading the results
+    public GameObject SpinWheelScreen;
 
     // config
     public Vector2[] StartPositions;         // Where the players should spawn
@@ -36,6 +35,7 @@ public class PunchlineBlingController : MonoBehaviour
     PunchlineBlingInputHandler[] _players;
     TimeLimit _overallLimit;
     TimeLimit _playerLimit;
+    public SpinningWheelScript SpinWheel;
 
     // member variables
     SelectionState _state = SelectionState.PickingFirst;
@@ -63,11 +63,14 @@ public class PunchlineBlingController : MonoBehaviour
         _cards = FindObjectsOfType<CardScript>();
         _players = FindObjectsOfType<PunchlineBlingInputHandler>();
 
-        // set all players as not active, except the first
+        // set all players as not active
         for (int i = 0; i < _players.Length; i++)
         {
-            _players[i].ActivePlayer(i == 0);
+            _players[i].ActivePlayer(false);
         }
+
+        // initialise the spin wheel
+        SpinWheel.Initialise(_players.ToList());
 
         // initialise the notepad texts
         for (var i = 0; i < NoteBookTexts.Length; i++)
@@ -125,6 +128,8 @@ public class PunchlineBlingController : MonoBehaviour
     {
         _overallLimit.StartTimer();
         _playerLimit.StartTimer();
+
+        ShowCharacterWheel();
     }
 
     /// <summary>
@@ -294,6 +299,8 @@ public class PunchlineBlingController : MonoBehaviour
             {
                 StartCoroutine(GoToEndScene());
             }
+
+            SetActivePlayer(activePlayer.GetPlayerIndex());
         }
         else
         {
@@ -301,31 +308,48 @@ public class PunchlineBlingController : MonoBehaviour
             foreach (var card in _selectedCards)
                 card?.FlipBack();
 
-            // set next player to active
-            _activePlayerIndex++;
-            if (_activePlayerIndex >= _players.Length) _activePlayerIndex = 0;
+            // next player
+            ShowCharacterWheel();
         }
 
         // clear out the selection
         for (int i = 0; i < _selectedCards.Length; i++)
             _selectedCards[i] = null;
 
-        // back to the first one
-        _state = SelectionState.PickingFirst;
-
-        // set the active player
-        _players[_activePlayerIndex].ActivePlayer(true);
-
         //reset texts
         foreach (var txt in NoteBookTexts)
             txt.text = "";
-
 
         if (CardsRemaining_())
         {
             // restart the player countdown
             _playerLimit.StartTimer();
         }
+    }
+
+    void ShowCharacterWheel()
+    {
+        Debug.Log("Starting spin");
+
+        // show wheel
+        SpinWheelScreen.SetActive(true);
+
+        SpinWheel.StartSpin();
+    }
+
+    public void SetActivePlayer(int index)
+    {
+        Debug.Log("Setting player " + index);
+        _activePlayerIndex = index;
+
+        // set the active player
+        _players[_activePlayerIndex].ActivePlayer(true);
+
+        // back to the first one
+        _state = SelectionState.PickingFirst;
+
+        // hide spinning wheel
+        SpinWheelScreen.SetActive(false);
     }
 
     /// <summary>

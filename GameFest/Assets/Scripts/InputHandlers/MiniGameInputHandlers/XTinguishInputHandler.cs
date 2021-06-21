@@ -37,6 +37,7 @@ public class XTinguishInputHandler : GenericInputHandler
         // get the movement script - disable it to stop the animations getting in each others way
         _zeroGravityScript = player.GetComponent<ZeroGravityMovement>();
         _zeroGravityScript.SetPlayerColour(_playerIndex);
+        _zeroGravityScript.SetAddPointsCallback(AddPoints);
 
         return player;
     }
@@ -172,6 +173,15 @@ public class XTinguishInputHandler : GenericInputHandler
     internal List<int> GetBatteryList()
     {
         return _zeroGravityScript.GetBatteryList();
+    }
+
+    /// <summary>
+    /// Checks if the player died
+    /// </summary>
+    /// <returns>Whether the player is dead</returns>
+    internal bool Died()
+    {
+        return _zeroGravityScript.IsDead();
     }
     #endregion
 }

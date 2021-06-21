@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ZeroGravityMovement : MonoBehaviour
@@ -20,6 +21,10 @@ public class ZeroGravityMovement : MonoBehaviour
     BoxCollider2D _triggerCollider;
     [SerializeField]
     SpriteRenderer _colourDetails;
+    [SerializeField]
+    SpriteRenderer _healthBarFill;
+    [SerializeField]
+    GameObject _healthBar;
 
     // status
     float _xMovement = 0;
@@ -33,6 +38,9 @@ public class ZeroGravityMovement : MonoBehaviour
 
     // status
     float _health = 100f;
+
+    // callbacks
+    Action<int> _addPointCallback;
 
     /// <summary>
     /// Called when item is created
@@ -58,6 +66,14 @@ public class ZeroGravityMovement : MonoBehaviour
     public void Y_Movement(float yInput)
     {
         _lastYInput = yInput;
+    }
+
+    /// <summary>
+    /// Sets the callback to call when points have been collected
+    /// </summary>
+    public void SetAddPointsCallback(Action<int> callback)
+    {
+        _addPointCallback = callback;
     }
 
     /// <summary>
@@ -120,6 +136,11 @@ public class ZeroGravityMovement : MonoBehaviour
         // can't escape if not in the correct area
         if (!_inDoorZone) return;
 
+        // add points to player
+        var totalValue = _pointsCollected.Sum(p => p);
+        _addPointCallback(totalValue);
+
+        // player is complete
         _isComplete = true;
         enabled = false;
 
@@ -135,16 +156,34 @@ public class ZeroGravityMovement : MonoBehaviour
     /// </summary>
     private IEnumerator Teleport()
     {
-        _rigidBody.velocity = Vector3.zero;
-        _collider.enabled = false;
-        _triggerCollider.enabled = false;
-        _rigidBody.isKinematic = true;
-        _spaceman.transform.eulerAngles = new Vector3(0, 0, 0);
+        LockPlayer_();
         _spaceman.gameObject.SetActive(false);
+        _spaceman.transform.eulerAngles = new Vector3(0, 0, 0);
         // move behind window
         transform.position = XTinguishController.Instance.TransportPosition + (new Vector3(2, 0, 0) * _playerIndex);
         yield return new WaitForSeconds(1);
         _spaceman.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// Disables player objects when complete/dead
+    /// </summary>
+    private void LockPlayer_()
+    {
+        _rigidBody.velocity = Vector3.zero;
+        _collider.enabled = false;
+        _triggerCollider.enabled = false;
+        _rigidBody.isKinematic = true;
+        _healthBar.SetActive(false);
+    }
+
+    /// <summary>
+    /// Checks if the player is dead
+    /// </summary>
+    /// <returns>Whether the player is dead</returns>
+    internal bool IsDead()
+    {
+        return _isDead;
     }
 
     /// <summary>
@@ -176,8 +215,24 @@ public class ZeroGravityMovement : MonoBehaviour
             // decrease health
             _health -= 15;
 
+            // calculate size and position
+            var width = _health / 100f;
+            var left = -1 * (((100 - _health) / 100) / 2);
+
+            // displays the current health
+            _healthBarFill.size = new Vector2(width, 1);
+            _healthBarFill.transform.localPosition = new Vector3(left, 0, 0);
+
+            // set color
+            var r = _health <= 50 ? 1f : ((100 - _health) / 50);
+            var g = _health >= 50 ? 1f : (_health / 50f);
+            _healthBarFill.color = new Color(r, g, 0);
+
             // make the player flash red to show they were hit
             StartCoroutine(FlashRed_());
+
+            // bounce back a bit
+            _rigidBody.AddForce(collision.relativeVelocity * -2);
 
             // if the player has no more health left, make them die
             if (_health <= 0)
@@ -202,13 +257,20 @@ public class ZeroGravityMovement : MonoBehaviour
     /// </summary>
     private void Die_(bool check)
     {
+        LockPlayer_();
+
+        // if dead, score is zero
+        _pointsCollected.Clear();
+
         // keep in the same position
         _rigidBody.constraints = RigidbodyConstraints2D.FreezePosition;
-        _collider.enabled = false;
 
         // set status variables
         _isComplete = true;
         _isDead = true;
+
+        // hide healthbar
+        _healthBar.SetActive(false);
 
         if (check)
             // inform the controller that this player is complete

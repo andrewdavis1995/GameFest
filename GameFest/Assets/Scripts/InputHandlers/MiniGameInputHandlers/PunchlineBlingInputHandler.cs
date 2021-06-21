@@ -15,6 +15,8 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     bool _walkingOn = false;
     bool _walkingOff = false;
     int _characterIndex = 0;
+    int _playerIndex = 0;
+    string _playerName;
 
     // jokes and points
     List<Joke> _jokes = new List<Joke>();
@@ -29,6 +31,15 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     private void Start()
     {
         _movement.transform.position -= new Vector3(0, 0, GetComponentInParent<PlayerInput>().playerIndex / 10);
+    }
+
+    /// <summary>
+    /// Get the name of the player
+    /// </summary>
+    /// <returns>The players name</returns>
+    internal string GetPlayerName()
+    {
+        return _playerName;
     }
 
     /// <summary>
@@ -76,7 +87,9 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// <param name="playerIndex">The index of the player</param>
     public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
     {
+        _playerIndex = playerIndex;
         _characterIndex = characterIndex;
+        _playerName = playerName;
 
         // create the player display
         var spawned = Instantiate(prefab, position, Quaternion.identity);
@@ -96,6 +109,15 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         _movement.SetPlayerName(true, playerName);
 
         return spawned;
+    }
+
+    /// <summary>
+    /// Gets the index of the player
+    /// </summary>
+    /// <returns>The index of the player</returns>
+    internal int GetPlayerIndex()
+    {
+        return _playerIndex;
     }
 
     /// <summary>

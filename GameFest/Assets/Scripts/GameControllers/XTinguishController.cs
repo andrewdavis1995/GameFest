@@ -154,8 +154,8 @@ public class XTinguishController : MonoBehaviour
         }
 
         // update spawn time config
-        _minBatteryWait = 4f / _players.Count;
-        _minBatteryWait = 9 - _players.Count;
+        _minBatteryWait = 3f / _players.Count;
+        _minBatteryWait = 8 - _players.Count;
 
         return playerTransforms;
     }
@@ -253,7 +253,7 @@ public class XTinguishController : MonoBehaviour
         {
             var rocket = Instantiate(RocketPrefab, ResultsSpawnPositionsTop - (new Vector3(0, 3, 0) * p.GetPlayerIndex()), Quaternion.identity);
             var rocketScript = rocket.gameObject.GetComponent<RocketResultScript>();
-            rocketScript.Initialise(p.GetBatteryList(), p.GetPlayerName(), p.GetPlayerIndex());
+            rocketScript.Initialise(p.GetBatteryList(), p.GetPlayerName(), p.GetPlayerIndex(), p.Died());
             _rockets.Add(rocketScript);
         }
     }

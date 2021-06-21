@@ -26,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1105838433225355160}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.44, y: 2.61, z: 2.2091064}
+  m_LocalPosition: {x: 3.5299976, y: 0.59999967, z: 2.2091064}
   m_LocalScale: {x: 1.5656803, y: 1.5656803, z: 1.5656803}
   m_Children: []
   m_Father: {fileID: 6198071017796285265}
@@ -52,7 +52,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10100, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 2100000, guid: dd9892f0e5084fc468c032aad2d0608a, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -86,13 +86,13 @@ TextMesh:
   m_OffsetZ: 0
   m_CharacterSize: 0.25
   m_LineSpacing: 1
-  m_Anchor: 4
-  m_Alignment: 1
+  m_Anchor: 3
+  m_Alignment: 0
   m_TabSize: 4
   m_FontSize: 30
   m_FontStyle: 0
   m_RichText: 1
-  m_Font: {fileID: 0}
+  m_Font: {fileID: 12800000, guid: dd9892f0e5084fc468c032aad2d0608a, type: 3}
   m_Color:
     serializedVersion: 2
     rgba: 4294967295
@@ -254,7 +254,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6578759528170352825}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.59, y: 0, z: 2.2091064}
+  m_LocalPosition: {x: 3.46, y: -0.54, z: 2.2091064}
   m_LocalScale: {x: 1.5656803, y: 1.5656803, z: 1.5656803}
   m_Children: []
   m_Father: {fileID: 6198071017796285265}
@@ -280,7 +280,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 335cad0eeeb2f6642986d5fc6780ba40, type: 3}
+  - {fileID: 2100000, guid: dd9892f0e5084fc468c032aad2d0608a, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -314,13 +314,13 @@ TextMesh:
   m_OffsetZ: 0
   m_CharacterSize: 0.25
   m_LineSpacing: 1
-  m_Anchor: 4
-  m_Alignment: 1
+  m_Anchor: 3
+  m_Alignment: 0
   m_TabSize: 4
   m_FontSize: 20
   m_FontStyle: 0
   m_RichText: 1
-  m_Font: {fileID: 12800000, guid: 335cad0eeeb2f6642986d5fc6780ba40, type: 3}
+  m_Font: {fileID: 12800000, guid: dd9892f0e5084fc468c032aad2d0608a, type: 3}
   m_Color:
     serializedVersion: 2
     rgba: 4294967295

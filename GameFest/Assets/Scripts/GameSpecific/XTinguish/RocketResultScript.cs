@@ -60,11 +60,19 @@ public class RocketResultScript : MonoBehaviour
     /// <param name="points">List of items the player picked up</param>
     /// <param name="playerName">Name of the player</param>
     /// <param name="playerIndex">Index of the player</param>
-    internal void Initialise(List<int> points, string playerName, int playerIndex)
+    /// <param name="died">Whether the player died</param>
+    internal void Initialise(List<int> points, string playerName, int playerIndex, bool died)
     {
         Rocket.color = ColourFetcher.GetColour(playerIndex);
         _values = points;
         TxtPlayerName.text = playerName;
+
+        // if the player died, disable the rocket
+        if (died)
+        {
+            _moveSpeed = 0;
+            Rocket.transform.eulerAngles = Vector3.zero;
+        }
     }
 
     /// <summary>
