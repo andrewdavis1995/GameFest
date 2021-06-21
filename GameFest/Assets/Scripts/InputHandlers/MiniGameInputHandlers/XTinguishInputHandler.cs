@@ -9,10 +9,7 @@ public class XTinguishInputHandler : GenericInputHandler
     ZeroGravityMovement _zeroGravityScript;
 
     // status values
-    int _playerIndex;
-    int _characterIndex;
     bool _active = false;
-    string _playerName;
 
     /// <summary>
     /// Creates the specified object for the player attached to this object
@@ -24,9 +21,7 @@ public class XTinguishInputHandler : GenericInputHandler
     /// <returns>The transform that was created</returns>
     public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
     {
-        _playerIndex = playerIndex;
-        _playerName = playerName;
-        _characterIndex = characterIndex;
+        base.Spawn(prefab, position, characterIndex, playerName, playerIndex);
 
         // create the player display
         var player = Instantiate(prefab, position, Quaternion.identity);
@@ -36,7 +31,7 @@ public class XTinguishInputHandler : GenericInputHandler
 
         // get the movement script - disable it to stop the animations getting in each others way
         _zeroGravityScript = player.GetComponent<ZeroGravityMovement>();
-        _zeroGravityScript.SetPlayerColour(_playerIndex);
+        _zeroGravityScript.SetPlayerColour(GetPlayerIndex());
         _zeroGravityScript.SetAddPointsCallback(AddPoints);
 
         return player;
@@ -141,29 +136,6 @@ public class XTinguishInputHandler : GenericInputHandler
     internal void Timeout()
     {
         _zeroGravityScript.Timeout();
-    }
-
-    internal int GetCharacterIndex()
-    {
-        return _characterIndex;
-    }
-
-    /// <summary>
-    /// Returns the name of the player
-    /// </summary>
-    /// <returns>The players name</returns>
-    internal string GetPlayerName()
-    {
-        return _playerName;
-    }
-
-    /// <summary>
-    /// Gets the index of the player
-    /// </summary>
-    /// <returns>The index of the player</returns>
-    internal int GetPlayerIndex()
-    {
-        return _playerIndex;
     }
 
     /// <summary>

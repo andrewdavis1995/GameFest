@@ -6,7 +6,13 @@ public abstract class GenericInputHandler : MonoBehaviour
     [SerializeField]
     private int _points = 0;
 
-    public virtual Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex) { return null; }
+    public virtual Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
+    {
+        _playerIndex = playerIndex;
+        _playerName = playerName;
+        _characterIndex = characterIndex;
+        return null;
+    }
 
     public virtual void OnMove(InputAction.CallbackContext ctx) { }
     public virtual void OnCross() { }
@@ -21,6 +27,38 @@ public abstract class GenericInputHandler : MonoBehaviour
 
     public virtual void TriggerEnter(Collision2D collision) { }
     public virtual void TriggerExit(Collision2D collision) { }
+
+    // status variables
+    int _playerIndex;
+    int _characterIndex;
+    string _playerName;
+
+    /// <summary>
+    /// Returns of the character being used by this player
+    /// </summary>
+    /// <returns>The character index</returns>
+    internal int GetCharacterIndex()
+    {
+        return _characterIndex;
+    }
+
+    /// <summary>
+    /// Returns the name of the player
+    /// </summary>
+    /// <returns>The players name</returns>
+    internal string GetPlayerName()
+    {
+        return _playerName;
+    }
+
+    /// <summary>
+    /// Gets the index of the player
+    /// </summary>
+    /// <returns>The index of the player</returns>
+    internal int GetPlayerIndex()
+    {
+        return _playerIndex;
+    }
 
     /// <summary>
     /// Add points for the current game

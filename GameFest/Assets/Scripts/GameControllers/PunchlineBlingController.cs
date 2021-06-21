@@ -20,14 +20,14 @@ public class PunchlineBlingController : MonoBehaviour
     public Transform[] PlayerDisplays;  // The displays for showing how many jokes each player has earned
     public GameObject PnlTotalPoints;   // Displays the score during reading the results
     public Text TxtTotalPoints;         // Displays the score during reading the results
-    public GameObject SpinWheelScreen;
+    public GameObject SpinWheelScreen;  // The window that appears to select next character
 
     // config
-    public Vector2[] StartPositions;         // Where the players should spawn
+    public Vector3[] StartPositions;         // Where the players should spawn
     public Vector3 ResultScreenPosition;     // Where the camera moves to for the results
     public Vector2 ResultPlayerPosition;     // Where the players move to for the results
     public int ResultPlayerReadingPosition;  // Where the players move to for the results
-    public Sprite[] CharacterIcons;            // The icons for the characters
+    public Sprite[] CharacterIcons;          // The icons for the characters
 
     // links to other scripts
     JokeManager _jokeManager;
@@ -61,7 +61,7 @@ public class PunchlineBlingController : MonoBehaviour
 
         // find components
         _cards = FindObjectsOfType<CardScript>();
-        _players = FindObjectsOfType<PunchlineBlingInputHandler>();
+        _players = FindObjectsOfType<PunchlineBlingInputHandler>().OrderBy(p => p.GetPlayerIndex()).ToArray();
 
         // set all players as not active
         for (int i = 0; i < _players.Length; i++)
@@ -86,7 +86,7 @@ public class PunchlineBlingController : MonoBehaviour
         {
             var images = PlayerDisplays[i].GetComponentsInChildren<Image>();
             images[0].color = ColourFetcher.GetColour(i);
-            images[1].sprite = CharacterIcons[_players[i].CharacterIndex()];
+            images[1].sprite = CharacterIcons[_players[i].GetCharacterIndex()];
         }
 
         // hide unused controls
@@ -110,6 +110,7 @@ public class PunchlineBlingController : MonoBehaviour
 
     private void Update()
     {
+        // only continue if there are cards remaining
         if (!CardsRemaining_())
         {
             // count up until the target score is met
@@ -273,6 +274,7 @@ public class PunchlineBlingController : MonoBehaviour
     /// </summary>
     private IEnumerator Reset()
     {
+        // get the active player (before they are no longer active)
         var activePlayer = _players.Where(p => p.ActivePlayer()).First();
 
         // no player is active at this point
@@ -300,6 +302,7 @@ public class PunchlineBlingController : MonoBehaviour
                 StartCoroutine(GoToEndScene());
             }
 
+            // current player can stay on
             SetActivePlayer(activePlayer.GetPlayerIndex());
         }
         else
@@ -319,27 +322,25 @@ public class PunchlineBlingController : MonoBehaviour
         //reset texts
         foreach (var txt in NoteBookTexts)
             txt.text = "";
-
-        if (CardsRemaining_())
-        {
-            // restart the player countdown
-            _playerLimit.StartTimer();
-        }
     }
 
+    /// <summary>
+    /// Shows the character wheel, which spins for X amount of time
+    /// </summary>
     void ShowCharacterWheel()
     {
-        Debug.Log("Starting spin");
-
         // show wheel
         SpinWheelScreen.SetActive(true);
-
+        // spin
         SpinWheel.StartSpin();
     }
 
+    /// <summary>
+    /// Sets the specified player as active
+    /// </summary>
+    /// <param name="index">The index of the player who is now active</param>
     public void SetActivePlayer(int index)
     {
-        Debug.Log("Setting player " + index);
         _activePlayerIndex = index;
 
         // set the active player
@@ -350,6 +351,13 @@ public class PunchlineBlingController : MonoBehaviour
 
         // hide spinning wheel
         SpinWheelScreen.SetActive(false);
+
+        // restart the player limit time
+        if (CardsRemaining_())
+        {
+            // restart the player countdown
+            _playerLimit.StartTimer();
+        }
     }
 
     /// <summary>
@@ -427,9 +435,12 @@ public class PunchlineBlingController : MonoBehaviour
     IEnumerator CurrentPlayerReadJokes()
     {
         yield return new WaitForSeconds(1);
-        PnlTotalPoints.SetActive(true);
-        TxtTotalPoints.text = "0";
 
+        // reset points
+        TxtTotalPoints.text = "0";
+        PnlTotalPoints.SetActive(true);
+
+        // reset status
         _targetScore = 0;
         _currentDisplayScore = 0;
 
@@ -506,8 +517,11 @@ public class PunchlineBlingController : MonoBehaviour
     /// </summary>
     void SetEndPositions_()
     {
+        // move camera to the end screen
         Camera.main.transform.localPosition = ResultScreenPosition;
         Camera.main.orthographicSize = 4.5f;
+
+        // move the players to the end screen
         foreach (var player in _players)
             player.MoveToEnd(ResultPlayerPosition);
     }

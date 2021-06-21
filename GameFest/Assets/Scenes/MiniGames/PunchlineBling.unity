@@ -4684,10 +4684,10 @@ MonoBehaviour:
   TxtTotalPoints: {fileID: 1888702104}
   SpinWheelScreen: {fileID: 2124785457}
   StartPositions:
-  - {x: -9, y: 3.5}
-  - {x: 4.5, y: 5.5}
-  - {x: 0, y: 0}
-  - {x: 4, y: -3.5}
+  - {x: -9, y: 3.5, z: -0.1}
+  - {x: 4.5, y: 5.5, z: -0.2}
+  - {x: 0, y: 0, z: -0.3}
+  - {x: 4, y: -3.5, z: -0.4}
   ResultScreenPosition: {x: 70, y: 0, z: -10}
   ResultPlayerPosition: {x: 54, y: 0}
   ResultPlayerReadingPosition: 69

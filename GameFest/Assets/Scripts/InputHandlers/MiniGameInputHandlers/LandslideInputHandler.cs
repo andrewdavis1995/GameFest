@@ -5,7 +5,6 @@ using UnityEngine.InputSystem;
 public class LandslideInputHandler : GenericInputHandler
 {
     private PlayerClimber _climber;
-    int _playerIndex;
     int _powerUpLevel;
 
     /// <summary>
@@ -18,7 +17,7 @@ public class LandslideInputHandler : GenericInputHandler
     /// <returns>The transform that was created</returns>
     public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
     {
-        _playerIndex = playerIndex;
+        base.Spawn(prefab, position, characterIndex, playerName, playerIndex);
 
         // create the player display
         var player = Instantiate(prefab, position, Quaternion.identity);
@@ -34,15 +33,6 @@ public class LandslideInputHandler : GenericInputHandler
         _climber.Initialise(playerIndex, playerName, IncreasePowerUpLevel, ClearPowerUpLevel, DecreasePowerUpLevel);
 
         return player;
-    }
-
-    /// <summary>
-    /// Returns the index of the player
-    /// </summary>
-    /// <returns>The index of the player</returns>
-    public int GetPlayerIndex()
-    {
-        return _playerIndex;
     }
 
     /// <summary>
@@ -92,15 +82,15 @@ public class LandslideInputHandler : GenericInputHandler
                 break;
             case 1:
                 // spawn a few small rocks
-                LandslideController.Instance.RockBarageSmall(_playerIndex);
+                LandslideController.Instance.RockBarageSmall(GetPlayerIndex());
                 break;
             case 2:
                 // spawn a mixture of small and bigger rocks
-                LandslideController.Instance.RockBarage(_playerIndex);
+                LandslideController.Instance.RockBarage(GetPlayerIndex());
                 break;
             default:
                 // spawn a giant rock
-                LandslideController.Instance.SpawnGiantRock(_playerIndex);
+                LandslideController.Instance.SpawnGiantRock(GetPlayerIndex());
                 break;
         }
 
