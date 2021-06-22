@@ -20,7 +20,7 @@ public class PlayerMovement : MonoBehaviour
 
     // public objects
     public TextMesh TxtPlayerName;
-    public GameObject ActivePlayerIcon;
+    public SpriteRenderer ActivePlayerIcon;
 
     // player state
     Vector2 _movementInput;
@@ -55,9 +55,11 @@ public class PlayerMovement : MonoBehaviour
     /// Sets the visibilty of the active icon
     /// </summary>
     /// <param name="state">The state to set</param>
-    public void SetActiveIcon(bool state)
+    /// <param name="imgIndex">The image index to set it as</param>
+    public void SetActiveIcon(bool state, int imgIndex)
     {
-        ActivePlayerIcon.SetActive(state);
+        ActivePlayerIcon.gameObject.SetActive(state);
+        ActivePlayerIcon.sprite = PunchlineBlingController.Instance.ActiveIcons[imgIndex];
     }
 
     /// <summary>

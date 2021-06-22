@@ -4683,6 +4683,9 @@ MonoBehaviour:
   PnlTotalPoints: {fileID: 2099049052}
   TxtTotalPoints: {fileID: 1888702104}
   SpinWheelScreen: {fileID: 2124785457}
+  ActiveIcons:
+  - {fileID: 21300000, guid: 26625985aeee30f4780690adc8d8d45f, type: 3}
+  - {fileID: 21300000, guid: 2254ca6a78081b1428c71b7db45755e2, type: 3}
   StartPositions:
   - {x: -9, y: 3.5, z: -0.1}
   - {x: 4.5, y: 5.5, z: -0.2}

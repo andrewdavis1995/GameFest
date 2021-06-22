@@ -21,6 +21,7 @@ public class PunchlineBlingController : MonoBehaviour
     public GameObject PnlTotalPoints;   // Displays the score during reading the results
     public Text TxtTotalPoints;         // Displays the score during reading the results
     public GameObject SpinWheelScreen;  // The window that appears to select next character
+    public Sprite[] ActiveIcons;        // The images to be used in the active icon above players head
 
     // config
     public Vector3[] StartPositions;         // Where the players should spawn
@@ -66,7 +67,7 @@ public class PunchlineBlingController : MonoBehaviour
         // set all players as not active
         for (int i = 0; i < _players.Length; i++)
         {
-            _players[i].ActivePlayer(false);
+            _players[i].ActivePlayer(false, 0);
         }
 
         // initialise the spin wheel
@@ -256,6 +257,8 @@ public class PunchlineBlingController : MonoBehaviour
             case SelectionState.PickingFirst:
                 // display the first card, and move to next state
                 SetCard_(card, 0);
+                // call again to update sprite image
+                _players[_activePlayerIndex].ActivePlayer(true, 1);
                 _state = SelectionState.PickingSecond;
                 break;
             case SelectionState.PickingSecond:
@@ -279,7 +282,7 @@ public class PunchlineBlingController : MonoBehaviour
 
         // no player is active at this point
         foreach (var player in _players)
-            player.ActivePlayer(false);
+            player.ActivePlayer(false, 0);
 
         yield return new WaitForSeconds(2);
 
@@ -344,7 +347,7 @@ public class PunchlineBlingController : MonoBehaviour
         _activePlayerIndex = index;
 
         // set the active player
-        _players[_activePlayerIndex].ActivePlayer(true);
+        _players[_activePlayerIndex].ActivePlayer(true, 0);
 
         // back to the first one
         _state = SelectionState.PickingFirst;
@@ -381,15 +384,15 @@ public class PunchlineBlingController : MonoBehaviour
         _overallLimit.Abort();
         _playerLimit.Abort();
 
-        // no player is active at this point
-        foreach (var player in _players)
-            player.ActivePlayer(false);
-
         // TODO: show a transition
         yield return new WaitForSeconds(1);
 
         // move to the end position
         SetEndPositions_();
+
+        // no player is active at this point
+        foreach (var player in _players)
+            player.ActivePlayer(false, 0);
 
         // tell the jokes
         StartResults_();

@@ -101,7 +101,8 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// Sets whether the player is "active" or not - i.e. their turn to answer
     /// </summary>
     /// <param name="active">The state to set</param>
-    internal void ActivePlayer(bool active)
+    /// <param name="imgIndex">The image to use for active indicator</param>
+    internal void ActivePlayer(bool active, int imgIndex)
     {
         _isActivePlayer = active;
 
@@ -112,7 +113,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         }
 
         // show/hide the active icon
-        _movement.SetActiveIcon(active);
+        _movement.SetActiveIcon(active, imgIndex);
     }
 
     /// <summary>
