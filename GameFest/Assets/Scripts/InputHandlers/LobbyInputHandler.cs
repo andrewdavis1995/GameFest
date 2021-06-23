@@ -12,7 +12,6 @@ public class LobbyInputHandler : GenericInputHandler
 
     // character selection logic
     public Sprite[] CharacterSprites;
-    private int _characterIndex = 0;
 
     // what step is the player at
     LobbyState _state = new LobbyState();
@@ -235,15 +234,15 @@ public class LobbyInputHandler : GenericInputHandler
     void UpdateCharacters_(int direction)
     {
         // move to the next/previous letter
-        _characterIndex += direction;
+        SetCharacterIndex(GetCharacterIndex() + direction);
 
         // loop around
-        if (_characterIndex < 0) _characterIndex = CharacterSprites.Length - 1;
-        else if (_characterIndex > CharacterSprites.Length - 1) _characterIndex = 0;
+        if (GetCharacterIndex() < 0) SetCharacterIndex(CharacterSprites.Length - 1);
+        else if (GetCharacterIndex() > CharacterSprites.Length - 1) SetCharacterIndex(0);
 
         // get the values
         var left = CharacterSprites[LeftLetterIndexCharacter_()];
-        var centre = CharacterSprites[_characterIndex];
+        var centre = CharacterSprites[GetCharacterIndex()];
         var right = CharacterSprites[RightLetterIndexCharacter_()];
 
         // display strings
@@ -275,7 +274,7 @@ public class LobbyInputHandler : GenericInputHandler
     void CharacterSelected_()
     {
         // tell the player object what the name is
-        _detailsCompleteCallback(_display.GetPlayerName(), _characterIndex);
+        _detailsCompleteCallback(_display.GetPlayerName(), GetCharacterIndex());
 
         _state.SetState(PlayerStateEnum.Ready);
         _display.ShowReadyPanel(true);
@@ -305,8 +304,8 @@ public class LobbyInputHandler : GenericInputHandler
     /// </summary>
     public int RightLetterIndexCharacter_()
     {
-        if (_characterIndex == CharacterSprites.Length - 1) return 0;
-        else return _characterIndex + 1;
+        if (GetCharacterIndex() == CharacterSprites.Length - 1) return 0;
+        else return GetCharacterIndex() + 1;
     }
 
     /// <summary>
@@ -314,8 +313,8 @@ public class LobbyInputHandler : GenericInputHandler
     /// </summary>
     public int LeftLetterIndexCharacter_()
     {
-        if (_characterIndex == 0) return CharacterSprites.Length - 1;
-        else return _characterIndex - 1;
+        if (GetCharacterIndex() == 0) return CharacterSprites.Length - 1;
+        else return GetCharacterIndex() - 1;
     }
     #endregion
 }

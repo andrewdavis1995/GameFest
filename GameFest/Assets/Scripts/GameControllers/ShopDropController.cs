@@ -345,10 +345,10 @@ public class ShopDropController : MonoBehaviour
         {
             // add the input handle, and assign all paddles
             player.SetActiveScript(typeof(ShopDropInputHandler));
-            player.GetComponent<ShopDropInputHandler>().AssignPaddles(index);
 
             // create the "visual" player at the start point - only used for turning
             player.Spawn(PlayerPrefab, StartPositions[index]);
+            player.GetComponent<ShopDropInputHandler>().AssignPaddles(index);
             index++;
         }
     }

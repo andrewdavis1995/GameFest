@@ -34,6 +34,13 @@ public class ShopDropInputHandler : GenericInputHandler
         // link to trolley, and show it
         _trolley = ShopDropController.Instance.Trolleys[playerIndex];
         _trolley.gameObject.SetActive(true);
+        var imgs = _trolley.GetComponentsInChildren<SpriteRenderer>();
+
+        // set the colour of the trolley
+        for(int i = 1; i < imgs.Count(); i++)
+        {
+            imgs[i].color = ColourFetcher.GetColour(GetPlayerIndex());
+        }
     }
 
     /// <summary>
@@ -109,6 +116,8 @@ public class ShopDropInputHandler : GenericInputHandler
     /// <param name="playerName">The index of the selected character</param>
     public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
     {
+        base.Spawn(prefab, position, characterIndex, playerName, playerIndex);
+
         // create the player display
         _playerTransform = Instantiate(prefab, position, Quaternion.identity);
 

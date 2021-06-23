@@ -43,6 +43,15 @@ public abstract class GenericInputHandler : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns of the character being used by this player
+    /// </summary>
+    /// <param name="index">The value to set</param>
+    internal void SetCharacterIndex(int index)
+    {
+        _characterIndex = index;
+    }
+
+    /// <summary>
     /// Returns the name of the player
     /// </summary>
     /// <returns>The players name</returns>

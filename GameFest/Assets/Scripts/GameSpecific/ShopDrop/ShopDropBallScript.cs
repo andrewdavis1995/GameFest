@@ -43,9 +43,9 @@ public class ShopDropBallScript : MonoBehaviour
 
         // move into trolley
         transform.SetParent(trolley);
-        transform.localPosition = new Vector3(-0.18f, -0.1f, -1);
+        transform.localPosition = new Vector3(-0.18f, -0.1f, 1);
 
         // make smaller
-        transform.localScale /= 1.7f;
+        transform.localScale /= 1.8f;
     }
 }
