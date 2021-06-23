@@ -24,6 +24,7 @@ public abstract class GenericInputHandler : MonoBehaviour
     public virtual void OnR1() { }
     public virtual void OnL2() { }
     public virtual void OnR2() { }
+    public virtual void OnOptions() { }
 
     public virtual void TriggerEnter(Collision2D collision) { }
     public virtual void TriggerExit(Collision2D collision) { }

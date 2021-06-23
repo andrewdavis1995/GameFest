@@ -218,6 +218,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: be7ac5e1-dd97-4abc-be15-ca3af412baed
     m_ActionName: Gameplay/R1[/Keyboard/p]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2432584173636143568}
+        m_TargetAssemblyTypeName: PlayerControls, Assembly-CSharp
+        m_MethodName: OnOptions
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: b954aed5-9ec9-4c9d-93c8-727142bb7968
+    m_ActionName: Gameplay/Options[/Keyboard/delete]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Gameplay
@@ -249,6 +265,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5154d3b7780d7694ba43531df5772f71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _points: 0
   CharacterSprites:
   - {fileID: 21300000, guid: 9c922659c5f0b20409e531f5f2eb6142, type: 3}
   - {fileID: 21300000, guid: 1da58174a8ba03744930091a21a7b3cc, type: 3}

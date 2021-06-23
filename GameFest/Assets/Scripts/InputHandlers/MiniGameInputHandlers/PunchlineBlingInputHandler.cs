@@ -160,6 +160,14 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     }
 
     /// <summary>
+    /// When the Options event is triggered
+    /// </summary>
+    public override void OnOptions()
+    {
+        PauseGameHandler.Instance.Pause(false);
+    }
+
+    /// <summary>
     /// When the player interacts with a trigger object
     /// </summary>
     /// <param name="collision">The object that triggered this event</param>

@@ -42,7 +42,7 @@ public class GameCentralController : MonoBehaviour
             ScoreTexts[player.PlayerInput.playerIndex].text = player.GetPoints().ToString();
         }
 
-        StartCoroutine(LoadMiniGame(Scene.ShopDrop));
+        StartCoroutine(LoadMiniGame(Scene.PunchlineBling));
     }
 
     /// <summary>

@@ -250,4 +250,17 @@ public class PlayerControls : MonoBehaviour
         if (_activeHandler != null)
             _activeHandler.OnR2();
     }
+
+    /// <summary>
+    /// When the Options input is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
+    public void OnOptions(InputAction.CallbackContext ctx)
+    {
+        // only handle it once
+        if (!ctx.performed) return;
+
+        if (_activeHandler != null)
+            _activeHandler.OnOptions();
+    }
 }
