@@ -1,7 +1,9 @@
+using System;
 using UnityEngine;
 
 public class PauseGameHandler : MonoBehaviour
-{// status variables
+{
+    // status variables
     bool _isPaused = false;
     bool _tutorialComplete = false;
     int _pageIndex = 0;
@@ -15,6 +17,8 @@ public class PauseGameHandler : MonoBehaviour
     // static instance of itself
     public static PauseGameHandler Instance;
 
+    // callback for when un-paused
+    Action _unPauseCallback;
 
     // called when the script is created
     void Start()
@@ -50,12 +54,13 @@ public class PauseGameHandler : MonoBehaviour
     /// Pauses the game
     /// </summary>
     /// <param name="init">Whether this is the first time it has been displayed (need to cycle through all pages)</param>
-    public void Pause(bool init)
+    public void Pause(bool init, Action callback = null)
     {
         // set pause variables
         _isPaused = true;
         Time.timeScale = 0;
         _pageIndex = 0;
+        _unPauseCallback = callback;
 
         // if this is the first time the page has been displayed, force the player to go through all players
         _tutorialComplete = init;
@@ -91,7 +96,19 @@ public class PauseGameHandler : MonoBehaviour
 
             // hide the screen
             PauseScreen.SetActive(false);
+
+            // trigger callback, if set
+            _unPauseCallback?.Invoke();
         }
+    }
+
+    /// <summary>
+    /// Swaps the pause state
+    /// </summary>
+    public void TogglePause()
+    {
+        if (_isPaused) Resume();
+        else Pause(false);
     }
 
     /// <summary>

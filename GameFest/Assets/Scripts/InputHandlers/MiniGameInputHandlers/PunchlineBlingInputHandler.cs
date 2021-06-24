@@ -164,7 +164,26 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// </summary>
     public override void OnOptions()
     {
-        PauseGameHandler.Instance.Pause(false);
+        PauseGameHandler.Instance.TogglePause();
+    }
+
+    /// <summary>
+    /// When the R1 event is triggered
+    /// </summary>
+    public override void OnR1()
+    {
+        if(PauseGameHandler.Instance.IsPaused())
+        {
+            PauseGameHandler.Instance.NextPage();
+        }
+    }
+
+    /// <summary>
+    /// When the L1 event is triggered
+    /// </summary>
+    public override void OnL1()
+    {
+        PauseGameHandler.Instance.PreviousPage();
     }
 
     /// <summary>

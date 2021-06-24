@@ -70,9 +70,6 @@ public class PunchlineBlingController : MonoBehaviour
             _players[i].ActivePlayer(false, 0);
         }
 
-        // initialise the spin wheel
-        SpinWheel.Initialise(_players.ToList());
-
         // initialise the notepad texts
         for (var i = 0; i < NoteBookTexts.Length; i++)
         {
@@ -105,8 +102,9 @@ public class PunchlineBlingController : MonoBehaviour
         _overallLimit.Initialise(300, OverallTickCallback, OverallTimeoutCallback);
         _playerLimit.Initialise(25, PlayerTickCallback, PlayerTimeoutCallback);
 
-        // start the game
-        StartGame();
+        SpinWheel.Initialise(_players.ToList());
+
+        PauseGameHandler.Instance.Pause(true, StartGame);
     }
 
     private void Update()
