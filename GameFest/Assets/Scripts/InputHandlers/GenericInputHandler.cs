@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -24,7 +25,6 @@ public abstract class GenericInputHandler : MonoBehaviour
     public virtual void OnR1() { }
     public virtual void OnL2() { }
     public virtual void OnR2() { }
-    public virtual void OnOptions() { }
 
     public virtual void TriggerEnter(Collision2D collision) { }
     public virtual void TriggerExit(Collision2D collision) { }
@@ -33,6 +33,8 @@ public abstract class GenericInputHandler : MonoBehaviour
     int _playerIndex;
     int _characterIndex;
     string _playerName;
+
+    bool _pausePopupActive = false;
 
     /// <summary>
     /// Returns of the character being used by this player
@@ -86,6 +88,15 @@ public abstract class GenericInputHandler : MonoBehaviour
     public int GetPoints()
     {
         return _points;
+    }
+
+    /// <summary>
+    /// Checks if the player is the host of the game
+    /// </summary>
+    /// <returns>Whether the player is the host</returns>
+    public bool IsHost()
+    {
+        return _playerIndex == 0;
     }
 
     /// <summary>
@@ -144,5 +155,49 @@ public abstract class GenericInputHandler : MonoBehaviour
     {
         // update the animation controller
         spawned.GetComponent<Animator>().runtimeAnimatorController = PlayerManagerScript.Instance.CharacterControllers[characterIndex];
+    }
+
+    /// <summary>
+    /// Sets whether the pause popup for this player is active
+    /// </summary>
+    /// <param name="active">Whether the popup is active</param>
+    public void PausePopupActive(bool active)
+    {
+        _pausePopupActive = active;
+    }
+
+    /// <summary>
+    /// Sets whether the pause popup for this player is active
+    /// </summary>
+    /// <returns>Whether the popup is active</returns>
+    public bool PausePopupActive()
+    {
+        return _pausePopupActive;
+    }
+
+    /// <summary>
+    /// When the Options event is triggered
+    /// </summary>
+    public void OnOptions()
+    {
+        // pause
+        if (IsHost())
+            PauseGameHandler.Instance.TogglePause();
+        // show popup for players who are not the host
+        else if (!PausePopupActive())
+            StartCoroutine(PauseRequest_());
+    }
+
+    /// <summary>
+    /// Displays the pause request message for this player
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator PauseRequest_()
+    {
+        PausePopupActive(true);
+        PauseGameHandler.Instance.PausePopups[GetPlayerIndex() - 1].SetActive(true);
+        yield return new WaitForSeconds(4);
+        PauseGameHandler.Instance.PausePopups[GetPlayerIndex() - 1].SetActive(false);
+        PausePopupActive(false);
     }
 }

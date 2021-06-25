@@ -450,22 +450,5 @@
             ]
         }
     ],
-    "controlSchemes": [
-        {
-            "name": "Controllers",
-            "bindingGroup": "Controllers",
-            "devices": [
-                {
-                    "devicePath": "<DualShockGamepad>",
-                    "isOptional": true,
-                    "isOR": false
-                },
-                {
-                    "devicePath": "<Keyboard>",
-                    "isOptional": false,
-                    "isOR": false
-                }
-            ]
-        }
-    ]
+    "controlSchemes": []
 }

@@ -36,13 +36,13 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     private void Update()
     {
         // if walking on
-        if(_walkingOn)
+        if (_walkingOn)
         {
             // move to the right
             _movement.Move(new Vector2(1, 0));
 
             // if reached the end point, stop
-            if(_movement.transform.position.x > PunchlineBlingController.Instance.ResultPlayerReadingPosition)
+            if (_movement.transform.position.x > PunchlineBlingController.Instance.ResultPlayerReadingPosition)
             {
                 // tell the controller they are done
                 _walkingOn = false;
@@ -104,12 +104,14 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// <param name="imgIndex">The image to use for active indicator</param>
     internal void ActivePlayer(bool active, int imgIndex)
     {
+        Debug.Log("Setting active player " + active);
+
         _isActivePlayer = active;
 
         // show the card selection border
-        if (_currentCard != null && active)
+        if (_currentCard != null)
         {
-            _currentCard.InZone(true);
+            _currentCard.InZone(active);
         }
 
         // show/hide the active icon
@@ -160,19 +162,11 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     }
 
     /// <summary>
-    /// When the Options event is triggered
-    /// </summary>
-    public override void OnOptions()
-    {
-        PauseGameHandler.Instance.TogglePause();
-    }
-
-    /// <summary>
     /// When the R1 event is triggered
     /// </summary>
     public override void OnR1()
     {
-        if(PauseGameHandler.Instance.IsPaused())
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
         {
             PauseGameHandler.Instance.NextPage();
         }
@@ -183,7 +177,10 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// </summary>
     public override void OnL1()
     {
-        PauseGameHandler.Instance.PreviousPage();
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.PreviousPage();
+        }
     }
 
     /// <summary>
@@ -197,6 +194,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         {
             // if it was a card, this becomes the selected card
             case "Card":
+                Debug.Log("Card entered");
                 _currentCard = collision.GetComponent<CardScript>();
                 if (_isActivePlayer)
                     _currentCard.InZone(true);
@@ -215,6 +213,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         {
             // if it was a card, forget that this was the current card
             case "Card":
+                Debug.Log("Card left");
                 if (_currentCard != null)
                 {
                     _currentCard.InZone(false);

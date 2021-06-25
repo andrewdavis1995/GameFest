@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PauseGameHandler : MonoBehaviour
 {
@@ -13,6 +15,14 @@ public class PauseGameHandler : MonoBehaviour
     public GameObject PauseMessage;
     public GameObject ContinueButton;
     public UIFormatter Formatter;
+    public GameObject[] PausePopups;
+
+    // Formattable objects
+    public Image PauseBackground;
+    public Image PauseMenu;
+    public Text[] PauseTexts;
+    public Text[] OutsidePanelTexts;
+    public Image[] OutsidePanelImages;
 
     // static instance of itself
     public static PauseGameHandler Instance;
@@ -25,6 +35,7 @@ public class PauseGameHandler : MonoBehaviour
     {
         // store static instance of this object
         Instance = this;
+        Startup();
     }
 
     /// <summary>
@@ -45,9 +56,36 @@ public class PauseGameHandler : MonoBehaviour
         ConfigureAppearance_();
     }
 
+    /// <summary>
+    /// Changes the appearance of the pause screen to match the UI Formatter
+    /// </summary>
     void ConfigureAppearance_()
     {
-        // TODO: Set the colours, fonts and images to match Formatter
+        // background (semi-transparent) image
+        PauseBackground.sprite = Formatter.WindowImage;
+
+        // colour of the menu
+        PauseMenu.color = Formatter.BackgroundColour;
+
+        // set the colours, fonts and images
+        foreach (var txt in PauseTexts)
+        {
+            txt.font = Formatter.MainFont;
+            txt.color = Formatter.FontColour;
+        }
+
+        // set the colour and font and the texts for continue/move left & right
+        foreach (var txt in OutsidePanelTexts)
+        {
+            txt.font = Formatter.MainFont;
+            txt.color = Formatter.OutsidePanelColour;
+        }
+
+        // set the colour of the images for continue/move left & right
+        foreach (var img in OutsidePanelImages)
+        {
+            img.color = Formatter.OutsidePanelColour;
+        }
     }
 
     /// <summary>
@@ -63,7 +101,7 @@ public class PauseGameHandler : MonoBehaviour
         _unPauseCallback = callback;
 
         // if this is the first time the page has been displayed, force the player to go through all players
-        _tutorialComplete = init;
+        _tutorialComplete = !init;
 
         // show the pause screen
         PauseScreen.SetActive(true);
@@ -142,5 +180,18 @@ public class PauseGameHandler : MonoBehaviour
 
         // show the current page
         ShowPage_();
+    }
+
+    /// <summary>
+    /// Initialises the pause popups
+    /// </summary>
+    /// <param name="players">The list of players involved in the game</param>
+    public void Initialise(List<PunchlineBlingInputHandler> players)
+    {
+        for(int i = 1; i < players.Count; i++)
+        {
+            PausePopups[i - 1].GetComponentsInChildren<Image>()[1].color = ColourFetcher.GetColour(i);
+            PausePopups[i - 1].GetComponentInChildren<Text>().text = players[i].GetPlayerName() + " requested a pause";
+        }
     }
 }

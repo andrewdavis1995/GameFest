@@ -23,7 +23,7 @@ public class CardScript : MonoBehaviour
     public void InZone(bool inZone)
     {
         // don't do this if it is already turning
-        if (!_flipped && AppropriateStage_())
+        if (!_flipped && (AppropriateStage_() || !inZone))
         {
             CardSelected.SetActive(inZone);
         }

@@ -100,10 +100,11 @@ public class PunchlineBlingController : MonoBehaviour
         _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
 
         _overallLimit.Initialise(300, OverallTickCallback, OverallTimeoutCallback);
-        _playerLimit.Initialise(25, PlayerTickCallback, PlayerTimeoutCallback);
+        _playerLimit.Initialise(20, PlayerTickCallback, PlayerTimeoutCallback);
 
         SpinWheel.Initialise(_players.ToList());
 
+        PauseGameHandler.Instance.Initialise(_players.ToList());
         PauseGameHandler.Instance.Pause(true, StartGame);
     }
 
@@ -276,7 +277,7 @@ public class PunchlineBlingController : MonoBehaviour
     private IEnumerator Reset()
     {
         // get the active player (before they are no longer active)
-        var activePlayer = _players.Where(p => p.ActivePlayer()).First();
+        var activePlayer = _players.Where(p => p.ActivePlayer()).FirstOrDefault();
 
         // no player is active at this point
         foreach (var player in _players)
@@ -292,10 +293,10 @@ public class PunchlineBlingController : MonoBehaviour
                 card.gameObject.SetActive(false);
 
             // add a joke to the players list
-            activePlayer.JokeEarned(_selectedCards.First().GetJoke());
+            activePlayer?.JokeEarned(_selectedCards.First().GetJoke());
 
             // set display text
-            PlayerDisplays[_activePlayerIndex].GetComponentInChildren<Text>().text = activePlayer.GetJokes().Count.ToString();
+            PlayerDisplays[_activePlayerIndex].GetComponentInChildren<Text>().text = activePlayer?.GetJokes().Count.ToString();
 
             // if none remaining, end game
             if (!CardsRemaining_())
@@ -304,7 +305,10 @@ public class PunchlineBlingController : MonoBehaviour
             }
 
             // current player can stay on
-            SetActivePlayer(activePlayer.GetPlayerIndex());
+            if (activePlayer != null)
+                SetActivePlayer(activePlayer.GetPlayerIndex());
+            else
+                ShowCharacterWheel();
         }
         else
         {
@@ -330,6 +334,9 @@ public class PunchlineBlingController : MonoBehaviour
     /// </summary>
     void ShowCharacterWheel()
     {
+        // stop the player timer
+        _playerLimit.Abort();
+
         // show wheel
         SpinWheelScreen.SetActive(true);
         // spin
@@ -344,11 +351,11 @@ public class PunchlineBlingController : MonoBehaviour
     {
         _activePlayerIndex = index;
 
-        // set the active player
-        _players[_activePlayerIndex].ActivePlayer(true, 0);
-
         // back to the first one
         _state = SelectionState.PickingFirst;
+
+        // set the active player
+        _players[_activePlayerIndex].ActivePlayer(true, 0);
 
         // hide spinning wheel
         SpinWheelScreen.SetActive(false);

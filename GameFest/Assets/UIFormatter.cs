@@ -3,8 +3,10 @@ using UnityEngine;
 public class UIFormatter : MonoBehaviour
 {
     public Font MainFont;
-    public Vector3 BackgroundColour;
-    public Vector3 FontColour;
+    public Color BackgroundColour;
+    public Color FontColour;
+    public Color OutsidePanelColour;
+    public Color BackgroudTransparencyColour;
     public Sprite WindowImage;
 
     public GameObject[] Pages;
