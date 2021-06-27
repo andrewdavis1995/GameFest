@@ -97,6 +97,8 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="xMove">How much the player is moving</param>
     void UpdateOrientation_(float xMove)
     {
+        if (PauseGameHandler.Instance != null && PauseGameHandler.Instance.IsPaused()) return;
+
         // if moving right, set flip to false
         if (xMove > 0)
         {

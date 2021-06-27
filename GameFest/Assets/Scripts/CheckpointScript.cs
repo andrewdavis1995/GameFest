@@ -15,8 +15,6 @@ public class CheckpointScript : MonoBehaviour
     /// <param name="playerIndex">The index of the player to add</param>
     public bool AddPlayer(int playerIndex)
     {
-        Debug.Log("Adding player!");
-
         bool added = false;
 
         // if the player is not already on the last, add them and store

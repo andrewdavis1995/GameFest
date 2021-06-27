@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class LandslideController : MonoBehaviour
+public class LandslideController : GenericController
 {
 
     // status variables
@@ -247,7 +247,6 @@ public class LandslideController : MonoBehaviour
     {
         _resultsPlayerIndex++;
 
-        Debug.Log(_resultsPlayerIndex + " vs " + _players.Count);
         // checks if all players are done
         if (_resultsPlayerIndex >= _players.Count)
         {

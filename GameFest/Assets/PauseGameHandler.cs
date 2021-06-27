@@ -16,6 +16,8 @@ public class PauseGameHandler : MonoBehaviour
     public GameObject ContinueButton;
     public UIFormatter Formatter;
     public GameObject[] PausePopups;
+    public GenericController ActiveGameController;
+    public GameObject[] Pages;
 
     // Formattable objects
     public Image PauseBackground;
@@ -116,8 +118,8 @@ public class PauseGameHandler : MonoBehaviour
     public void ShowPage_()
     {
         // hide all pages, except for the current one
-        for (int i = 0; i < Formatter.Pages.Length; i++)
-            Formatter.Pages[i].SetActive(i == _pageIndex);
+        for (int i = 0; i < Pages.Length; i++)
+            Pages[i].SetActive(i == _pageIndex);
     }
 
     /// <summary>
@@ -145,6 +147,9 @@ public class PauseGameHandler : MonoBehaviour
     /// </summary>
     public void TogglePause()
     {
+        // don't pause if the game is not in a pauseable stage
+        if (!ActiveGameController.CanPause()) return;
+
         if (_isPaused) Resume();
         else Pause(false);
     }
@@ -155,11 +160,11 @@ public class PauseGameHandler : MonoBehaviour
     public void NextPage()
     {
         // if there are more pages, move to the next one
-        if (_pageIndex < Formatter.Pages.Length - 1)
+        if (_pageIndex < Pages.Length - 1)
             _pageIndex++;
 
         // if we are at the end, we are the completion condition has been met
-        if (_pageIndex >= Formatter.Pages.Length - 1)
+        if (_pageIndex >= Pages.Length - 1)
             _tutorialComplete = true;
 
         // only show the continue button if the tutorial has been completed
@@ -188,8 +193,10 @@ public class PauseGameHandler : MonoBehaviour
     /// <param name="players">The list of players involved in the game</param>
     public void Initialise(List<PunchlineBlingInputHandler> players)
     {
+        // loop through the players and configure the pause request messages
         for(int i = 1; i < players.Count; i++)
         {
+            // update the colour and the name on the popup
             PausePopups[i - 1].GetComponentsInChildren<Image>()[1].color = ColourFetcher.GetColour(i);
             PausePopups[i - 1].GetComponentInChildren<Text>().text = players[i].GetPlayerName() + " requested a pause";
         }

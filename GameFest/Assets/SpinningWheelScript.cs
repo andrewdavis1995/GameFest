@@ -51,7 +51,7 @@ public class SpinningWheelScript : MonoBehaviour
     /// </summary>
     private IEnumerator SpinCountdown()
     {
-        yield return new WaitForSeconds(Random.Range(1.25f, 2.4f));
+        yield return new WaitForSeconds(Random.Range(1f, 1.95f));
         _decreasing = true;
     }
 
@@ -70,8 +70,8 @@ public class SpinningWheelScript : MonoBehaviour
         if (_decreasing)
         {
             // decrease speed
-            _speed -= 1f;
-            if(_speed < 1f)
+            _speed -= 1.5f;
+            if(_speed < 1.5f)
             {
                 // once we get to 0, end the spin and move on
                 StartCoroutine(EndSpin_());

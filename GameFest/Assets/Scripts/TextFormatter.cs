@@ -1,7 +1,7 @@
 ﻿
 public static class TextFormatter
 {
-    const int MAX_CARD_JOKE_LENGTH = 16;
+    const int MAX_CARD_JOKE_LENGTH = 14;
     const int MAX_NOTEPAD_JOKE_LENGTH = 20;
     const int MAX_BUBBLE_JOKE_LENGTH = 25;
 

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class XTinguishController : MonoBehaviour
+public class XTinguishController : GenericController
 {
     // configuration
     private const int GAME_TIMEOUT = 120;

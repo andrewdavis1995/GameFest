@@ -1178,7 +1178,7 @@ MonoBehaviour:
   - {x: 5, y: -4}
   LeftBound: -7.8
   RightBound: 7.8
-  BallDropHeight: 7
+  BallDropHeight: 6.1
   Trolleys:
   - {fileID: 8393593464233098957}
   - {fileID: 1718192674}
@@ -4410,11 +4410,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Sprites:
-  - {fileID: 21300000, guid: f92bdbd9d0451a04e8f72cd95d8d7447, type: 3}
-  - {fileID: 21300000, guid: 365482824bd9f3c4b8a0a0088542dd94, type: 3}
   - {fileID: 21300000, guid: ad15839fb323dd1458755d9e09a279c4, type: 3}
   - {fileID: 21300000, guid: 497548839dabffa409c30ababb4464d1, type: 3}
   - {fileID: 21300000, guid: 35aebd63119c00a43847f6e856d624a0, type: 3}
+  - {fileID: 21300000, guid: 97dd908a3236a5945b7231d3466798f3, type: 3}
+  - {fileID: 21300000, guid: 747c4eb4d49a99b4ba15d655da1410d1, type: 3}
 --- !u!4 &522283379
 Transform:
   m_ObjectHideFlags: 0
@@ -12762,7 +12762,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8393593463789211506, guid: 7b85a957d473a06419b657158a16402a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7b85a957d473a06419b657158a16402a, type: 3}
@@ -14903,7 +14903,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8393593463789211506, guid: 7b85a957d473a06419b657158a16402a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7b85a957d473a06419b657158a16402a, type: 3}
@@ -15933,7 +15933,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8393593463789211506, guid: 7b85a957d473a06419b657158a16402a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7b85a957d473a06419b657158a16402a, type: 3}
@@ -20430,6 +20430,10 @@ PrefabInstance:
     - target: {fileID: 8393593463789211506, guid: 7b85a957d473a06419b657158a16402a, type: 3}
       propertyPath: m_Name
       value: Trolley0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8393593463789211506, guid: 7b85a957d473a06419b657158a16402a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7b85a957d473a06419b657158a16402a, type: 3}

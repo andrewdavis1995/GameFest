@@ -6,6 +6,7 @@ public class ShopDropBallScript : MonoBehaviour
 {
     public int Points { get; set; } = 0;
     public string Food { get; set; }
+    private bool _complete = false;
 
     public Rigidbody2D RigidBodyBall;
 
@@ -38,14 +39,19 @@ public class ShopDropBallScript : MonoBehaviour
     /// <param name="trolley">The trolley to move to</param>
     internal void MoveToTrolley(Transform trolley)
     {
-        // no longer moving
-        RigidBodyBall.velocity = Vector3.zero;
+        if (!_complete)
+        {
+            _complete = true;
 
-        // move into trolley
-        transform.SetParent(trolley);
-        transform.localPosition = new Vector3(-0.18f, -0.1f, 1);
+            // no longer moving
+            RigidBodyBall.velocity = Vector3.zero;
 
-        // make smaller
-        transform.localScale /= 1.8f;
+            // move into trolley
+            transform.SetParent(trolley);
+            transform.localPosition = new Vector3(-0.18f, -0.1f, 1);
+
+            // make smaller
+            transform.localScale /= 1.8f;
+        }
     }
 }

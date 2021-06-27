@@ -13,17 +13,24 @@ public static class ColourFetcher
         switch (index)
         {
             case 0:
-                r = .8f;        // red
+                r = 0.83f;        // red
+                g = 0f;
+                b = 0.0863f;
                 break;
             case 1:
-                b = .8f;        // blue
+                r = 0.0863f;      // blue
+                g = 0.235f;
+                b = 0.976f;
                 break;
             case 2:
-                g = .8f;        // green
+                r = 0.0863f;      // green
+                g = 0.7333f;
+                b = 0.145f;
                 break;
             case 3:
-                r = 1;          // yellow
-                g = .8f;
+                r = 0.906f;       // yellow
+                g = 0.7333f;
+                b = 0.145f;
                 break;
         }
 

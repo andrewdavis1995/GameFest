@@ -30,8 +30,6 @@ public class CameraZoomFollow : MonoBehaviour
 
         var leftPoint = transform.position.x - (camWidth/2) + trailer.localScale.x + _xOffset;
 
-        Debug.Log(trailer.position + " vs " + leftPoint + " at " + Camera.main.aspect);
-
         if((trailer.position.x < leftPoint) && (Camera.main.orthographicSize < MaxZoomOut))
         {
             Camera.main.orthographicSize += 0.1f;

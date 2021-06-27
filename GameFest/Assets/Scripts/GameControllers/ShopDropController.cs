@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// Controls the flow of the "Shop Drop" mini game
 /// </summary>
-public class ShopDropController : MonoBehaviour
+public class ShopDropController : GenericController
 {
     // configuration
     public Vector2[] StartPositions;

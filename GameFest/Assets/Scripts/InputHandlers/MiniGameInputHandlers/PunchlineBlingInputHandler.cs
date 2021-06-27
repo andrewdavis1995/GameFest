@@ -104,8 +104,6 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// <param name="imgIndex">The image to use for active indicator</param>
     internal void ActivePlayer(bool active, int imgIndex)
     {
-        Debug.Log("Setting active player " + active);
-
         _isActivePlayer = active;
 
         // show the card selection border
@@ -194,7 +192,6 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         {
             // if it was a card, this becomes the selected card
             case "Card":
-                Debug.Log("Card entered");
                 _currentCard = collision.GetComponent<CardScript>();
                 if (_isActivePlayer)
                     _currentCard.InZone(true);
@@ -213,7 +210,6 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         {
             // if it was a card, forget that this was the current card
             case "Card":
-                Debug.Log("Card left");
                 if (_currentCard != null)
                 {
                     _currentCard.InZone(false);
@@ -262,6 +258,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// <param name="callback">The function to call when walked on</param>
     internal void WalkOn(Action callback)
     {
+        ActivePlayer(false, 0);
         _walkingOn = true;
         _walkOnCallBack = callback;
     }

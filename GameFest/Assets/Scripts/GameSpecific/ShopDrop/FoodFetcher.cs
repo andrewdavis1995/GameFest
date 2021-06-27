@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-enum FoodType { BreadRoll, Lettuce, Melon, Orange, ToiletRoll }
+enum FoodType { Melon, Orange, ToiletRoll, Potato, Cake }
 
 public class FoodFetcher : MonoBehaviour
 {
@@ -15,11 +15,11 @@ public class FoodFetcher : MonoBehaviour
     List<Tuple<FoodType, int>> GetDistribution()
     {
         List<Tuple<FoodType, int>> distribution = new List<Tuple<FoodType, int>>();
-        distribution.Add(new Tuple<FoodType, int>(FoodType.BreadRoll, 36));
-        distribution.Add(new Tuple<FoodType, int>(FoodType.Lettuce, 35));
-        distribution.Add(new Tuple<FoodType, int>(FoodType.Melon, 2));
-        distribution.Add(new Tuple<FoodType, int>(FoodType.Orange, 17));
-        distribution.Add(new Tuple<FoodType, int>(FoodType.ToiletRoll, 12));
+        distribution.Add(new Tuple<FoodType, int>(FoodType.Melon, 10));
+        distribution.Add(new Tuple<FoodType, int>(FoodType.Orange, 22));
+        distribution.Add(new Tuple<FoodType, int>(FoodType.ToiletRoll, 23));
+        distribution.Add(new Tuple<FoodType, int>(FoodType.Potato, 45));
+        distribution.Add(new Tuple<FoodType, int>(FoodType.Cake, 3));
 
         return distribution;
     }
@@ -35,29 +35,30 @@ public class FoodFetcher : MonoBehaviour
         var offset = new Vector3(0, 0);
         switch(value)
         {
-            case FoodType.BreadRoll:
-                foodName = "Bread";
-                offset = new Vector2(-.05f, -.05f);
-                points = 21;
-                break;
             case FoodType.Melon:
                 foodName = "Melon";
-                offset = new Vector2(+.095f, .025f);
-                points = 32;
+                offset = new Vector2(+.09f, .02f);
+                points = 15;
                 break;
             case FoodType.Orange:
                 foodName = "Orange";
-                offset = new Vector2(-.11f, -.11f);
-                points = 15;
+                offset = new Vector2(-.14f, -.14f);
+                points = 5;
                 break;
             case FoodType.ToiletRoll:
                 foodName = "Toilet Roll";
-                offset = new Vector2(-.07f, -.07f);
-                points = 1;
+                offset = new Vector2(-.06f, -.06f);
+                points = 8;
                 break;
-            case FoodType.Lettuce:
-                foodName = "Lettuce";
-                points = 10;
+            case FoodType.Potato:
+                foodName = "Potato";
+                offset = new Vector2(-.095f, -.095f);
+                points = 9;
+                break;
+            case FoodType.Cake:
+                foodName = "Birthday Cake";
+                offset = new Vector2(0.1f, 0.1f);
+                points = 40;
                 break;
         }
 

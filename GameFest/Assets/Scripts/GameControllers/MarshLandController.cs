@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MarshLandController : MonoBehaviour
+public class MarshLandController : GenericController
 {
     // configuration
     private const int GAME_TIMEOUT = 120;

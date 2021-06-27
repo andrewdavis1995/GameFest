@@ -184,7 +184,7 @@ public abstract class GenericInputHandler : MonoBehaviour
         if (IsHost())
             PauseGameHandler.Instance.TogglePause();
         // show popup for players who are not the host
-        else if (!PausePopupActive())
+        else if (!PausePopupActive() && !PauseGameHandler.Instance.IsPaused())
             StartCoroutine(PauseRequest_());
     }
 

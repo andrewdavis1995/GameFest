@@ -95,7 +95,6 @@ public class RocketResultScript : MonoBehaviour
         // loop through each power source
         foreach (var value in _values)
         {
-            Debug.Log("Processing " + value);
             int currentValue = value;
             do
             {
