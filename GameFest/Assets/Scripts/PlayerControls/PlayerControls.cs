@@ -44,6 +44,15 @@ public class PlayerControls : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the device used by the player
+    /// </summary>
+    /// <returns>The type of device in use</returns>
+    public InputDevice GetDevice()
+    {
+        return _device;
+    }
+
+    /// <summary>
     /// Gets the total points the player has earned
     /// </summary>
     /// <returns>Points earned by the player</returns>

@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.DualShock;
 using UnityEngine.UI;
 
 public class PauseGameHandler : MonoBehaviour
@@ -18,6 +21,10 @@ public class PauseGameHandler : MonoBehaviour
     public GameObject[] PausePopups;
     public GenericController ActiveGameController;
     public GameObject[] Pages;
+    public Image[] PauseControlImages;
+    public Sprite[] NextPageSprites;
+    public Sprite[] PreviousPageSprites;
+    public Sprite[] ResumeSprites;
 
     // Formattable objects
     public Image PauseBackground;
@@ -87,6 +94,27 @@ public class PauseGameHandler : MonoBehaviour
         {
             img.color = Formatter.OutsidePanelColour;
         }
+
+        SetPauseInstructions_();
+    }
+
+    private void SetPauseInstructions_()
+    {
+        var host = PlayerManagerScript.Instance.GetPlayers();
+        var controllerType = host.First().GetDevice();
+
+        int controllerIndex = 0;
+
+        // get the image index, based on the controller type
+        if (controllerType is DualShockGamepad)
+            controllerIndex = 0;
+        else if (controllerType is Keyboard)
+            controllerIndex = 1;
+
+        PauseControlImages[0].sprite = PreviousPageSprites[controllerIndex];
+        PauseControlImages[1].sprite = NextPageSprites[controllerIndex];
+        PauseControlImages[2].sprite = ResumeSprites[controllerIndex];
+
     }
 
     /// <summary>
