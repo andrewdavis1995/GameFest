@@ -23,6 +23,8 @@ public class LobbyInputHandler : GenericInputHandler
     // is this player the host (player 1)
     bool _isHost = false;
 
+    bool _done = false;
+
     #region Override functions
     /// <summary>
     /// When the movement event is triggered - change letter/character
@@ -181,12 +183,14 @@ public class LobbyInputHandler : GenericInputHandler
         var allReady = allPlayers.All(p => p.Ready());
 
         // if all ready...
-        if(allReady)
+        if(allReady && !_done)
         {
             // ...store the player list in the manager
             PlayerManagerScript.Instance.SetPlayers(allPlayers.Select(p => p.GetComponent<PlayerControls>()).ToList());
             // move to the game central scene
-            PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+            PlayerManagerScript.Instance.NextScene(Scene.GameCentral, true);
+
+            _done = true;
         }
         else
         {

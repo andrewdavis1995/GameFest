@@ -10,21 +10,26 @@ public enum SelectionState { PickingFirst, PickingSecond, Resetting }
 public class PunchlineBlingController : GenericController
 {
     // Display elements
-    public Transform PlayerPrefab;      // The prefab to create
-    public TextMesh[] NoteBookTexts;    // The text meshes used to display cards
-    public Sprite[] CardBacks;          // The images to use on the back of cards (Setup then punchline)
-    public Sprite[] CardFronts;         // The images to use on the back of cards (Setup then punchline)
-    public GameObject SpeechBubble;     // Speech bubble display
-    public TextMesh SpeechBubbleText;   // Speech bubble text
-    public Text TxtOverallTime;         // The text for displaying the overall time
-    public Text[] TxtPlayerTimes;       // The text for displaying the round time
-    public Transform[] PlayerDisplays;  // The displays for showing how many jokes each player has earned
-    public GameObject PnlTotalPoints;   // Displays the score during reading the results
-    public Text TxtTotalPoints;         // Displays the score during reading the results
-    public GameObject SpinWheelScreen;  // The window that appears to select next character
-    public Sprite[] ActiveIcons;        // The images to be used in the active icon above players head
-    public GameObject PlayerDetailUI;   // The UI that displays UI info
-    public Text TxtNewPoints;           // The "+ X" points popup
+    public Transform PlayerPrefab;              // The prefab to create
+    public TextMesh[] NoteBookTexts;            // The text meshes used to display cards
+    public Sprite[] CardBacks;                  // The images to use on the back of cards (Setup then punchline)
+    public Sprite[] CardFronts;                 // The images to use on the back of cards (Setup then punchline)
+    public GameObject SpeechBubble;             // Speech bubble display
+    public TextMesh SpeechBubbleText;           // Speech bubble text
+    public Text TxtOverallTime;                 // The text for displaying the overall time
+    public Text[] TxtPlayerTimes;               // The text for displaying the round time
+    public Transform[] PlayerDisplays;          // The displays for showing how many jokes each player has earned
+    public GameObject PnlTotalPoints;           // Displays the score during reading the results
+    public Text TxtTotalPoints;                 // Displays the score during reading the results
+    public GameObject SpinWheelScreen;          // The window that appears to select next character
+    public Sprite[] ActiveIcons;                // The images to be used in the active icon above players head
+    public GameObject PlayerDetailUI;           // The UI that displays UI info
+    public Text TxtNewPoints;                   // The "+ X" points popup
+    public Sprite[] CompletionMessageSprites;   // The sprites that say "Time's up" or "Complete!"
+    public GameObject CompletionMessage;        // The display of the game over message
+    public TransitionFader LaterFader;          // Fader for the "later that day" message
+    public TransitionFader EndFader;            // Fader for the end of game
+    public Text TxtLaterMsg;                    // Displays the "later that day" message
 
     // config
     public Vector3[] StartPositions;         // Where the players should spawn
@@ -59,6 +64,9 @@ public class PunchlineBlingController : GenericController
     void Start()
     {
         Instance = this;
+
+        // fade in
+        EndFader.StartFade(1, 0, FadeInComplete);
 
         // load all jokes - must be done in Start, not constructor (as Resources must be loaded after script starts)
         _jokeManager = new JokeManager();
@@ -110,11 +118,20 @@ public class PunchlineBlingController : GenericController
         _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
 
         _overallLimit.Initialise(300, OverallTickCallback, OverallTimeoutCallback);
+        //_overallLimit.Initialise(30, OverallTickCallback, OverallTimeoutCallback);        // TEST ONLY
         _playerLimit.Initialise(20, PlayerTickCallback, PlayerTimeoutCallback);
 
         SpinWheel.Initialise(_players.ToList());
 
         PauseGameHandler.Instance.Initialise(_players.ToList());
+    }
+
+    /// <summary>
+    /// Called once fully faded in
+    /// </summary>
+    private void FadeInComplete()
+    {
+        Debug.Log("nyah");
         PauseGameHandler.Instance.Pause(true, StartGame);
     }
 
@@ -175,7 +192,7 @@ public class PunchlineBlingController : GenericController
     /// </summary>
     public void OverallTimeoutCallback()
     {
-        StartCoroutine(GoToEndScene());
+        StartCoroutine(GoToEndScene(false));
     }
 
     /// <summary>
@@ -311,7 +328,7 @@ public class PunchlineBlingController : GenericController
             // if none remaining, end game
             if (!CardsRemaining_())
             {
-                StartCoroutine(GoToEndScene());
+                StartCoroutine(GoToEndScene(true));
             }
 
             // current player can stay on
@@ -346,6 +363,8 @@ public class PunchlineBlingController : GenericController
     /// </summary>
     void ShowCharacterWheel()
     {
+        if (_ended) return;
+
         // hides all time displays
         for (int i = 0; i < TxtPlayerTimes.Length; i++)
         {
@@ -420,26 +439,35 @@ public class PunchlineBlingController : GenericController
     /// Ends the game and moves to the result
     /// </summary>
     /// <returns></returns>
-    private IEnumerator GoToEndScene()
+    private IEnumerator GoToEndScene(bool complete)
     {
-        _ended = true;
+        // if already at end scene, don't move again
+        if (!_ended)
+        {
+            _ended = true;
 
-        // stop timeouts
-        _overallLimit.Abort();
-        _playerLimit.Abort();
+            // show the completion message
+            CompletionMessage.SetActive(true);
+            CompletionMessage.GetComponentsInChildren<Image>()[1].sprite = CompletionMessageSprites[complete ? 1 : 0];
 
-        // TODO: show a transition
-        yield return new WaitForSeconds(1);
+            // no player is active at this point
+            foreach (var player in _players)
+                player.ActivePlayer(false, 0);
 
-        // move to the end position
-        SetEndPositions_();
+            // stop timeouts
+            _overallLimit.Abort();
+            _playerLimit.Abort();
 
-        // no player is active at this point
-        foreach (var player in _players)
-            player.ActivePlayer(false, 0);
+            yield return new WaitForSeconds(3);
+            CompletionMessage.SetActive(false);
 
-        // tell the jokes
-        StartResults_();
+            LaterFader.StartFade(0, 1, ShowLaterMsg);
+        }
+    }
+
+    private void ShowLaterMsg()
+    {
+        StartCoroutine(ShowLaterMessage_());
     }
 
     /// <summary>
@@ -447,7 +475,6 @@ public class PunchlineBlingController : GenericController
     /// </summary>
     private void StartResults_()
     {
-        PlayerDetailUI.SetActive(false);
         _players[_resultsPlayerIndex].WalkOn(ReadJokes);
     }
 
@@ -558,9 +585,12 @@ public class PunchlineBlingController : GenericController
 
         PnlTotalPoints.SetActive(false);
 
-        // exit speech
-        Speak("Thank you! Good night!");
-        yield return new WaitForSeconds(2);
+        if (_players[_resultsPlayerIndex].GetJokes().Count > 0)
+        {
+            // exit speech
+            Speak(MessageFetcher.GetEndOfJokesString());
+            yield return new WaitForSeconds(3);
+        }
 
         // walk off
         HideSpeech();
@@ -586,7 +616,7 @@ public class PunchlineBlingController : GenericController
         yield return new WaitForSeconds(0.4f);
 
         // fade the colour out
-        for (float i = 1; i > 0; i-=0.01f)
+        for (float i = 1; i > 0; i -= 0.01f)
         {
             TxtNewPoints.color = new Color(c.r, c.g, c.b, i);
             yield return new WaitForSeconds(0.01f);
@@ -620,8 +650,17 @@ public class PunchlineBlingController : GenericController
         ResultsScreen.Setup();
         ResultsScreen.SetPlayers(_players);
 
-        yield return new WaitForSeconds(5 + _players.Length);
+        yield return new WaitForSeconds(4 + _players.Length);
 
+        // fade out
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Moves back to the central screen
+    /// </summary>
+    void ReturnToCentral_()
+    {
         // when no more players, move to the central page
         PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }
@@ -638,6 +677,9 @@ public class PunchlineBlingController : GenericController
         // move the players to the end screen
         foreach (var player in _players)
             player.MoveToEnd(ResultPlayerPosition);
+
+        // hide UI
+        PlayerDetailUI.SetActive(false);
     }
 
     /// <summary>
@@ -658,5 +700,34 @@ public class PunchlineBlingController : GenericController
     public override bool CanPause()
     {
         return !_ended;
+    }
+
+    IEnumerator ShowLaterMessage_()
+    {
+        TxtLaterMsg.text = TextFormatter.GetBubbleJokeString(MessageFetcher.GetLaterThatDayString());
+        TxtLaterMsg.gameObject.SetActive(true);
+
+        var col = TxtLaterMsg.color;
+        for (float i = 0f; i < 1f; i += 0.1f)
+        {
+            TxtLaterMsg.color = new Color(col.r, col.g, col.b, i);
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        yield return new WaitForSeconds(2f);
+
+        // move to the end position
+        SetEndPositions_();
+
+        for (float i = 1f; i >= 0f; i -= 0.1f)
+        {
+            TxtLaterMsg.color = new Color(col.r, col.g, col.b, i);
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        TxtLaterMsg.color = new Color(col.r, col.g, col.b, 0);
+
+        yield return new WaitForSeconds(1);
+        LaterFader.StartFade(1f, 0f, StartResults_);
     }
 }

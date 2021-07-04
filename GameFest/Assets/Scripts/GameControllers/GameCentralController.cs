@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Assets;
 using UnityEngine;
@@ -13,6 +14,10 @@ public class GameCentralController : MonoBehaviour
 
     MiniGameManager _manager;   // the manager to handle mini games
 
+    public TransitionFader EndFader;
+
+    Scene _sceneToLoad;
+
     public TextMesh[] NameTexts;
     public TextMesh[] ScoreTexts;
 
@@ -20,6 +25,14 @@ public class GameCentralController : MonoBehaviour
     /// Called when item is created
     /// </summary>
     void Start()
+    {
+        EndFader.StartFade(1, 0, ContinueWithProcess_);
+    }
+
+    /// <summary>
+    /// Continues to display scores and player info
+    /// </summary>
+    private void ContinueWithProcess_()
     {
         // loop through all players
         float left = START_LEFT;
@@ -42,16 +55,26 @@ public class GameCentralController : MonoBehaviour
             ScoreTexts[player.PlayerInput.playerIndex].text = player.GetPoints().ToString();
         }
 
-        StartCoroutine(LoadMiniGame(Scene.PunchlineBling));
+        // fade out, then load the game
+        _sceneToLoad = Scene.PunchlineBling;
+
+        StartCoroutine(DelayedLoad_());
+    }
+
+    /// <summary>
+    /// Pause briefly before fading out
+    /// </summary>
+    private IEnumerator DelayedLoad_()
+    {
+        yield return new WaitForSeconds(2);
+        EndFader.StartFade(0, 1, LoadMiniGame);
     }
 
     /// <summary>
     /// Loads the specified game
     /// </summary>
-    /// <param name="gameIndex">The index of the scene to load</param>
-    private IEnumerator LoadMiniGame(Scene game)
+    private void LoadMiniGame()
     {
-        yield return new WaitForSeconds(1.2f);
-        PlayerManagerScript.Instance.NextScene(game);
+        PlayerManagerScript.Instance.NextScene(_sceneToLoad);
     }
 }

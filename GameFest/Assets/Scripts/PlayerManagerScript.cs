@@ -18,6 +18,10 @@ public class PlayerManagerScript : MonoBehaviour
 
     public RuntimeAnimatorController[] CharacterControllers;   // controllers to control players appearance and animations
 
+    public TransitionFader EndFader;
+
+    Scene _scene = Scene.Lobby;
+
     /// <summary>
     /// Called when object is created
     /// </summary>
@@ -28,6 +32,8 @@ public class PlayerManagerScript : MonoBehaviour
 
         // easy access to this item
         Instance = this;
+
+        EndFader.StartFade(1, 0, null);
     }
 
     /// <summary>
@@ -61,9 +67,24 @@ public class PlayerManagerScript : MonoBehaviour
     /// <summary>
     /// Move to the "Home" page where scores etc are shown
     /// </summary>
-    public void NextScene(Scene index)
+    public void NextScene(Scene index, bool fade = false)
     {
-        // TODO: Fade out
-        SceneManager.LoadScene((int)index);
+        _scene = index;
+
+        if (fade)
+        {
+            // fade out
+            EndFader.StartFade(0, 1, MoveToNextScene_);
+        }
+        else
+            MoveToNextScene_();
+    }
+
+    /// <summary>
+    /// Moves to the next scene as specified previously
+    /// </summary>
+    private void MoveToNextScene_()
+    {
+        SceneManager.LoadScene((int)_scene);
     }
 }

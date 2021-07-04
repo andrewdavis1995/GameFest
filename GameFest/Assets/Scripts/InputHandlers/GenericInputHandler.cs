@@ -194,10 +194,13 @@ public abstract class GenericInputHandler : MonoBehaviour
     /// <returns></returns>
     private IEnumerator PauseRequest_()
     {
-        PausePopupActive(true);
-        PauseGameHandler.Instance.PausePopups[GetPlayerIndex() - 1].SetActive(true);
-        yield return new WaitForSeconds(4);
-        PauseGameHandler.Instance.PausePopups[GetPlayerIndex() - 1].SetActive(false);
-        PausePopupActive(false);
+        if (PauseGameHandler.Instance.ActiveGameController.CanPause())
+        {
+            PausePopupActive(true);
+            PauseGameHandler.Instance.PausePopups[GetPlayerIndex() - 1].SetActive(true);
+            yield return new WaitForSeconds(4);
+            PauseGameHandler.Instance.PausePopups[GetPlayerIndex() - 1].SetActive(false);
+            PausePopupActive(false);
+        }
     }
 }
