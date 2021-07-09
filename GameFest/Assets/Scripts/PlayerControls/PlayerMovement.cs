@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -21,10 +22,13 @@ public class PlayerMovement : MonoBehaviour
     // public objects
     public TextMesh TxtPlayerName;
     public SpriteRenderer ActivePlayerIcon;
+    public List<SpriteRenderer> BlingRenderers;
+    public Transform BlingHolder;
 
     // player state
     Vector2 _movementInput;
     bool _onGround = false;
+    bool _flipX = false;
 
     // callback functions
     Action<Collider2D> _triggerEnterCallback;
@@ -99,15 +103,28 @@ public class PlayerMovement : MonoBehaviour
     {
         if (PauseGameHandler.Instance != null && PauseGameHandler.Instance.IsPaused()) return;
 
+        var flipped = _flipX;
+
         // if moving right, set flip to false
         if (xMove > 0)
         {
-            _renderer.flipX = false;
+            _flipX = false;
         }
         // if moving left, set flip to true
         else if (xMove < 0)
         {
-            _renderer.flipX = true;
+            _flipX = true;
+        }
+
+        // only change direction when necessary
+        if (flipped != _flipX)
+        {
+            _renderer.flipX = _flipX;
+
+            foreach(var rend in BlingRenderers)
+            {
+                rend.flipX = _flipX;
+            }
         }
 
         // note: if not moving, flip will remain the same as it was before
@@ -193,5 +210,23 @@ public class PlayerMovement : MonoBehaviour
     public void OnTriggerExit2D(Collider2D collision)
     {
         _triggerExitCallback?.Invoke(collision);
+    }
+
+    /// <summary>
+    /// Whether the image(s) are flipped
+    /// </summary>
+    /// <returns></returns>
+    internal bool Flipped()
+    {
+        return _flipX;
+    }
+
+    /// <summary>
+    /// Enables/disables the animator of this player
+    /// </summary>
+    /// <param name="state">The state to set the animator to be in</param>
+    internal void SetAnimatorState(bool state)
+    {
+        _animator.enabled = state;
     }
 }

@@ -30,6 +30,7 @@ public class PunchlineBlingController : GenericController
     public TransitionFader LaterFader;          // Fader for the "later that day" message
     public TransitionFader EndFader;            // Fader for the end of game
     public Text TxtLaterMsg;                    // Displays the "later that day" message
+    public Transform BlingPrefab;               // Prefab for bling
 
     // config
     public Vector3[] StartPositions;         // Where the players should spawn
@@ -37,6 +38,7 @@ public class PunchlineBlingController : GenericController
     public Vector2 ResultPlayerPosition;     // Where the players move to for the results
     public int ResultPlayerReadingPosition;  // Where the players move to for the results
     public Sprite[] CharacterIcons;          // The icons for the characters
+    public Sprite[] BlingSprites;            // The images of bling
 
     // links to other scripts
     JokeManager _jokeManager;
@@ -56,6 +58,7 @@ public class PunchlineBlingController : GenericController
     int _targetScore = 0;
     int _currentDisplayScore = 0;
     bool _ended = false;
+    float _endSpeed = 1f;
 
     // static link to self
     public static PunchlineBlingController Instance;
@@ -117,8 +120,8 @@ public class PunchlineBlingController : GenericController
         _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
 
-        _overallLimit.Initialise(300, OverallTickCallback, OverallTimeoutCallback);
-        //_overallLimit.Initialise(30, OverallTickCallback, OverallTimeoutCallback);        // TEST ONLY
+        //_overallLimit.Initialise(300, OverallTickCallback, OverallTimeoutCallback);
+        _overallLimit.Initialise(30, OverallTickCallback, OverallTimeoutCallback);        // TEST ONLY
         _playerLimit.Initialise(20, PlayerTickCallback, PlayerTimeoutCallback);
 
         SpinWheel.Initialise(_players.ToList());
@@ -535,6 +538,8 @@ public class PunchlineBlingController : GenericController
     {
         yield return new WaitForSeconds(1);
 
+        _endSpeed = 1f;
+
         // reset points
         TxtTotalPoints.text = "0";
         PnlTotalPoints.SetActive(true);
@@ -546,16 +551,19 @@ public class PunchlineBlingController : GenericController
         // if there are jokes to display
         if (_players[_resultsPlayerIndex].GetJokes().Count > 0)
         {
+            // don't animate while telling jokes
+            _players[_resultsPlayerIndex].SetAnimatorState(false);
+
             // loop through each joke
             foreach (var joke in _players[_resultsPlayerIndex].GetJokes())
             {
                 // setup
                 Speak(joke.Setup);
-                yield return new WaitForSeconds(4);
+                yield return new WaitForSeconds(4*_endSpeed);
 
                 // Pause
                 HideSpeech();
-                yield return new WaitForSeconds(1);
+                yield return new WaitForSeconds(1 * _endSpeed);
 
                 // punchline
                 Speak(joke.Punchline);
@@ -564,24 +572,24 @@ public class PunchlineBlingController : GenericController
                 var newPoints = UnityEngine.Random.Range(90, 110);
                 _players[_resultsPlayerIndex].AddPoints(newPoints);
 
-                yield return new WaitForSeconds(2);
+                yield return new WaitForSeconds(2 * _endSpeed);
                 _targetScore = _players[_resultsPlayerIndex].GetPoints();
                 StartCoroutine(ShowNewPointsFlashUp(newPoints));
-                yield return new WaitForSeconds(2);
+                yield return new WaitForSeconds(2 * _endSpeed);
 
                 // Pause
                 HideSpeech();
-                yield return new WaitForSeconds(1);
+                yield return new WaitForSeconds(1 * _endSpeed);
             }
         }
         else
         {
             // no jokes for this player
             Speak("I got nothing...");
-            yield return new WaitForSeconds(2);
+            yield return new WaitForSeconds(2 * _endSpeed);
         }
 
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(2 * _endSpeed);
 
         PnlTotalPoints.SetActive(false);
 
@@ -589,15 +597,31 @@ public class PunchlineBlingController : GenericController
         {
             // exit speech
             Speak(MessageFetcher.GetEndOfJokesString());
-            yield return new WaitForSeconds(3);
+            yield return new WaitForSeconds(3 * _endSpeed);
         }
 
         // walk off
         HideSpeech();
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(1 * _endSpeed);
+
+        // re-enable animation
+        _players[_resultsPlayerIndex].SetAnimatorState(true);
 
         // finished
         _players[_resultsPlayerIndex].WalkOff(NextPlayerResults);
+    }
+
+    /// <summary>
+    /// Increases the speed at which jokes are read
+    /// </summary>
+    /// <param name="index">The index of the player who requested the pause</param>
+    public void SpeedUp(int index)
+    {
+        // only do it if the requester was the current player
+        if(index == _resultsPlayerIndex && _endSpeed > 0.4f)
+        {
+            _endSpeed /= 1.5f;
+        }
     }
 
     /// <summary>

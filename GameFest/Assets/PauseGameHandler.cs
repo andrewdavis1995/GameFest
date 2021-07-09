@@ -123,8 +123,6 @@ public class PauseGameHandler : MonoBehaviour
     /// <param name="init">Whether this is the first time it has been displayed (need to cycle through all pages)</param>
     public void Pause(bool init, Action callback = null)
     {
-        Debug.Log("pquaswws");
-
         // set pause variables
         _isPaused = true;
         Time.timeScale = 0;

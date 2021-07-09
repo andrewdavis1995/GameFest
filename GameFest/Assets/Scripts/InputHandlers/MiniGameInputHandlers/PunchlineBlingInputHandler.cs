@@ -168,6 +168,10 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         {
             PauseGameHandler.Instance.NextPage();
         }
+        else
+        {
+            PunchlineBlingController.Instance.SpeedUp(GetPlayerIndex());
+        }
     }
 
     /// <summary>
@@ -225,6 +229,24 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// <param name="joke">The joke that was earned</param>
     public void JokeEarned(Joke joke)
     {
+        if (_jokes.Count < PunchlineBlingController.Instance.BlingSprites.Length)
+        {
+            // create bling
+            var created = Instantiate(PunchlineBlingController.Instance.BlingPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+
+            // add bling
+            created.SetParent(_movement.BlingHolder);
+            created.transform.localScale = new Vector3(1, 1, 1);
+            created.transform.localPosition = new Vector3(0, -0.01f, 0.001f - (0.001f * _jokes.Count));
+
+            var renderer = created.GetComponent<SpriteRenderer>();
+            renderer.sprite = PunchlineBlingController.Instance.BlingSprites[_jokes.Count];
+            renderer.flipX = _movement.Flipped();
+
+            _movement.BlingRenderers.Add(renderer);
+        }
+
+        // add a joke
         _jokes.Add(joke);
     }
 
@@ -271,5 +293,14 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     {
         _walkingOff = true;
         _walkOffCallBack = callback;
+    }
+
+    /// <summary>
+    /// Enables/disables the animator of this player
+    /// </summary>
+    /// <param name="state">The state to set the animator to be in</param>
+    internal void SetAnimatorState(bool state)
+    {
+        _movement.SetAnimatorState(state);
     }
 }

@@ -58,6 +58,9 @@ public class ResultsPageScreen : MonoBehaviour
         // order the players based on points
         var sorted = players.OrderByDescending(p => p.GetPoints()).ToList();
 
+        // wait a second at the start
+        yield return new WaitForSeconds(1);
+
         // loop through all players
         for (int i = 0; i < sorted.Count; i++)
         {

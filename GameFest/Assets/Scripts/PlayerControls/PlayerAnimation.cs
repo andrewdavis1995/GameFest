@@ -50,4 +50,13 @@ public class PlayerAnimation : MonoBehaviour
             SetAnimation("Idle");
         }
     }
+
+    /// <summary>
+    /// Enables/disables the animator of this player
+    /// </summary>
+    /// <param name="state">The state to set the animator to be in</param>
+    public void SetAnimationState(bool state)
+    {
+        _animator.enabled = state;
+    }
 }
