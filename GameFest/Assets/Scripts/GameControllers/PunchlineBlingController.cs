@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,11 +19,11 @@ public class PunchlineBlingController : GenericController
     public Text[] TxtPlayerTimes;               // The text for displaying the round time
     public Transform[] PlayerDisplays;          // The displays for showing how many jokes each player has earned
     public GameObject PnlTotalPoints;           // Displays the score during reading the results
-    public Text TxtTotalPoints;                 // Displays the score during reading the results
+    public TextMesh TxtTotalPoints;             // Displays the score during reading the results
     public GameObject SpinWheelScreen;          // The window that appears to select next character
     public Sprite[] ActiveIcons;                // The images to be used in the active icon above players head
     public GameObject PlayerDetailUI;           // The UI that displays UI info
-    public Text TxtNewPoints;                   // The "+ X" points popup
+    public TextMesh TxtNewPoints;               // The "+ X" points popup
     public Sprite[] CompletionMessageSprites;   // The sprites that say "Time's up" or "Complete!"
     public GameObject CompletionMessage;        // The display of the game over message
     public TransitionFader LaterFader;          // Fader for the "later that day" message
@@ -39,6 +38,7 @@ public class PunchlineBlingController : GenericController
     public int ResultPlayerReadingPosition;  // Where the players move to for the results
     public Sprite[] CharacterIcons;          // The icons for the characters
     public Sprite[] BlingSprites;            // The images of bling
+    public Transform LaughterAnimation;      // The "HA"s
 
     // links to other scripts
     JokeManager _jokeManager;
@@ -121,7 +121,7 @@ public class PunchlineBlingController : GenericController
         _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
 
         //_overallLimit.Initialise(300, OverallTickCallback, OverallTimeoutCallback);
-        _overallLimit.Initialise(30, OverallTickCallback, OverallTimeoutCallback);        // TEST ONLY
+        _overallLimit.Initialise(600, OverallTickCallback, OverallTimeoutCallback);        // TEST ONLY
         _playerLimit.Initialise(20, PlayerTickCallback, PlayerTimeoutCallback);
 
         SpinWheel.Initialise(_players.ToList());
@@ -323,7 +323,7 @@ public class PunchlineBlingController : GenericController
         {
             // disable both cards
             foreach (var card in _selectedCards)
-                card.gameObject.SetActive(false);
+                card.Remove();
 
             // add a joke to the players list
             activePlayer?.JokeEarned(_selectedCards.First().GetJoke());
@@ -434,7 +434,7 @@ public class PunchlineBlingController : GenericController
     private bool CardsRemaining_()
     {
         // check for remaining cards
-        var remaining = _cards.Count(c => c.gameObject.activeInHierarchy);
+        var remaining = _cards.Count(c => c.IsActive());
         return remaining > 0;
     }
 
@@ -511,13 +511,13 @@ public class PunchlineBlingController : GenericController
         // get message
         var split = TextFormatter.GetBubbleJokeString(msg).Split(' ');
 
-        yield return new WaitForSeconds(0.05f);
+        yield return new WaitForSeconds(0.05f * _endSpeed);
 
         // add each word, one at a time
         foreach (var txt in split)
         {
             SpeechBubbleText.text += txt + " ";
-            yield return new WaitForSeconds(0.15f);
+            yield return new WaitForSeconds(0.15f * _endSpeed);
         }
 
         SpeechBubble.SetActive(true);
@@ -573,6 +573,9 @@ public class PunchlineBlingController : GenericController
                 _players[_resultsPlayerIndex].AddPoints(newPoints);
 
                 yield return new WaitForSeconds(2 * _endSpeed);
+
+                StartCoroutine(DisplayLaughter());
+
                 _targetScore = _players[_resultsPlayerIndex].GetPoints();
                 StartCoroutine(ShowNewPointsFlashUp(newPoints));
                 yield return new WaitForSeconds(2 * _endSpeed);
@@ -609,6 +612,20 @@ public class PunchlineBlingController : GenericController
 
         // finished
         _players[_resultsPlayerIndex].WalkOff(NextPlayerResults);
+    }
+
+    /// <summary>
+    /// Displays some laughter
+    /// </summary>
+    private IEnumerator DisplayLaughter()
+    {
+        for(int i = 0; i < 15; i++)
+        {
+            var x = ResultScreenPosition.x + UnityEngine.Random.Range(-Camera.main.orthographicSize * Camera.main.aspect/2, Camera.main.orthographicSize * Camera.main.aspect/2);
+            var y = ResultScreenPosition.y + UnityEngine.Random.Range(-Camera.main.orthographicSize, Camera.main.orthographicSize);
+            Instantiate(LaughterAnimation, new Vector3(x, y, -4), Quaternion.identity);
+            yield return new WaitForSeconds(0.15f);
+        }
     }
 
     /// <summary>
@@ -728,7 +745,7 @@ public class PunchlineBlingController : GenericController
 
     IEnumerator ShowLaterMessage_()
     {
-        TxtLaterMsg.text = TextFormatter.GetBubbleJokeString(MessageFetcher.GetLaterThatDayString());
+        TxtLaterMsg.text = MessageFetcher.GetLaterThatDayString();
         TxtLaterMsg.gameObject.SetActive(true);
 
         var col = TxtLaterMsg.color;

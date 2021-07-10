@@ -71,6 +71,7 @@ public class PauseGameHandler : MonoBehaviour
     {
         // background (semi-transparent) image
         PauseBackground.sprite = Formatter.WindowImage;
+        PauseBackground.color = Formatter.BackgroundTransparencyColour;
 
         // colour of the menu
         PauseMenu.color = Formatter.BackgroundColour;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -22,8 +21,9 @@ public class PlayerMovement : MonoBehaviour
     // public objects
     public TextMesh TxtPlayerName;
     public SpriteRenderer ActivePlayerIcon;
-    public List<SpriteRenderer> BlingRenderers;
+    public List<SpriteRenderer> _blingRenderers;
     public Transform BlingHolder;
+    public ItemFlash Flash;
 
     // player state
     Vector2 _movementInput;
@@ -121,7 +121,7 @@ public class PlayerMovement : MonoBehaviour
         {
             _renderer.flipX = _flipX;
 
-            foreach(var rend in BlingRenderers)
+            foreach(var rend in _blingRenderers)
             {
                 rend.flipX = _flipX;
             }
@@ -228,5 +228,28 @@ public class PlayerMovement : MonoBehaviour
     internal void SetAnimatorState(bool state)
     {
         _animator.enabled = state;
+    }
+
+    internal void AddBling(int count)
+    {
+        Flash.Go(CreateBling_, null, count);
+    }
+
+    void CreateBling_(int index)
+    {
+        // create bling
+        var created = Instantiate(PunchlineBlingController.Instance.BlingPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+
+        // add bling
+        created.SetParent(BlingHolder);
+
+        created.transform.localScale = new Vector3(1, 1, 1);
+        created.transform.localPosition = new Vector3(0, -0.01f, 0.001f - (0.001f * index));
+
+        var renderer = created.GetComponent<SpriteRenderer>();
+        renderer.sprite = PunchlineBlingController.Instance.BlingSprites[index];
+        renderer.flipX = Flipped();
+
+        _blingRenderers.Add(renderer);
     }
 }

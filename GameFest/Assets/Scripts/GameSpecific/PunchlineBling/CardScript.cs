@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ public class CardScript : MonoBehaviour
     public Transform CardBack;
     public GameObject CardSelected;
     public TextMesh JokeText;
+    public ItemFlash Flash;
 
     // content of this card
     Joke _joke;
@@ -15,6 +17,7 @@ public class CardScript : MonoBehaviour
 
     // state variables
     private bool _flipped = false;
+    bool _active = true;
 
     /// <summary>
     /// Sets the "selected" image when the player enters the trigger zone
@@ -86,6 +89,7 @@ public class CardScript : MonoBehaviour
         var stringToUse = punchline ? joke.Punchline : joke.Setup;
         JokeText.text = TextFormatter.GetCardJokeString(stringToUse);
 
+        // set the images
         var imageIndex = IsPunchline() ? 1 : 0;
         CardBack.GetComponent<SpriteRenderer>().sprite = PunchlineBlingController.Instance.CardBacks[imageIndex];
         CardFront.GetComponent<SpriteRenderer>().sprite = PunchlineBlingController.Instance.CardFronts[imageIndex];
@@ -147,5 +151,42 @@ public class CardScript : MonoBehaviour
             appropriate = true;
 
         return appropriate;
+    }
+
+    /// <summary>
+    /// Removes the card after successfully matched
+    /// </summary>
+    internal void Remove()
+    {
+        _active = false;
+        Flash.Go(HideCard, DestroyCard, 0, 3.3f);
+    }
+
+    /// <summary>
+    /// Hides the content of the card
+    /// </summary>
+    /// <param name="index">Needed to satisfy the action type</param>
+    void HideCard(int index)
+    {
+        CardFront.GetComponent<SpriteRenderer>().enabled = false;
+        CardBack.GetComponent<SpriteRenderer>().enabled = false;
+        JokeText.text = "";
+    }
+
+    /// <summary>
+    /// Destroys the card
+    /// </summary>
+    void DestroyCard()
+    {
+        gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// Is the card selectable
+    /// </summary>
+    /// <returns>Whether the card is selectable</returns>
+    internal bool IsActive()
+    {
+        return _active;
     }
 }

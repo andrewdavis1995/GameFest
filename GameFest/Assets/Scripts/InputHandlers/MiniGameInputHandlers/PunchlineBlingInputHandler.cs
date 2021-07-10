@@ -231,19 +231,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     {
         if (_jokes.Count < PunchlineBlingController.Instance.BlingSprites.Length)
         {
-            // create bling
-            var created = Instantiate(PunchlineBlingController.Instance.BlingPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-
-            // add bling
-            created.SetParent(_movement.BlingHolder);
-            created.transform.localScale = new Vector3(1, 1, 1);
-            created.transform.localPosition = new Vector3(0, -0.01f, 0.001f - (0.001f * _jokes.Count));
-
-            var renderer = created.GetComponent<SpriteRenderer>();
-            renderer.sprite = PunchlineBlingController.Instance.BlingSprites[_jokes.Count];
-            renderer.flipX = _movement.Flipped();
-
-            _movement.BlingRenderers.Add(renderer);
+            _movement.AddBling(_jokes.Count);
         }
 
         // add a joke

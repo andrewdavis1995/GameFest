@@ -180,6 +180,8 @@ public abstract class GenericInputHandler : MonoBehaviour
     /// </summary>
     public void OnOptions()
     {
+        if (PauseGameHandler.Instance == null) return;
+
         // pause
         if (IsHost())
             PauseGameHandler.Instance.TogglePause();
