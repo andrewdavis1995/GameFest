@@ -1,6 +1,6 @@
 ﻿namespace Assets.Scripts
 {
-    public enum PlayerStateEnum { NameEntry, CharacterSelection, Ready }
+    public enum PlayerStateEnum { NameEntry, CharacterSelection, ChoosingGames, Ready }
 
     /// <summary>
     /// Stores the current state of a player - i.e. which action they are taking part in

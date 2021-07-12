@@ -120,8 +120,8 @@ public class PunchlineBlingController : GenericController
         _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
 
-        //_overallLimit.Initialise(300, OverallTickCallback, OverallTimeoutCallback);
-        _overallLimit.Initialise(600, OverallTickCallback, OverallTimeoutCallback);        // TEST ONLY
+        _overallLimit.Initialise(300, OverallTickCallback, OverallTimeoutCallback);
+        //_overallLimit.Initialise(600, OverallTickCallback, OverallTimeoutCallback);        // TEST ONLY
         _playerLimit.Initialise(20, PlayerTickCallback, PlayerTimeoutCallback);
 
         SpinWheel.Initialise(_players.ToList());

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Assets;
 using UnityEngine;
 
@@ -21,11 +22,16 @@ public class GameCentralController : MonoBehaviour
     public TextMesh[] NameTexts;
     public TextMesh[] ScoreTexts;
 
+    List<Scene> _games = new List<Scene>();
+
+    public static GameCentralController Instance;
+
     /// <summary>
     /// Called when item is created
     /// </summary>
     void Start()
     {
+        Instance = this;
         EndFader.StartFade(1, 0, ContinueWithProcess_);
     }
 
@@ -76,5 +82,14 @@ public class GameCentralController : MonoBehaviour
     private void LoadMiniGame()
     {
         PlayerManagerScript.Instance.NextScene(_sceneToLoad);
+    }
+
+    /// <summary>
+    /// Set the list of games to play
+    /// </summary>
+    /// <param name="games"></param>
+    public void SetGames(List<Scene> games)
+    {
+        _games = games;
     }
 }

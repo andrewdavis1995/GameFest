@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.DualShock;
@@ -13,9 +14,8 @@ public class LobbyDisplayScript : MonoBehaviour
     public Transform NoPlayerPanel;
     public Transform PlayerStartedPanel;
     public Transform PnlCharacter;
+    public Transform PnlLetters;
     public Transform PnlReady;
-    public Transform[] InstructionsController;
-    public Transform[] InstructionsKeyboard;
     public Image ImgController;
 
     // Texts to display the letters
@@ -35,6 +35,7 @@ public class LobbyDisplayScript : MonoBehaviour
     // private variables
     InputDevice _device;
     int _playerIndex;
+    bool _errorMessageShowing = false;
 
     /// <summary>
     /// Called when the player joins the game - updates the lobby display
@@ -55,9 +56,6 @@ public class LobbyDisplayScript : MonoBehaviour
         // show the input selections
         NoPlayerPanel.gameObject.SetActive(false);
         PlayerStartedPanel.gameObject.SetActive(true);
-
-        // show the first set of instructions
-        UpdateInstructions_(0, false);
     }
 
     /// <summary>
@@ -112,40 +110,8 @@ public class LobbyDisplayScript : MonoBehaviour
     /// </summary>
     internal void ShowCharacterSelectionPanel(bool state)
     {
+        PnlLetters.gameObject.SetActive(!state);
         PnlCharacter.gameObject.SetActive(state);
-        UpdateInstructions_(1, false);
-    }
-
-    /// <summary>
-    /// Shows the appropriate instructions
-    /// </summary>
-    /// <param name="index">The instruction index to display</param>
-    /// <param name="hostOnly">Whether these instructions are only valid for the host</param>
-    private void UpdateInstructions_(int index, bool hostOnly)
-    {
-        // check which device type the player is using
-        if (_device is Gamepad)
-        {
-            // loop through all controller instructions
-            for (int i = 0; i < InstructionsController.Length; i++)
-            {
-                // only set the instruction to visible if the index matches the specified index
-                // if host only, make sure this is the host
-                var state = (i == index) && (!hostOnly || _playerIndex == 0);
-                InstructionsController[i].gameObject.SetActive(state);
-            }
-        }
-        else if (_device is Keyboard)
-        {
-            // loop through all keyboard instructions
-            for (int i = 0; i < InstructionsKeyboard.Length; i++)
-            {
-                // only set the instruction to visible if the index matches the specified index
-                // if host only, make sure this is the host
-                var state = (i == index) && (!hostOnly || _playerIndex == 0);
-                InstructionsKeyboard[i].gameObject.SetActive(state);
-            }
-        }
     }
 
     /// <summary>
@@ -153,8 +119,8 @@ public class LobbyDisplayScript : MonoBehaviour
     /// </summary>
     internal void ShowReadyPanel(bool state)
     {
-        UpdateInstructions_(state ? 2 : 1, state == true);  // only player 1 only if being set to true
         PnlReady.gameObject.SetActive(state);
+        PlayerManagerScript.Instance.SetGameSelectionState(state);
     }
 
     /// <summary>
@@ -179,6 +145,25 @@ public class LobbyDisplayScript : MonoBehaviour
         {
             // should never get here
             ImgController.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Displays the pause request message for this player
+    /// </summary>
+    public IEnumerator ShowError(string msg)
+    {
+        var txt = PlayerManagerScript.Instance.PausePopups[_playerIndex].GetComponentInChildren<Text>();
+
+        // can display if the message is not showing, or a different message is to be shown
+        if (!_errorMessageShowing || msg != txt.text)
+        {
+            _errorMessageShowing = true;
+            txt.text = msg;
+            PlayerManagerScript.Instance.PausePopups[_playerIndex].SetActive(true);
+            yield return new WaitForSeconds(4);
+            PlayerManagerScript.Instance.PausePopups[_playerIndex].SetActive(false);
+            _errorMessageShowing = false;
         }
     }
 }
