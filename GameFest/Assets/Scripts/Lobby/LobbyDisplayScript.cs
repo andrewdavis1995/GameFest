@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Assets.Scripts;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.DualShock;
@@ -16,6 +17,8 @@ public class LobbyDisplayScript : MonoBehaviour
     public Transform PnlCharacter;
     public Transform PnlLetters;
     public Transform PnlReady;
+    public Transform PnlShadow;
+    public Text TxtCurrentAction;
     public Image ImgController;
 
     // Texts to display the letters
@@ -50,6 +53,7 @@ public class LobbyDisplayScript : MonoBehaviour
 
         // change the backgroud colour
         GetComponent<Image>().color = colour;
+        PnlReady.GetComponent<Image>().color = colour;
         // set the image to show which device the player is using
         SetControllerIcon_();
 
@@ -97,6 +101,24 @@ public class LobbyDisplayScript : MonoBehaviour
     }
 
     /// <summary>
+    /// Sets the message for what state the player is in
+    /// </summary>
+    /// <param name="playerStateEnum">The state the player is in</param>
+    internal void UpdateState(PlayerStateEnum playerStateEnum)
+    {
+        var msg = "";
+        switch(playerStateEnum)
+        {
+            case PlayerStateEnum.CharacterSelection: msg = "Selecting character"; break;
+            case PlayerStateEnum.ChoosingGames: msg = "Choosing Games"; break;
+            case PlayerStateEnum.NameEntry: msg = "Entering name"; break;
+            case PlayerStateEnum.Ready: msg = "Ready"; break;
+        }
+
+        TxtCurrentAction.text = msg;
+    }
+
+    /// <summary>
     /// Returns the player name
     /// </summary>
     /// <returns>The player name</returns>
@@ -120,6 +142,7 @@ public class LobbyDisplayScript : MonoBehaviour
     internal void ShowReadyPanel(bool state)
     {
         PnlReady.gameObject.SetActive(state);
+        PnlShadow.gameObject.SetActive(state);
         PlayerManagerScript.Instance.SetGameSelectionState(state);
     }
 
@@ -165,5 +188,17 @@ public class LobbyDisplayScript : MonoBehaviour
             PlayerManagerScript.Instance.PausePopups[_playerIndex].SetActive(false);
             _errorMessageShowing = false;
         }
+    }
+
+    /// <summary>
+    /// Back to the start state
+    /// </summary>
+    public void ResetDisplay()
+    {
+        NoPlayerPanel.gameObject.SetActive(true);
+        PlayerStartedPanel.gameObject.SetActive(true);
+
+        _playerIndex = 0;
+        NameDisplay.text = "";
     }
 }

@@ -22,9 +22,9 @@ public class GameCentralController : MonoBehaviour
     public TextMesh[] NameTexts;
     public TextMesh[] ScoreTexts;
 
-    List<Scene> _games = new List<Scene>();
-
     public static GameCentralController Instance;
+
+    private static int _gameIndex = 0;
 
     /// <summary>
     /// Called when item is created
@@ -61,10 +61,18 @@ public class GameCentralController : MonoBehaviour
             ScoreTexts[player.PlayerInput.playerIndex].text = player.GetPoints().ToString();
         }
 
-        // fade out, then load the game
-        _sceneToLoad = Scene.PunchlineBling;
 
-        StartCoroutine(DelayedLoad_());
+        if (_gameIndex < PlayerManagerScript.Instance.SelectedGames.Count)
+        {
+            // fade out, then load the game
+            _sceneToLoad = PlayerManagerScript.Instance.SelectedGames[_gameIndex++];
+
+            StartCoroutine(DelayedLoad_());
+        }
+        else
+        {
+            // TODO: end game
+        }
     }
 
     /// <summary>
@@ -82,14 +90,5 @@ public class GameCentralController : MonoBehaviour
     private void LoadMiniGame()
     {
         PlayerManagerScript.Instance.NextScene(_sceneToLoad);
-    }
-
-    /// <summary>
-    /// Set the list of games to play
-    /// </summary>
-    /// <param name="games"></param>
-    public void SetGames(List<Scene> games)
-    {
-        _games = games;
     }
 }

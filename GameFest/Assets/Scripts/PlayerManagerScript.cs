@@ -31,7 +31,9 @@ public class PlayerManagerScript : MonoBehaviour
 
     public GameOption[] Games;
 
-    private List<Scene> _selectedGames = new List<Scene>();
+    public List<Scene> SelectedGames = new List<Scene>();
+
+    public SelectedGameControlScript[] GameSelectionDisplays;
 
     /// <summary>
     /// Called when object is created
@@ -78,11 +80,43 @@ public class PlayerManagerScript : MonoBehaviour
     /// </summary>
     internal void GameSelected()
     {
-        if (_selectedGames.Count < 5)
+        if (SelectedGames.Count < 5)
         {
-            _selectedGames.Add(Games[_gameIndex].SceneIndex);
+            // update display
+            GameSelectionDisplays[SelectedGames.Count].SetImage(Games[_gameIndex].SceneIndex);
 
-           // TODO: update display
+            // add to list
+            SelectedGames.Add(Games[_gameIndex].SceneIndex);
+
+            ShowDeleteIcon();
+        }
+    }
+
+    /// <summary>
+    /// When the player presses X on a game
+    /// </summary>
+    internal void GameDeleted()
+    {
+        if (SelectedGames.Count > 0)
+        {
+            // update display
+            GameSelectionDisplays[SelectedGames.Count - 1].gameObject.SetActive(false);
+
+            // remove from list
+            SelectedGames.RemoveAt(SelectedGames.Count - 1);
+
+            ShowDeleteIcon();
+        }
+    }
+
+    /// <summary>
+    /// Displays the delete icon on the appropriate display
+    /// </summary>
+    private void ShowDeleteIcon()
+    {
+        for (var i = 0; i < GameSelectionDisplays.Length; i++)
+        {
+            GameSelectionDisplays[i].CanDelete(i == SelectedGames.Count - 1);
         }
     }
 
@@ -125,7 +159,7 @@ public class PlayerManagerScript : MonoBehaviour
     /// <param name="state"></param>
     internal void SetGameSelectionState(bool state)
     {
-        ImgGamesLocked.SetActive(state);
+        ImgGamesLocked.SetActive(!state);
     }
 
     /// <summary>
@@ -156,8 +190,6 @@ public class PlayerManagerScript : MonoBehaviour
     {
         // ...store the player list in the manager
         SetPlayers(allPlayers.Select(p => p.GetComponent<PlayerControls>()).ToList());
-
-        GameCentralController.Instance.SetGames(_selectedGames);
 
         // move to the game central scene
         NextScene(Scene.GameCentral, true);

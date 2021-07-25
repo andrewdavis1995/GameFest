@@ -100,6 +100,8 @@ public class LobbyInputHandler : GenericInputHandler
                 _display.ShowReadyPanel(false);
                 break;
         }
+
+        _display.UpdateState(_state.GetState());
     }
 
     /// <summary>
@@ -118,12 +120,40 @@ public class LobbyInputHandler : GenericInputHandler
                 CharacterSelected_();
                 break;
             case PlayerStateEnum.ChoosingGames:
-                _state.SetState(PlayerStateEnum.Ready);
-                _display.ShowReadyPanel(true);
+                GameSelectionComplete_();
                 break;
             case PlayerStateEnum.Ready:
                 StartGame_();
                 break;
+        }
+
+        _display.UpdateState(_state.GetState());
+    }
+
+    public override void OnTriangle()
+    {
+        switch (_state.GetState())
+        {
+            case PlayerStateEnum.ChoosingGames:
+                PlayerManagerScript.Instance.GameDeleted();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Check enough games were selected
+    /// </summary>
+    private void GameSelectionComplete_()
+    {
+        if (PlayerManagerScript.Instance.SelectedGames.Count > 2)
+        {
+            _state.SetState(PlayerStateEnum.Ready);
+            _display.ShowReadyPanel(true);
+        }
+        else
+        {
+            // Not enough games selected
+            StartCoroutine(_display.ShowError("Please select at least 3 games"));
         }
     }
 
@@ -154,6 +184,17 @@ public class LobbyInputHandler : GenericInputHandler
         _display = display;
         _detailsCompleteCallback = detailsCallback;
         _isHost = isHost;
+    }
+
+    /// <summary>
+    /// Back to the start state
+    /// </summary>
+    public void ResetDisplay()
+    {
+        _display.ResetDisplay();
+        SetCharacterIndex(0);
+        UpdateCharacters_(0);
+        _state.SetState(PlayerStateEnum.NameEntry);
     }
 
     /// <summary>

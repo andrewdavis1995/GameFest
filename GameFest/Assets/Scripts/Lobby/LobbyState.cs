@@ -35,5 +35,23 @@
         {
             _state = value;
         }
+
+        /// <summary>
+        /// Sets the stored state to the specified state
+        /// </summary>
+        /// <param name="value">The current state to set</param>
+        public string GetStateMessage()
+        {
+            string msg = "";
+            switch(_state)
+            {
+                case PlayerStateEnum.CharacterSelection: msg = "Selecting character"; break;
+                case PlayerStateEnum.ChoosingGames: msg = "Choosing games"; break;
+                case PlayerStateEnum.NameEntry: msg = "Entering name"; break;
+                case PlayerStateEnum.Ready: msg = "Ready!"; break;
+            }
+
+            return msg;
+        }
     }
 }
