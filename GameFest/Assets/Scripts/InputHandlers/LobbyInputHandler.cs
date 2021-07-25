@@ -93,7 +93,7 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.ChoosingGames:
                 _state.SetState(PlayerStateEnum.CharacterSelection);
                 _display.ShowCharacterSelectionPanel(true);
-                PlayerManagerScript.Instance.SetGameSelectionState(true);
+                PlayerManagerScript.Instance.SetGameSelectionState(false);
                 break;
             case PlayerStateEnum.Ready:
                 _state.SetState(PlayerStateEnum.ChoosingGames);
@@ -380,7 +380,7 @@ public class LobbyInputHandler : GenericInputHandler
         if (GetPlayerIndex() == 0)
         {
             _state.SetState(PlayerStateEnum.ChoosingGames);
-            PlayerManagerScript.Instance.SetGameSelectionState(false);
+            PlayerManagerScript.Instance.SetGameSelectionState(true);
         }
         else
             _state.SetState(PlayerStateEnum.Ready);

@@ -143,7 +143,7 @@ public class LobbyDisplayScript : MonoBehaviour
     {
         PnlReady.gameObject.SetActive(state);
         PnlShadow.gameObject.SetActive(state);
-        PlayerManagerScript.Instance.SetGameSelectionState(state);
+        PlayerManagerScript.Instance.SetGameSelectionState(!state);
     }
 
     /// <summary>

@@ -35,6 +35,10 @@ public class PlayerManagerScript : MonoBehaviour
 
     public SelectedGameControlScript[] GameSelectionDisplays;
 
+    private short _gameMovementIndex = 0;
+
+    public Text TxtDescription;
+
     /// <summary>
     /// Called when object is created
     /// </summary>
@@ -159,7 +163,20 @@ public class PlayerManagerScript : MonoBehaviour
     /// <param name="state"></param>
     internal void SetGameSelectionState(bool state)
     {
-        ImgGamesLocked.SetActive(!state);
+        ImgGamesLocked.SetActive(state);
+        if (state)
+        {
+            Games[_gameIndex].Selected(_gameMovementIndex);
+        }
+        SetDescription_();
+    }
+
+    /// <summary>
+    /// Sets he description of the selected game
+    /// </summary>
+    private void SetDescription_()
+    {
+        TxtDescription.text = GameDescriptionScript.GetDescription(Games[_gameIndex].SceneIndex);
     }
 
     /// <summary>
@@ -177,9 +194,23 @@ public class PlayerManagerScript : MonoBehaviour
         // update to new position
         if (originallySelected != _gameIndex)
         {
+            _gameMovementIndex++;
             Games[originallySelected].Deselected();
-            Games[_gameIndex].Selected();
+            Games[_gameIndex].Selected(_gameMovementIndex);
+            SetDescription_();
+            if (_gameMovementIndex >= short.MaxValue)
+                _gameMovementIndex = 0;
         }
+    }
+
+    /// <summary>
+    /// Checks if the index of the game movement matches what it was when the item was selected
+    /// </summary>
+    /// <param name="indexAtStart">The index that was set when the item was originally selected</param>
+    /// <returns>Whether the index is still the same</returns>
+    public bool MovedSinceVideoTriggered(short indexAtStart)
+    {
+        return _gameMovementIndex == indexAtStart;
     }
 
     /// <summary>
