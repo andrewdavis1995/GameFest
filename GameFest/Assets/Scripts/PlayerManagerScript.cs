@@ -39,6 +39,8 @@ public class PlayerManagerScript : MonoBehaviour
 
     public Text TxtDescription;
 
+    public bool LobbyComplete = false;
+
     /// <summary>
     /// Called when object is created
     /// </summary>
@@ -86,6 +88,30 @@ public class PlayerManagerScript : MonoBehaviour
     {
         if (SelectedGames.Count < 5)
         {
+            // update display
+            GameSelectionDisplays[SelectedGames.Count].SetImage(Games[_gameIndex].SceneIndex);
+
+            // add to list
+            SelectedGames.Add(Games[_gameIndex].SceneIndex);
+
+            ShowDeleteIcon();
+        }
+    }
+
+    /// <summary>
+    /// When the player presses X on a game
+    /// </summary>
+    internal void RandomiseGames()
+    {
+        while (SelectedGames.Count < 5)
+        {
+            // pick a random game
+            int randomIndex = UnityEngine.Random.Range(0, Games.Length);
+
+            // select the game
+            var difference = randomIndex - _gameIndex;
+            MoveGameSelection(difference);
+
             // update display
             GameSelectionDisplays[SelectedGames.Count].SetImage(Games[_gameIndex].SceneIndex);
 
@@ -219,6 +245,8 @@ public class PlayerManagerScript : MonoBehaviour
     /// <param name="allPlayers"></param>
     internal void Complete(LobbyInputHandler[] allPlayers)
     {
+        LobbyComplete = true;
+
         // ...store the player list in the manager
         SetPlayers(allPlayers.Select(p => p.GetComponent<PlayerControls>()).ToList());
 

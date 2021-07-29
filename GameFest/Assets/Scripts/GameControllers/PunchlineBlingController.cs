@@ -134,7 +134,6 @@ public class PunchlineBlingController : GenericController
     /// </summary>
     private void FadeInComplete()
     {
-        Debug.Log("nyah");
         PauseGameHandler.Instance.Pause(true, StartGame);
     }
 

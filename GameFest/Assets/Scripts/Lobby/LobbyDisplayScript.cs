@@ -107,7 +107,7 @@ public class LobbyDisplayScript : MonoBehaviour
     internal void UpdateState(PlayerStateEnum playerStateEnum)
     {
         var msg = "";
-        switch(playerStateEnum)
+        switch (playerStateEnum)
         {
             case PlayerStateEnum.CharacterSelection: msg = "Selecting character"; break;
             case PlayerStateEnum.ChoosingGames: msg = "Choosing Games"; break;
@@ -185,7 +185,8 @@ public class LobbyDisplayScript : MonoBehaviour
             txt.text = msg;
             PlayerManagerScript.Instance.PausePopups[_playerIndex].SetActive(true);
             yield return new WaitForSeconds(4);
-            PlayerManagerScript.Instance.PausePopups[_playerIndex].SetActive(false);
+            if (!PlayerManagerScript.Instance.LobbyComplete)
+                PlayerManagerScript.Instance.PausePopups[_playerIndex].SetActive(false);
             _errorMessageShowing = false;
         }
     }

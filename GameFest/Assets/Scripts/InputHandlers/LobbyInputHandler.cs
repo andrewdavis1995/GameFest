@@ -42,8 +42,6 @@ public class LobbyInputHandler : GenericInputHandler
 
         var movement = ctx.ReadValue<Vector2>();
 
-        Debug.Log("On Move");
-
         // if right, move right
         if (movement.x > 0.99f)
             MoveRight_();
@@ -78,6 +76,21 @@ public class LobbyInputHandler : GenericInputHandler
         }
     }
 
+
+    /// <summary>
+    /// When the cross is triggered - select letter
+    /// </summary>
+    public override void OnSquare()
+    {
+        switch (_state.GetState())
+        {
+            // randomise
+            case PlayerStateEnum.ChoosingGames:
+                PlayerManagerScript.Instance.RandomiseGames();
+                break;
+        }
+    }
+
     /// <summary>
     /// When the circle is triggered - back
     /// </summary>
@@ -96,8 +109,11 @@ public class LobbyInputHandler : GenericInputHandler
                 PlayerManagerScript.Instance.SetGameSelectionState(false);
                 break;
             case PlayerStateEnum.Ready:
-                _state.SetState(PlayerStateEnum.ChoosingGames);
-                _display.ShowReadyPanel(false);
+                if (!PlayerManagerScript.Instance.LobbyComplete)
+                {
+                    _state.SetState(PlayerStateEnum.ChoosingGames);
+                    _display.ShowReadyPanel(false);
+                }
                 break;
         }
 
@@ -107,7 +123,7 @@ public class LobbyInputHandler : GenericInputHandler
     /// <summary>
     /// When the touchpad event is triggered - continue
     /// </summary>
-    public override void OnTouchpad()
+    public override void OnOptions()
     {
         switch (_state.GetState())
         {

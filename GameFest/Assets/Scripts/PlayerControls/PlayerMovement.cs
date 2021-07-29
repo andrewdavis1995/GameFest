@@ -15,12 +15,13 @@ public class PlayerMovement : MonoBehaviour
 
     // components/objects
     Rigidbody2D _rigidBody;
-    Animator _animator;
+    Animator[] _animators;
     SpriteRenderer _renderer;
 
     // public objects
     public TextMesh TxtPlayerName;
     public SpriteRenderer ActivePlayerIcon;
+    public SpriteRenderer Shadow;
     public List<SpriteRenderer> _blingRenderers;
     public Transform BlingHolder;
     public ItemFlash Flash;
@@ -35,13 +36,14 @@ public class PlayerMovement : MonoBehaviour
     Action<Collider2D> _triggerExitCallback;
 
     public PlayerAnimation PlayerAnimator;
+    public PlayerAnimation ShadowAnimator;
 
     void Start()
     {
         // find necessary components
         _renderer = GetComponent<SpriteRenderer>();
         _rigidBody = GetComponent<Rigidbody2D>();
-        _animator = GetComponent<Animator>();
+        _animators = GetComponentsInChildren<Animator>();
     }
 
     /// <summary>
@@ -90,9 +92,15 @@ public class PlayerMovement : MonoBehaviour
 
         // if we are on the ground, i.e. walking or idle, update the animation
         if (_onGround)
-            PlayerAnimator.SetAnimation(xMove == 0 ? "Idle" : "Walk");
+            Animate(xMove == 0 ? "Idle" : "Walk");
 
         UpdateOrientation_(xMove);
+    }
+
+    void Animate(string animation)
+    {
+        PlayerAnimator.SetAnimation(animation);
+        ShadowAnimator.SetAnimation(animation);
     }
 
     /// <summary>
@@ -120,8 +128,9 @@ public class PlayerMovement : MonoBehaviour
         if (flipped != _flipX)
         {
             _renderer.flipX = _flipX;
+            Shadow.flipX = _flipX;
 
-            foreach(var rend in _blingRenderers)
+            foreach (var rend in _blingRenderers)
             {
                 rend.flipX = _flipX;
             }
@@ -136,7 +145,7 @@ public class PlayerMovement : MonoBehaviour
     internal void DisableMovement()
     {
         _movementInput = new Vector2(0, 0);
-        PlayerAnimator.SetAnimation("Idle");
+        Animate("Idle");
     }
 
     /// <summary>
@@ -158,7 +167,7 @@ public class PlayerMovement : MonoBehaviour
             return;
 
         // set the animation to the jumping animation
-        PlayerAnimator.SetAnimation("Jump");
+        Animate("Jump");
 
         // might as well JUMP!
         _rigidBody.AddForce(new Vector2(0, JUMP_FORCE));
@@ -190,7 +199,7 @@ public class PlayerMovement : MonoBehaviour
         {
             // they are no longer on the ground
             _onGround = false;
-            PlayerAnimator.SetAnimation("Jump");
+            Animate("Jump");
         }
     }
 
@@ -227,7 +236,8 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="state">The state to set the animator to be in</param>
     internal void SetAnimatorState(bool state)
     {
-        _animator.enabled = state;
+        foreach (var anim in _animators)
+            anim.enabled = state;
     }
 
     internal void AddBling(int count)

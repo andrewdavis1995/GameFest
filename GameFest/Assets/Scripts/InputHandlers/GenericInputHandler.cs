@@ -178,7 +178,7 @@ public abstract class GenericInputHandler : MonoBehaviour
     /// <summary>
     /// When the Options event is triggered
     /// </summary>
-    public void OnOptions()
+    public virtual void OnOptions()
     {
         if (PauseGameHandler.Instance == null) return;
 
