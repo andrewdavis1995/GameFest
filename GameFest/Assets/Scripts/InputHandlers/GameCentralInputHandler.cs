@@ -16,6 +16,7 @@ public class GameCentralInputHandler : GenericInputHandler
         var spawned = Instantiate(prefab, position, Quaternion.identity);
         SetAnimation(spawned, characterIndex);
         SetHeight(spawned, characterIndex);
+        spawned.GetComponent<PlayerMovement>().Shadow.gameObject.SetActive(true);
         return spawned;
     }
 }

@@ -26,6 +26,8 @@ public class GameCentralController : MonoBehaviour
 
     private static int _gameIndex = 0;
 
+    public MrAController MisterA;
+
     /// <summary>
     /// Called when item is created
     /// </summary>
@@ -80,9 +82,22 @@ public class GameCentralController : MonoBehaviour
     /// </summary>
     private IEnumerator DelayedLoad_()
     {
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(1);
+        MisterA.Fly(-2.4f, FlyInComplete);
+    }
+
+    void FlyInComplete()
+    {
+        StartCoroutine(ReadIntro());
+    }
+
+    IEnumerator ReadIntro()
+    {
+        yield return new WaitForSeconds(4);
         EndFader.StartFade(0, 1, LoadMiniGame);
     }
+
+
 
     /// <summary>
     /// Loads the specified game
