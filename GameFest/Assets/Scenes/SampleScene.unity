@@ -123,46 +123,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &8593711 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1964389221360031298, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
-  m_PrefabInstance: {fileID: 1753452096}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &8593712 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1964389221360031297, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
   m_PrefabInstance: {fileID: 1753452096}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8593713
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8593711}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: caf99ba07ad30684781e3a501c5bdfc8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  NoPlayerPanel: {fileID: 0}
-  PlayerStartedPanel: {fileID: 0}
-  PnlCharacter: {fileID: 0}
-  PnlLetters: {fileID: 0}
-  PnlReady: {fileID: 0}
-  PnlShadow: {fileID: 0}
-  TxtCurrentAction: {fileID: 0}
-  ImgController: {fileID: 0}
-  LetterTextLeft: {fileID: 0}
-  LetterTextMiddle: {fileID: 0}
-  LetterTextRight: {fileID: 0}
-  NameDisplay: {fileID: 0}
-  ImageCharacterLeft: {fileID: 0}
-  ImageCharacterMiddle: {fileID: 0}
-  ImageCharacterRight: {fileID: 0}
-  ControllerImages:
-  - {fileID: 21300000, guid: 786b1dc011e25d744b6e7df9e7a29062, type: 3}
-  - {fileID: 21300000, guid: 3425b7488a7a403408cfd92a61f7f351, type: 3}
 --- !u!1 &20395105
 GameObject:
   m_ObjectHideFlags: 0
@@ -539,6 +504,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PnlLobbyDisplay
       objectReference: {fileID: 0}
+    - target: {fileID: 1964389221360031298, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 1964389221543019722, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0.000015258789
@@ -574,6 +543,10 @@ PrefabInstance:
     - target: {fileID: 5706111763955223279, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -0.000091552734
+      objectReference: {fileID: 0}
+    - target: {fileID: 6465941367695260942, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+      propertyPath: m_TagString
+      value: PlayerColourDisplay
       objectReference: {fileID: 0}
     - target: {fileID: 6754516814726870289, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1117,6 +1090,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PnlLobbyDisplay
       objectReference: {fileID: 0}
+    - target: {fileID: 1964389221360031298, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 1964389221543019722, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0.000015258789
@@ -1152,6 +1129,10 @@ PrefabInstance:
     - target: {fileID: 5706111763955223279, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -0.000091552734
+      objectReference: {fileID: 0}
+    - target: {fileID: 6465941367695260942, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+      propertyPath: m_TagString
+      value: PlayerColourDisplay
       objectReference: {fileID: 0}
     - target: {fileID: 6754516814726870289, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1476,46 +1457,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 493419569}
   m_CullTransparentMesh: 1
---- !u!1 &501116733 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1964389221360031298, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
-  m_PrefabInstance: {fileID: 459326264}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &501116734 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1964389221360031297, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
   m_PrefabInstance: {fileID: 459326264}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &501116735
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 501116733}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: caf99ba07ad30684781e3a501c5bdfc8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  NoPlayerPanel: {fileID: 0}
-  PlayerStartedPanel: {fileID: 0}
-  PnlCharacter: {fileID: 0}
-  PnlLetters: {fileID: 0}
-  PnlReady: {fileID: 0}
-  PnlShadow: {fileID: 0}
-  TxtCurrentAction: {fileID: 0}
-  ImgController: {fileID: 0}
-  LetterTextLeft: {fileID: 0}
-  LetterTextMiddle: {fileID: 0}
-  LetterTextRight: {fileID: 0}
-  NameDisplay: {fileID: 0}
-  ImageCharacterLeft: {fileID: 0}
-  ImageCharacterMiddle: {fileID: 0}
-  ImageCharacterRight: {fileID: 0}
-  ControllerImages:
-  - {fileID: 21300000, guid: 786b1dc011e25d744b6e7df9e7a29062, type: 3}
-  - {fileID: 21300000, guid: 3425b7488a7a403408cfd92a61f7f351, type: 3}
 --- !u!114 &504513591 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6514658196078264751, guid: 1b91574573e527948b8e935cd9968144, type: 3}
@@ -3275,46 +3221,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1078327931 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1964389221360031298, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
-  m_PrefabInstance: {fileID: 171065947}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1078327932 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1964389221360031297, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
   m_PrefabInstance: {fileID: 171065947}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1078327933
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1078327931}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: caf99ba07ad30684781e3a501c5bdfc8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  NoPlayerPanel: {fileID: 0}
-  PlayerStartedPanel: {fileID: 0}
-  PnlCharacter: {fileID: 0}
-  PnlLetters: {fileID: 0}
-  PnlReady: {fileID: 0}
-  PnlShadow: {fileID: 0}
-  TxtCurrentAction: {fileID: 0}
-  ImgController: {fileID: 0}
-  LetterTextLeft: {fileID: 0}
-  LetterTextMiddle: {fileID: 0}
-  LetterTextRight: {fileID: 0}
-  NameDisplay: {fileID: 0}
-  ImageCharacterLeft: {fileID: 0}
-  ImageCharacterMiddle: {fileID: 0}
-  ImageCharacterRight: {fileID: 0}
-  ControllerImages:
-  - {fileID: 21300000, guid: 786b1dc011e25d744b6e7df9e7a29062, type: 3}
-  - {fileID: 21300000, guid: 3425b7488a7a403408cfd92a61f7f351, type: 3}
 --- !u!1 &1091576706
 GameObject:
   m_ObjectHideFlags: 0
@@ -3598,6 +3509,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PnlLobbyDisplay
       objectReference: {fileID: 0}
+    - target: {fileID: 1964389221360031298, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 1964389221543019722, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0.000030517578
@@ -3625,6 +3540,10 @@ PrefabInstance:
     - target: {fileID: 5706111763955223279, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -0.000091552734
+      objectReference: {fileID: 0}
+    - target: {fileID: 6465941367695260942, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+      propertyPath: m_TagString
+      value: PlayerColourDisplay
       objectReference: {fileID: 0}
     - target: {fileID: 6754516814726870289, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -5055,6 +4974,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PnlLobbyDisplay
       objectReference: {fileID: 0}
+    - target: {fileID: 1964389221360031298, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
+      objectReference: {fileID: 0}
     - target: {fileID: 1964389221543019722, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0.000015258789
@@ -5090,6 +5013,10 @@ PrefabInstance:
     - target: {fileID: 5706111763955223279, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -0.000091552734
+      objectReference: {fileID: 0}
+    - target: {fileID: 6465941367695260942, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+      propertyPath: m_TagString
+      value: PlayerColourDisplay
       objectReference: {fileID: 0}
     - target: {fileID: 6754516814726870289, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: m_AnchoredPosition.y

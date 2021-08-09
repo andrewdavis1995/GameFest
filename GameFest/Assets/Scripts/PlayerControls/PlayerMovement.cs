@@ -139,6 +139,14 @@ public class PlayerMovement : MonoBehaviour
         // note: if not moving, flip will remain the same as it was before
     }
 
+    public void DisableAnimators()
+    {
+        foreach (var animator in _animators)
+        {
+            animator.enabled = false;
+        }
+    }
+
     /// <summary>
     /// Stops movement from the player
     /// </summary>

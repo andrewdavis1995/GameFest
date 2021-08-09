@@ -31,7 +31,7 @@ public class XTinguishInputHandler : GenericInputHandler
 
         // get the movement script - disable it to stop the animations getting in each others way
         _zeroGravityScript = player.GetComponent<ZeroGravityMovement>();
-        _zeroGravityScript.SetPlayerColour(GetPlayerIndex());
+        _zeroGravityScript.SetPlayerColour(GetPlayerIndex(), GetCharacterIndex());
         _zeroGravityScript.SetAddPointsCallback(AddPoints);
 
         return player;

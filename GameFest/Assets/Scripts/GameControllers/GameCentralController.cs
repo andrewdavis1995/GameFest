@@ -28,29 +28,63 @@ public class GameCentralController : MonoBehaviour
 
     public MrAController MisterA;
 
+    public Transform Floor;
+    public float FloorEndPoint;
+
+    public GameObject[] Plinths;
+
     /// <summary>
     /// Called when item is created
     /// </summary>
     void Start()
     {
         Instance = this;
-        EndFader.StartFade(1, 0, ContinueWithProcess_);
+        SpawnPlayers_();
+        EndFader.StartFade(1, 0, RevealPlayers_);
     }
 
-    /// <summary>
-    /// Continues to display scores and player info
-    /// </summary>
-    private void ContinueWithProcess_()
+    void RevealPlayers_()
+    {
+        StartCoroutine(RevealPlayersIEnum_());
+    }
+
+    IEnumerator RevealPlayersIEnum_()
+    {
+        while (Floor.transform.localPosition.y < FloorEndPoint)
+        {
+            Floor.transform.Translate(new Vector3(0, 2 * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+        ContinueWithProcess_();
+    }
+
+    IEnumerator HidePlayersIEnum_()
+    {
+        foreach (var player in FindObjectsOfType<PlayerMovement>())
+        {
+            player.DisableAnimators();
+        }
+
+        while (Floor.transform.localPosition.y > -1000)
+        {
+            Floor.transform.Translate(new Vector3(0, 2 * -Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+        ContinueWithProcess_();
+    }
+
+    void SpawnPlayers_()
     {
         // loop through all players
         float left = START_LEFT;
+        int index = 0;
         foreach (var player in PlayerManagerScript.Instance.GetPlayers())
         {
             // switch to use an input handler suitable for this scene
             player.SetActiveScript(typeof(GameCentralInputHandler));
 
             // create the "visual" player
-            var spawned = player.Spawn(PlayerPrefab, new Vector2(left, 0));
+            var spawned = player.Spawn(PlayerPrefab, new Vector2(left, -5.5f));
 
             // move to next position
             left += POSITION_GAP;
@@ -61,9 +95,17 @@ public class GameCentralController : MonoBehaviour
             // display player info
             NameTexts[player.PlayerInput.playerIndex].text = player.GetPlayerName();
             ScoreTexts[player.PlayerInput.playerIndex].text = player.GetPoints().ToString();
+
+            Plinths[index].GetComponentsInChildren<SpriteRenderer>()[1].color = ColourFetcher.GetColour(index);
+            Plinths[index++].SetActive(true);
         }
+    }
 
-
+    /// <summary>
+    /// Continues to display scores and player info
+    /// </summary>
+    private void ContinueWithProcess_()
+    {
         if (_gameIndex < PlayerManagerScript.Instance.SelectedGames.Count)
         {
             // fade out, then load the game
@@ -94,10 +136,15 @@ public class GameCentralController : MonoBehaviour
     IEnumerator ReadIntro()
     {
         yield return new WaitForSeconds(4);
+
+        MisterA.Fly(-100f, null);
+
+        StartCoroutine(HidePlayersIEnum_());
+
+        // let players start to go down
+        yield return new WaitForSeconds(2);
         EndFader.StartFade(0, 1, LoadMiniGame);
     }
-
-
 
     /// <summary>
     /// Loads the specified game

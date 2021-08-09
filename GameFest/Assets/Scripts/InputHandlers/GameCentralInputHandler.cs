@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 public class GameCentralInputHandler : GenericInputHandler
@@ -17,6 +18,9 @@ public class GameCentralInputHandler : GenericInputHandler
         SetAnimation(spawned, characterIndex);
         SetHeight(spawned, characterIndex);
         spawned.GetComponent<PlayerMovement>().Shadow.gameObject.SetActive(true);
+        spawned.GetComponent<PlayerMovement>().Shadow.gameObject.GetComponent<SpriteRenderer>().maskInteraction = SpriteMaskInteraction.VisibleOutsideMask;
+        spawned.GetComponent<SpriteRenderer>().maskInteraction = SpriteMaskInteraction.VisibleOutsideMask;
+        spawned.GetComponent<SpriteRenderer>().sortingLayerName = "Player3B";
         return spawned;
     }
 }

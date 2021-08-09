@@ -205,4 +205,9 @@ public abstract class GenericInputHandler : MonoBehaviour
             PausePopupActive(false);
         }
     }
+
+    public void SetPlayerIndex(int playerIndex)
+    {
+        _playerIndex = playerIndex;
+    }
 }

@@ -20,9 +20,6 @@ public class LobbyInputHandler : GenericInputHandler
     LobbyDisplayScript _display = null;
     Action<string, int> _detailsCompleteCallback;
 
-    // is this player the host (player 1)
-    bool _isHost = false;
-
     bool _done = false;
 
     const int GAMES_PER_ROW = 3;
@@ -111,7 +108,14 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.Ready:
                 if (!PlayerManagerScript.Instance.LobbyComplete)
                 {
-                    _state.SetState(PlayerStateEnum.ChoosingGames);
+                    if (IsHost())
+                    {
+                        _state.SetState(PlayerStateEnum.ChoosingGames);
+                    }
+                    else
+                    {
+                        _state.SetState(PlayerStateEnum.CharacterSelection);
+                    }
                     _display.ShowReadyPanel(false);
                 }
                 break;
@@ -195,11 +199,11 @@ public class LobbyInputHandler : GenericInputHandler
     /// <param name="display">The UI element to update</param>
     /// <param name="nameCallback">The callback function to call when the name is updated</param>
     /// <param name="isHost">Is this player the host (player 1)</param>
-    public void SetDisplay(LobbyDisplayScript display, Action<string, int> detailsCallback, bool isHost)
+    public void SetDisplay(LobbyDisplayScript display, Action<string, int> detailsCallback, int playerIndex)
     {
         _display = display;
         _detailsCompleteCallback = detailsCallback;
-        _isHost = isHost;
+        SetPlayerIndex(playerIndex);
     }
 
     /// <summary>
@@ -291,7 +295,10 @@ public class LobbyInputHandler : GenericInputHandler
     void StartGame_()
     {
         // non-hosts cannot start the game
-        if (!_isHost) return;
+        if (!IsHost()) return;
+
+        // don't continue if already started
+        if (PlayerManagerScript.Instance.LobbyComplete) return;
 
         // find all players
         var allPlayers = GameObject.FindObjectsOfType<LobbyInputHandler>();
@@ -393,13 +400,16 @@ public class LobbyInputHandler : GenericInputHandler
         // tell the player object what the name is
         _detailsCompleteCallback(_display.GetPlayerName(), GetCharacterIndex());
 
-        if (GetPlayerIndex() == 0)
+        if (IsHost())
         {
             _state.SetState(PlayerStateEnum.ChoosingGames);
             PlayerManagerScript.Instance.SetGameSelectionState(true);
         }
         else
+        {
             _state.SetState(PlayerStateEnum.Ready);
+            _display.ShowReadyPanel(true);
+        }
     }
 
     #region Fetch index of the left/right elements to display

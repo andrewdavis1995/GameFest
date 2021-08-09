@@ -10,6 +10,12 @@ public class MrAController : MonoBehaviour
     Action _callback;
 
     public Animator Animator;
+    SpriteRenderer _renderer;
+
+    private void Start()
+    {
+        _renderer = GetComponentInChildren<SpriteRenderer>();
+    }
 
     IEnumerator Float_()
     {
@@ -51,6 +57,8 @@ public class MrAController : MonoBehaviour
 
     IEnumerator FlyLeft_()
     {
+        _renderer.flipX = true;
+
         while (_flying && transform.position.x > _flyEnd)
         {
             transform.position -= new Vector3(10f * Time.deltaTime, 0, 0);
@@ -61,6 +69,8 @@ public class MrAController : MonoBehaviour
 
     IEnumerator FlyRight_()
     {
+        _renderer.flipX = false;
+
         while (_flying && transform.position.x < _flyEnd)
         {
             transform.position += new Vector3(10f * Time.deltaTime, 0, 0);

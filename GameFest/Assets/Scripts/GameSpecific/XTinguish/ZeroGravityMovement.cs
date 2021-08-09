@@ -25,6 +25,12 @@ public class ZeroGravityMovement : MonoBehaviour
     SpriteRenderer _healthBarFill;
     [SerializeField]
     GameObject _healthBar;
+    [SerializeField]
+    SpriteRenderer _playerSprite;
+    [SerializeField]
+    SpriteMask _spriteMask;
+
+    public Sprite[] IdleImages;
 
     // status
     float _xMovement = 0;
@@ -80,10 +86,12 @@ public class ZeroGravityMovement : MonoBehaviour
     /// Sets the colour of the suit details to match the players colour
     /// </summary>
     /// <param name="playerIndex"></param>
-    internal void SetPlayerColour(int playerIndex)
+    /// <param name="characterIndex"></param>
+    internal void SetPlayerColour(int playerIndex, int characterIndex)
     {
         _playerIndex = playerIndex;
         _colourDetails.color = ColourFetcher.GetColour(playerIndex);
+        _playerSprite.sprite = IdleImages[characterIndex];
     }
 
     // Called once per frame
@@ -111,6 +119,8 @@ public class ZeroGravityMovement : MonoBehaviour
                 _spaceman.flipX = _xMovement < 0;
                 _extinguisher.flipX = _xMovement < 0;
                 _colourDetails.flipX = _xMovement < 0;
+                _playerSprite.flipX = _xMovement < 0;
+                _spriteMask.transform.localScale = new Vector3(_xMovement < 0 ? -1 : 1, 1, 1);
             }
 
             // boost up

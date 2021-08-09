@@ -54,6 +54,7 @@ public class LobbyDisplayScript : MonoBehaviour
         // change the backgroud colour
         GetComponent<Image>().color = colour;
         PnlReady.GetComponent<Image>().color = colour;
+
         // set the image to show which device the player is using
         SetControllerIcon_();
 
@@ -143,7 +144,8 @@ public class LobbyDisplayScript : MonoBehaviour
     {
         PnlReady.gameObject.SetActive(state);
         PnlShadow.gameObject.SetActive(state);
-        PlayerManagerScript.Instance.SetGameSelectionState(!state);
+        if (_playerIndex == 0)
+            PlayerManagerScript.Instance.SetGameSelectionState(!state);
     }
 
     /// <summary>
