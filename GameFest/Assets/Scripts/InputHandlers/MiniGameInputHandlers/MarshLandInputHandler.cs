@@ -101,7 +101,6 @@ public class MarshLandInputHandler : GenericInputHandler
         // use the correct animation controller
         SetAnimation(_player, characterIndex);
 
-
         // get the jump script
         _jumpScript = _player.GetComponent<PlayerJumper>();
         _jumpScript.SetCollisionCallback(CheckFinish_);
@@ -157,6 +156,10 @@ public class MarshLandInputHandler : GenericInputHandler
 
             // celebrate
             StartCoroutine(Celebrate());
+        }
+        else
+        {
+            NextAction_();
         }
     }
 
@@ -226,8 +229,7 @@ public class MarshLandInputHandler : GenericInputHandler
             // move to next platform
             _jumpScript.Jump();
 
-            // sets the next action
-            NextAction_();
+            MarshLandController.Instance.ClearAction(_playerIndex);
 
             // can now fall in
             _leftStartPoint = true;

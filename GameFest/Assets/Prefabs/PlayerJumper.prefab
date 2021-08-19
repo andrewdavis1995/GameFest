@@ -223,7 +223,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.5526645, y: -4.244093}
+  m_Offset: {x: 0.5526645, y: -4.2106}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -234,7 +234,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 4.6692004, y: 1.7994616}
+  m_Size: {x: 4.6692004, y: 1.7324758}
   m_EdgeRadius: 0
 --- !u!1 &8475240428089446558
 GameObject:
@@ -435,4 +435,9 @@ MonoBehaviour:
   Speed: 5
   TxtPlayerName: {fileID: 5314997412158928466}
   ActivePlayerIcon: {fileID: 4004152496688009746}
+  Shadow: {fileID: 0}
+  _blingRenderers: []
+  BlingHolder: {fileID: 0}
+  Flash: {fileID: 0}
   PlayerAnimator: {fileID: 7498838797230888598}
+  ShadowAnimator: {fileID: 0}

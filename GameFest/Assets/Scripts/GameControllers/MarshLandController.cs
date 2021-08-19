@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +7,9 @@ using UnityEngine.UI;
 public class MarshLandController : GenericController
 {
     // configuration
-    private const int GAME_TIMEOUT = 120;
-    private const int MAX_POINTS = 1200;
-    private int[] POSITIONAL_POINTS = { 250, 100, 25 };
+    private const int GAME_TIMEOUT = 180;
+    private const int MAX_POINTS = 1800;
+    private int[] POSITIONAL_POINTS = { 160, 70, 20 };
 
     // Unity configuration
     public Vector2[] PlayerSpawnPositions;
@@ -286,6 +285,14 @@ public class MarshLandController : GenericController
     public void SetAction(int index, MarshLandInputAction action)
     {
         InputDisplays[index].SetAction(action, PlayerManagerScript.Instance.GetPlayers()[index].PlayerInput.devices.FirstOrDefault());
+    }
+
+    /// <summary>
+    /// Sets the action display to blank
+    /// </summary>
+    public void ClearAction(int index)
+    {
+        InputDisplays[index].ClearAction();
     }
 
     /// <summary>

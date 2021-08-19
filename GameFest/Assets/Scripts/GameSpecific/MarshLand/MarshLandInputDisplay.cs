@@ -26,11 +26,22 @@ public class MarshLandInputDisplay : MonoBehaviour
     /// <param name="device">The device the player is using</param>
     public void SetAction(MarshLandInputAction action, InputDevice device)
     {
+        ActionInput.color = new Color(1, 1, 1, 1);
+
         // display the relevant image
         if ((int)action < ControllerImages.Length)
             ActionInput.sprite = device is Gamepad ? ControllerImages[(int)action] : KeyboardImages[(int)action];
         else
             // null if not enough images
             ActionInput.sprite = null;
+    }
+
+    /// <summary>
+    /// Sets the display icon to null
+    /// </summary>
+    public void ClearAction()
+    {
+        // null if not enough images
+        ActionInput.color = new Color(0,0,0,0);
     }
 }

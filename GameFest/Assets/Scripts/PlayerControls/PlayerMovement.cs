@@ -100,7 +100,7 @@ public class PlayerMovement : MonoBehaviour
     void Animate(string animation)
     {
         PlayerAnimator.SetAnimation(animation);
-        ShadowAnimator.SetAnimation(animation);
+        ShadowAnimator?.SetAnimation(animation);
     }
 
     /// <summary>
