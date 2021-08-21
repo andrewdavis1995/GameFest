@@ -10,12 +10,12 @@ public class BowlsBallScript : MonoBehaviour
     // status variables
     bool _running = false;
     float _shadowOffsetY;
-    float _windInterval = 1f;
     Vector2 _windStrength;
 
     // constant values for drag
     const float DRAG_AIRBORNE = 0.35f;
     const float DRAG_GROUNDED = 0.6f;
+    const float WIND_INTERVAL = 0.1f;
 
     // constant values for appearance
     const float SHADOW_COLOUR_CHANGE = 0.007f;
@@ -29,7 +29,6 @@ public class BowlsBallScript : MonoBehaviour
     private void Start()
     {
         _shadowOffsetY = BallShadow.transform.localPosition.y;
-        Ball = GetComponent<SpriteRenderer>();
     }
 
     /// <summary>
@@ -37,6 +36,14 @@ public class BowlsBallScript : MonoBehaviour
     /// </summary>
     private void Update()
     {
+        // make the ball face the correct direction
+        if (_running)
+        {
+            Vector2 dir = Body.velocity;
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
+            Ball.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        }
+
         // if the ball is moving and slows to below specified speed, stop the ball
         if (Math.Abs(Body.velocity.y) < 0.2f && _running)
         {
@@ -46,6 +53,20 @@ public class BowlsBallScript : MonoBehaviour
             // tell the controller that the ball stopped
             BeachBowlesController.Instance.BallStopped();
         }
+
+        // stop wind when slows enough
+        if (Math.Abs(Body.velocity.y) < 1.5f && _running)
+        {
+            DecreaseWind_(2);
+        }
+    }
+
+    /// <summary>
+    /// Put the ball back to its original state
+    /// </summary>
+    public void ResetBall()
+    {
+        Ball.transform.eulerAngles = Vector3.zero;
     }
 
     /// <summary>
@@ -77,6 +98,25 @@ public class BowlsBallScript : MonoBehaviour
     }
 
     /// <summary>
+    /// Called when the ball collides with an object
+    /// </summary>
+    /// <param name="collision">The object it stopped colliding with</param>
+    public void OnCollisionEnter2D(Collision2D collision)
+    {
+        // if it is a zone area, tell the controller that the ball left the zone
+        if (collision.gameObject.tag == "Stick")
+        {
+            // centre stick
+            if (collision.gameObject.name == "Centre Stick")
+                BeachBowlesController.Instance.CentreStickHit();
+
+            // stick of double points
+            else if (collision.gameObject.name == "Stick of Double Points")
+                BeachBowlesController.Instance.StickOfDoublePointsHit();
+        }
+    }
+
+    /// <summary>
     /// Called when the ball is throw
     /// </summary>
     /// <param name="overarm">Whether the ball was thrown overarm</param>
@@ -90,8 +130,18 @@ public class BowlsBallScript : MonoBehaviour
         // if the ball was overarm, we need to control the shadow and the size of the ball
         if (overarm)
             StartCoroutine(ControlHeight(power));
+        else
+            DecreaseWind_(3);
 
         StartCoroutine(WindMovement_());
+    }
+
+    /// <summary>
+    /// Wind is less strong when ball is on ground
+    /// </summary>
+    private void DecreaseWind_(int factor)
+    {
+        _windStrength /= factor;
     }
 
     /// <summary>
@@ -100,10 +150,10 @@ public class BowlsBallScript : MonoBehaviour
     private IEnumerator WindMovement_()
     {
         // continue while running/rolling
-        while(_running)
+        while (_running)
         {
-            yield return new WaitForSeconds(_windInterval);
-            transform.Translate(_windStrength * new Vector2(1, -1));    // need to flip the Y, since -1 means down
+            yield return new WaitForSeconds(WIND_INTERVAL);
+            Body.AddForce(_windStrength * 50 * new Vector2(1, -1));
         }
     }
 
@@ -111,7 +161,6 @@ public class BowlsBallScript : MonoBehaviour
     {
         // reduce drag while in the air
         Body.drag = DRAG_AIRBORNE;
-        _windInterval = 0.1f;
 
         var maxOffset = power * -2.5f;
 
@@ -146,7 +195,9 @@ public class BowlsBallScript : MonoBehaviour
 
         // increase drag now that we are on the ground
         Body.drag = DRAG_GROUNDED;
-        _windInterval = 1f;
+
+        // wind has less affect
+        DecreaseWind_(3);
     }
 
     /// <summary>
@@ -161,6 +212,6 @@ public class BowlsBallScript : MonoBehaviour
         BallShadow.color = new Color(0, 0, 0, BallShadow.color.a + shadowColourChange);
         BallShadow.transform.localScale += new Vector3(shadowScaleOffset, shadowScaleOffset, 0);
         Ball.transform.localScale -= new Vector3(ballScaleOffset, ballScaleOffset, 0);
-        BallShadow.transform.localPosition = new Vector3(0, shadowOffset, 0);
+        BallShadow.transform.localPosition = new Vector3(0, shadowOffset, 0.5f);
     }
 }

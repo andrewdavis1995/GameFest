@@ -3,6 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
+
+struct PlayerScores
+{
+    public PlayerControls Player { get; set; }
+    public int[][] Scores { get; set; }
+}
 
 /// <summary>
 /// Controller for the "Beach Bowles" game
@@ -13,6 +20,9 @@ public class BeachBowlesController : MonoBehaviour
     public Rigidbody2D Ball;
     public BowlsBallScript BallScript;
     public Transform Arrow;
+    public Image ThrowStyleImage;
+    public Sprite[] ThrowStyleSprites;
+    public Image WindImage;
 
     // status variables
     bool _selectingDirection = false;
@@ -22,6 +32,13 @@ public class BeachBowlesController : MonoBehaviour
     List<BowlZoneScript> _activeZones = new List<BowlZoneScript>();
     int _activePlayerIndex = 0;
     Vector2 _windDirection = new Vector2(0, 0);
+    int _pointsThisThrow = 0;
+    int _doubleFactor = 1;
+    bool _doubleHitThisThrow = false;
+    bool _centreHitThisThrow = false;
+
+    int _throwIndex = 0;
+    int _roundIndex = 0;
 
     // constants for the arrow/start position
     const float SWING_AMOUNT = 40f;
@@ -33,6 +50,7 @@ public class BeachBowlesController : MonoBehaviour
     const float FIRE_FORCE = 3000;
     const float DRAG_SKY = 0.7f;
     const float DRAG_GROUND = 1.4f;
+    const float CAMERA_OFFSET = -9f;
 
     // static instance that can be accessed from other scripts
     public static BeachBowlesController Instance;
@@ -55,9 +73,22 @@ public class BeachBowlesController : MonoBehaviour
     /// </summary>
     internal void BallStopped()
     {
-        // TODO: add a delay
-        // TODO: update UI
-        Debug.Log(_activeZones.Count + " - " + _activeZones.LastOrDefault()?.PointValue);
+        _pointsThisThrow += _activeZones.Count > 0 ? _activeZones.LastOrDefault().PointValue : 0;
+        StartCoroutine(ShowPoints_());
+    }
+
+    /// <summary>
+    /// Shows the points 
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator ShowPoints_()
+    {
+        yield return new WaitForSeconds(1);
+
+        // TODO: Show in UI
+        Debug.Log(_pointsThisThrow);
+
+        yield return new WaitForSeconds(2);
 
         // move everything back to their original locations
         ResetPositions_();
@@ -70,16 +101,41 @@ public class BeachBowlesController : MonoBehaviour
     {
         // clear statuses
         _overarm = false;
+        ThrowStyleImage.sprite = ThrowStyleSprites[_overarm ? 1 : 0];
+
         _activeZones.Clear();
+
+        // info about this round
+        _pointsThisThrow = 0;
+        _doubleHitThisThrow = false;
+        _centreHitThisThrow = false;
 
         // move items back
         Ball.transform.localPosition = _ballLocation;
         Arrow.localScale = new Vector3(1, 1, 1);
-        Arrow.eulerAngles = new Vector3(0, 0, 0);
         Ball.transform.eulerAngles = new Vector3(0, 0, 0);
+        Ball.GetComponent<BowlsBallScript>().ResetBall();
 
         // start moving arrow again
         StartCoroutine(SelectDirection());
+    }
+
+    /// <summary>
+    /// Called when the centre stick is hit by the ball
+    /// </summary>
+    public void CentreStickHit()
+    {
+        _centreHitThisThrow = false;
+        _pointsThisThrow += 500;
+    }
+
+    /// <summary>
+    /// Called when the Stick of Double points is hit
+    /// </summary>
+    public void StickOfDoublePointsHit()
+    {
+        _doubleFactor *= 2;
+        _doubleHitThisThrow = true;
     }
 
     /// <summary>
@@ -87,10 +143,11 @@ public class BeachBowlesController : MonoBehaviour
     /// </summary>
     IEnumerator SelectDirection()
     {
-        SetWind_();
+        SetWind_(); // TODO: Move to start of new round
 
         // show the arrow
         Arrow.eulerAngles = new Vector3(0, 0, 0);
+        yield return new WaitForSeconds(0.1f);  // ensure the ball has reset before showing arrow
         Arrow.gameObject.SetActive(true);
 
         _selectingDirection = true;
@@ -122,9 +179,22 @@ public class BeachBowlesController : MonoBehaviour
         StartCoroutine(SelectDistance());
     }
 
+    /// <summary>
+    /// Sets the wind direction
+    /// </summary>
     private void SetWind_()
     {
-        _windDirection = new Vector2(UnityEngine.Random.Range(-1, 1), UnityEngine.Random.Range(-1, 1));
+        float xWind = UnityEngine.Random.Range(-400f, 400f) / 1000f;
+        float yWind = 0;
+
+        _windDirection = new Vector2(xWind, yWind);
+        Debug.Log("Wind set as " + _windDirection.x + ", " + _windDirection.y);
+
+        var size = Math.Abs(xWind);
+        var flip = xWind > 0;
+
+        WindImage.rectTransform.eulerAngles = flip ? new Vector3(0, 0, 180) : Vector3.zero;
+        WindImage.rectTransform.localScale = new Vector3(size, 1, 1);
     }
 
     /// <summary>
@@ -168,6 +238,7 @@ public class BeachBowlesController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.P) && _selectingDirection)
         {
             _overarm = !_overarm;
+            ThrowStyleImage.sprite = ThrowStyleSprites[_overarm ? 1 : 0];
         }
         if (Input.GetKey(KeyCode.LeftArrow))
         {
@@ -179,7 +250,7 @@ public class BeachBowlesController : MonoBehaviour
         }
 
         // follow the ball
-        Camera.main.transform.localPosition = Ball.transform.localPosition - new Vector3(0, 0, 5);
+        Camera.main.transform.localPosition = Ball.transform.localPosition - new Vector3(CAMERA_OFFSET, 0, 5);
     }
 
     /// <summary>
@@ -227,7 +298,7 @@ public class BeachBowlesController : MonoBehaviour
         Ball.AddRelativeForce(Vector2.up * FIRE_FORCE * Arrow.localScale.y);
 
         // delay before setting the ball as active, so the velocity check does not apply immediately
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.1f);
         BallScript.Started(_overarm, Arrow.localScale.y, _windDirection);
     }
 
