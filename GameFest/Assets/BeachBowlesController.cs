@@ -23,6 +23,13 @@ public class BeachBowlesController : MonoBehaviour
     public Image ThrowStyleImage;
     public Sprite[] ThrowStyleSprites;
     public Image WindImage;
+    public Image ActivePlayerColour;
+    public Text TxtActivePlayerName;
+
+    // score controls
+    public BeachScoreDisplayScript[] RoundControls;
+    public BeachScoreDisplayScript RoundTotalScore;
+    public OverallBeachDisplayScoreScript[] PlayerScores;
 
     // status variables
     bool _selectingDirection = false;
@@ -36,6 +43,7 @@ public class BeachBowlesController : MonoBehaviour
     int _doubleFactor = 1;
     bool _doubleHitThisThrow = false;
     bool _centreHitThisThrow = false;
+    List<BeachBowlesInputHandler> _players = new List<BeachBowlesInputHandler>();
 
     int _throwIndex = 0;
     int _roundIndex = 0;
@@ -52,6 +60,8 @@ public class BeachBowlesController : MonoBehaviour
     const float DRAG_GROUND = 1.4f;
     const float CAMERA_OFFSET = -9f;
 
+    private const int NUMBER_OF_ROUNDS = 3;
+
     // static instance that can be accessed from other scripts
     public static BeachBowlesController Instance;
 
@@ -61,11 +71,57 @@ public class BeachBowlesController : MonoBehaviour
         // store static instance
         Instance = this;
 
+        SpawnPlayers_();
+
+        SetWind_(0, 100);
+        DisplayActivePlayer_();
+
         // get the location of the ball at the start
         _ballLocation = Ball.transform.localPosition;
 
+        InitialiseScoreDisplays_();
+
         // move everything to starting position
         ResetPositions_();
+    }
+
+    /// <summary>
+    /// Creates the player objects and assigns required script
+    /// </summary>
+    private List<Transform> SpawnPlayers_()
+    {
+        var playerTransforms = new List<Transform>();
+
+        // loop through all players
+        foreach (var player in PlayerManagerScript.Instance.GetPlayers())
+        {
+            // switch to use an input handler suitable for this scene
+            player.SetActiveScript(typeof(BeachBowlesInputHandler));
+            // create the "visual" player at the start point
+            player.Spawn(null, Vector3.zero);
+            _players.Add(player.GetComponent<BeachBowlesInputHandler>());
+        }
+
+        return playerTransforms;
+    }
+
+    /// <summary>
+    /// Sets up the score displays with the correct cololur and names, and hides the unused ones
+    /// </summary>
+    private void InitialiseScoreDisplays_()
+    {
+        // initialise each of the players displays
+        for (int i = 0; i < _players.Count(); i++)
+        {
+            PlayerScores[i].gameObject.SetActive(true);
+            PlayerScores[i].SetColour(_players[i].GetPlayerName(), _players[i].GetPlayerIndex());
+        }
+
+        // remove unused items
+        for (int i = _players.Count(); i < PlayerScores.Count(); i++)
+        {
+            PlayerScores[i].gameObject.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -78,6 +134,49 @@ public class BeachBowlesController : MonoBehaviour
     }
 
     /// <summary>
+    /// Checks if the ball went out of bounds, and behaves accordingly
+    /// </summary>
+    void CheckOutOfBounds_(int index)
+    {
+        // -9999 is used for zones outwith playing area
+        if (_pointsThisThrow == -9999)
+        {
+            _doubleFactor = 1;
+            _centreHitThisThrow = false;
+            _doubleHitThisThrow = false;
+            _pointsThisThrow = 0;
+
+            RoundControls[_throwIndex].OutOfBounds();
+            PlayerScores[_activePlayerIndex].IndividualBreakDowns[index].OutOfBounds();
+
+            for (int i = 0; i < _throwIndex; i++)
+            {
+                RoundControls[i].Cancelled();
+            }
+
+            for (int i = index - _throwIndex; i < index; i++)
+            {
+                PlayerScores[_activePlayerIndex].IndividualBreakDowns[i].Cancelled();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Displays the total score for the round
+    /// </summary>
+    void UpdateRoundTotalScore_()
+    {
+        var roundScore = 0;
+        foreach (var v in RoundControls)
+            roundScore += v.GetValue();
+
+        roundScore *= _doubleFactor;
+
+        RoundTotalScore.SetValue(roundScore);
+        PlayerScores[_activePlayerIndex].RoundTotalScores[_roundIndex].SetValue(roundScore);
+    }
+
+    /// <summary>
     /// Shows the points 
     /// </summary>
     /// <returns></returns>
@@ -85,13 +184,113 @@ public class BeachBowlesController : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
 
-        // TODO: Show in UI
-        Debug.Log(_pointsThisThrow);
+        var index = _roundIndex * 3 + _throwIndex;
+
+        PlayerScores[_activePlayerIndex].IndividualBreakDowns[index].SetValue(_pointsThisThrow);
+        RoundControls[_throwIndex].SetValue(_pointsThisThrow);
+        CheckOutOfBounds_(index);
+
+        if (_doubleHitThisThrow)
+        {
+            RoundControls[_throwIndex].Double();
+            PlayerScores[_activePlayerIndex].IndividualBreakDowns[index].Double();
+        }
+
+        UpdateRoundTotalScore_();
+        UpdateTotalScores_();
 
         yield return new WaitForSeconds(2);
 
         // move everything back to their original locations
         ResetPositions_();
+
+        _throwIndex++;
+
+        if (_throwIndex > 2)
+            NextPlayer_();
+    }
+
+    /// <summary>
+    /// Displays scores for each player
+    /// </summary>
+    private void UpdateTotalScores_()
+    {
+        foreach (var player in PlayerScores)
+        {
+            var score = 0;
+            foreach (var control in player.RoundTotalScores)
+            {
+                score += control.GetValue();
+            }
+            player.TxtTotalScore.text = score.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Move to the next player/round
+    /// </summary>
+    private void NextPlayer_()
+    {
+        _throwIndex = 0;
+
+        _activePlayerIndex++;
+
+        if (_activePlayerIndex == _players.Count)
+        {
+            _activePlayerIndex = 0;
+            _roundIndex++;
+
+            SetWind_(_roundIndex * 140, _roundIndex * 250);
+
+            if (_roundIndex >= NUMBER_OF_ROUNDS)
+            {
+                EndGame_();
+            }
+        }
+
+        foreach (var score in RoundControls)
+            score.ResetControl();
+
+        RoundTotalScore.ResetControl();
+        _doubleFactor = 1;
+
+        DisplayActivePlayer_();
+    }
+
+    /// <summary>
+    /// Displays the name and colour of active player
+    /// </summary>
+    private void DisplayActivePlayer_()
+    {
+        var colour = ColourFetcher.GetColour(_players[_activePlayerIndex].GetPlayerIndex());
+        TxtActivePlayerName.text = _players[_activePlayerIndex].GetPlayerName();
+        ActivePlayerColour.color = colour;
+        Arrow.GetComponentInChildren<SpriteRenderer>().color = colour;
+
+        // display player active colour
+        for(int i = 0; i < PlayerScores.Count(); i++)
+        {
+            Debug.Log(i == _activePlayerIndex);
+            PlayerScores[i].ImgActiveOverlay.SetActive(i == _activePlayerIndex);
+        }
+    }
+
+    /// <summary>
+    /// Ends the game and returns to the menu
+    /// </summary>
+    private void EndGame_()
+    {
+        for(int i = 0; i < PlayerScores.Length && i < _players.Count; i++)
+        {
+            var score = 0;
+            foreach (var control in PlayerScores[i].RoundTotalScores)
+            {
+                score += control.GetValue();
+            }
+
+            _players[i].AddPoints(score);
+        }
+        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }
 
     /// <summary>
@@ -143,8 +342,6 @@ public class BeachBowlesController : MonoBehaviour
     /// </summary>
     IEnumerator SelectDirection()
     {
-        SetWind_(); // TODO: Move to start of new round
-
         // show the arrow
         Arrow.eulerAngles = new Vector3(0, 0, 0);
         yield return new WaitForSeconds(0.1f);  // ensure the ball has reset before showing arrow
@@ -182,18 +379,21 @@ public class BeachBowlesController : MonoBehaviour
     /// <summary>
     /// Sets the wind direction
     /// </summary>
-    private void SetWind_()
+    private void SetWind_(int min, int max)
     {
-        float xWind = UnityEngine.Random.Range(-400f, 400f) / 1000f;
-        float yWind = 0;
+        var value = UnityEngine.Random.Range(min, max);
+        var flip = UnityEngine.Random.Range(0, 1) == 1;
 
-        _windDirection = new Vector2(xWind, yWind);
+        float xWind = value / 1000f;
+        if (flip)
+            xWind *= -1;
+
+        _windDirection = new Vector2(xWind, 0);
         Debug.Log("Wind set as " + _windDirection.x + ", " + _windDirection.y);
 
         var size = Math.Abs(xWind);
-        var flip = xWind > 0;
 
-        WindImage.rectTransform.eulerAngles = flip ? new Vector3(0, 0, 180) : Vector3.zero;
+        WindImage.rectTransform.eulerAngles = xWind > 0 ? new Vector3(0, 0, 180) : Vector3.zero;
         WindImage.rectTransform.localScale = new Vector3(size, 1, 1);
     }
 
@@ -230,43 +430,36 @@ public class BeachBowlesController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // TODO: Move to proper inputs
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            ConfirmPressed_();
-        }
-        if (Input.GetKeyDown(KeyCode.P) && _selectingDirection)
+        // follow the ball
+        Camera.main.transform.localPosition = Ball.transform.localPosition - new Vector3(CAMERA_OFFSET, 0, 5);
+    }
+
+    public void TrianglePressed(int playerIndex)
+    {
+        if (_selectingDirection && playerIndex == _activePlayerIndex)
         {
             _overarm = !_overarm;
             ThrowStyleImage.sprite = ThrowStyleSprites[_overarm ? 1 : 0];
         }
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            MoveLeft_();
-        }
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-            MoveRight_();
-        }
-
-        // follow the ball
-        Camera.main.transform.localPosition = Ball.transform.localPosition - new Vector3(CAMERA_OFFSET, 0, 5);
     }
 
     /// <summary>
     /// When the confirm button is pressed
     /// </summary>
-    private void ConfirmPressed_()
+    public void ConfirmPressed(int index)
     {
-        // clear status variables
-        _selectingDirection = false;
-        _selectingDistance = false;
+        if (index == _activePlayerIndex)
+        {
+            // clear status variables
+            _selectingDirection = false;
+            _selectingDistance = false;
+        }
     }
 
     /// <summary>
     /// When the user chooses to move left
     /// </summary>
-    private void MoveLeft_()
+    public void MoveLeft()
     {
         // only allow moving when choosing direction
         if (_selectingDirection && Ball.transform.localPosition.x > -MOVE_FREEDOM)
@@ -276,7 +469,7 @@ public class BeachBowlesController : MonoBehaviour
     /// <summary>
     /// When the user chooses to move right
     /// </summary>
-    private void MoveRight_()
+    public void MoveRight()
     {
         // only allow moving when choosing direction
         if (_selectingDirection && Ball.transform.localPosition.x < MOVE_FREEDOM)
