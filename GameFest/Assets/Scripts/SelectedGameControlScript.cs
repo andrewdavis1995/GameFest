@@ -14,8 +14,6 @@ public class SelectedGameControlScript : MonoBehaviour
     public void SetImage(Scene game)
     {
         var index = (int)game - OFFSET;
-        Debug.Log(game);
-        Debug.Log(index);
         RendererLogo.sprite = GameLogos[index];
         RendererBackground.sprite = GameBackgrounds[index];
 

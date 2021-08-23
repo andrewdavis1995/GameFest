@@ -14,7 +14,7 @@ struct PlayerScores
 /// <summary>
 /// Controller for the "Beach Bowles" game
 /// </summary>
-public class BeachBowlesController : MonoBehaviour
+public class BeachBowlesController : GenericController
 {
     // Unity items
     public Rigidbody2D Ball;
@@ -25,6 +25,9 @@ public class BeachBowlesController : MonoBehaviour
     public Image WindImage;
     public Image ActivePlayerColour;
     public Text TxtActivePlayerName;
+    public Text TxtShotCountDown;
+    public Vector3 CameraZoomPosition;
+    public TransitionFader EndFader;            // Fader for the end of game
 
     // score controls
     public BeachScoreDisplayScript[] RoundControls;
@@ -35,7 +38,8 @@ public class BeachBowlesController : MonoBehaviour
     bool _selectingDirection = false;
     bool _selectingDistance = false;
     bool _overarm = false;
-    Vector2 _ballLocation = Vector2.zero;
+    Vector3 _ballLocation = Vector3.zero;
+    Vector3 _cameraLocation = Vector3.zero;
     List<BowlZoneScript> _activeZones = new List<BowlZoneScript>();
     int _activePlayerIndex = 0;
     Vector2 _windDirection = new Vector2(0, 0);
@@ -44,6 +48,8 @@ public class BeachBowlesController : MonoBehaviour
     bool _doubleHitThisThrow = false;
     bool _centreHitThisThrow = false;
     List<BeachBowlesInputHandler> _players = new List<BeachBowlesInputHandler>();
+    bool _cameraPreview;
+    TimeLimit _playerLimit;
 
     int _throwIndex = 0;
     int _roundIndex = 0;
@@ -59,6 +65,7 @@ public class BeachBowlesController : MonoBehaviour
     const float DRAG_SKY = 0.7f;
     const float DRAG_GROUND = 1.4f;
     const float CAMERA_OFFSET = -9f;
+    const float CAMERA_MOVE_SPEED = 75f;
 
     private const int NUMBER_OF_ROUNDS = 3;
 
@@ -74,13 +81,43 @@ public class BeachBowlesController : MonoBehaviour
         SpawnPlayers_();
 
         SetWind_(0, 100);
-        DisplayActivePlayer_();
+
+        // fade in
+        EndFader.StartFade(1, 0, FadeInComplete);
+        _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _playerLimit.Initialise(30, DisplayCountdown, PlayerTimeoutCallback);
 
         // get the location of the ball at the start
         _ballLocation = Ball.transform.localPosition;
+        _cameraLocation = Camera.main.transform.localPosition;
 
         InitialiseScoreDisplays_();
+    }
 
+    private void DisplayCountdown(int time)
+    {
+        TxtShotCountDown.text = TextFormatter.GetTimeString(time);
+    }
+
+    private void PlayerTimeoutCallback()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            PlayerScores[_activePlayerIndex].IndividualBreakDowns[i].Cancelled();
+            RoundControls[i].Cancelled();
+        }
+    }
+
+    void FadeInComplete()
+    {
+        PauseGameHandler.Instance.Pause(true, StartGame);
+    }
+
+    void StartGame()
+    {
+        DisplayActivePlayer_();
+        _playerLimit.Restart();
+        _playerLimit.StartTimer();
         // move everything to starting position
         ResetPositions_();
     }
@@ -139,11 +176,9 @@ public class BeachBowlesController : MonoBehaviour
     void CheckOutOfBounds_(int index)
     {
         // -9999 is used for zones outwith playing area
-        if (_pointsThisThrow == -9999)
+        if (_pointsThisThrow == -9999 && !_doubleHitThisThrow && !_centreHitThisThrow)
         {
             _doubleFactor = 1;
-            _centreHitThisThrow = false;
-            _doubleHitThisThrow = false;
             _pointsThisThrow = 0;
 
             RoundControls[_throwIndex].OutOfBounds();
@@ -202,6 +237,13 @@ public class BeachBowlesController : MonoBehaviour
         yield return new WaitForSeconds(2);
 
         // move everything back to their original locations
+        NextShot_();
+    }
+
+    private void NextShot_()
+    {
+        _playerLimit.Restart();
+
         ResetPositions_();
 
         _throwIndex++;
@@ -268,9 +310,8 @@ public class BeachBowlesController : MonoBehaviour
         Arrow.GetComponentInChildren<SpriteRenderer>().color = colour;
 
         // display player active colour
-        for(int i = 0; i < PlayerScores.Count(); i++)
+        for (int i = 0; i < PlayerScores.Count(); i++)
         {
-            Debug.Log(i == _activePlayerIndex);
             PlayerScores[i].ImgActiveOverlay.SetActive(i == _activePlayerIndex);
         }
     }
@@ -280,7 +321,7 @@ public class BeachBowlesController : MonoBehaviour
     /// </summary>
     private void EndGame_()
     {
-        for(int i = 0; i < PlayerScores.Length && i < _players.Count; i++)
+        for (int i = 0; i < PlayerScores.Length && i < _players.Count; i++)
         {
             var score = 0;
             foreach (var control in PlayerScores[i].RoundTotalScores)
@@ -325,7 +366,7 @@ public class BeachBowlesController : MonoBehaviour
     public void CentreStickHit()
     {
         _centreHitThisThrow = false;
-        _pointsThisThrow += 500;
+        _pointsThisThrow += 80;
     }
 
     /// <summary>
@@ -382,14 +423,13 @@ public class BeachBowlesController : MonoBehaviour
     private void SetWind_(int min, int max)
     {
         var value = UnityEngine.Random.Range(min, max);
-        var flip = UnityEngine.Random.Range(0, 1) == 1;
+        var flip = UnityEngine.Random.Range(0, 2) == 1;
 
         float xWind = value / 1000f;
         if (flip)
             xWind *= -1;
 
         _windDirection = new Vector2(xWind, 0);
-        Debug.Log("Wind set as " + _windDirection.x + ", " + _windDirection.y);
 
         var size = Math.Abs(xWind);
 
@@ -430,8 +470,11 @@ public class BeachBowlesController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // follow the ball
-        Camera.main.transform.localPosition = Ball.transform.localPosition - new Vector3(CAMERA_OFFSET, 0, 5);
+        if (!_cameraPreview)
+        {
+            // follow the ball
+            Camera.main.transform.localPosition = Ball.transform.localPosition - new Vector3(CAMERA_OFFSET, 0, 5);
+        }
     }
 
     public void TrianglePressed(int playerIndex)
@@ -448,7 +491,7 @@ public class BeachBowlesController : MonoBehaviour
     /// </summary>
     public void ConfirmPressed(int index)
     {
-        if (index == _activePlayerIndex)
+        if (index == _activePlayerIndex && !_cameraPreview)
         {
             // clear status variables
             _selectingDirection = false;
@@ -459,20 +502,20 @@ public class BeachBowlesController : MonoBehaviour
     /// <summary>
     /// When the user chooses to move left
     /// </summary>
-    public void MoveLeft()
+    public void MoveLeft(int index)
     {
         // only allow moving when choosing direction
-        if (_selectingDirection && Ball.transform.localPosition.x > -MOVE_FREEDOM)
+        if (_selectingDirection && Ball.transform.localPosition.x > -MOVE_FREEDOM && index == _activePlayerIndex)
             Ball.transform.Translate(new Vector3(-0.1f, 0, 0));
     }
 
     /// <summary>
     /// When the user chooses to move right
     /// </summary>
-    public void MoveRight()
+    public void MoveRight(int index)
     {
         // only allow moving when choosing direction
-        if (_selectingDirection && Ball.transform.localPosition.x < MOVE_FREEDOM)
+        if (_selectingDirection && Ball.transform.localPosition.x < MOVE_FREEDOM && index == _activePlayerIndex)
             Ball.transform.Translate(new Vector3(0.1f, 0, 0));
     }
 
@@ -481,6 +524,8 @@ public class BeachBowlesController : MonoBehaviour
     /// </summary>
     private IEnumerator Fire_()
     {
+        _playerLimit.Abort();
+
         // rotate the ball
         Ball.transform.eulerAngles = Arrow.eulerAngles;
 
@@ -513,5 +558,31 @@ public class BeachBowlesController : MonoBehaviour
     {
         // remove from the active zone list
         _activeZones.Remove(zone);
+    }
+
+    public void CameraPreview(int index)
+    {
+        if (index == _activePlayerIndex && !_cameraPreview)
+        {
+            StartCoroutine(CameraPreview_());
+        }
+    }
+
+    private IEnumerator CameraPreview_()
+    {
+        _cameraPreview = true;
+        while (Camera.main.transform.localPosition.y < CameraZoomPosition.y)
+        {
+            Camera.main.transform.Translate(new Vector3(0, CAMERA_MOVE_SPEED * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+        yield return new WaitForSeconds(2f);
+        while (Camera.main.transform.localPosition.y > _cameraLocation.y)
+        {
+            Camera.main.transform.Translate(new Vector3(0, -CAMERA_MOVE_SPEED * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+        Camera.main.transform.localPosition = _cameraLocation;
+        _cameraPreview = false;
     }
 }

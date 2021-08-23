@@ -7,8 +7,8 @@ public class BeachBowlesInputHandler : GenericInputHandler
 
     private void Update()
     {
-        if (_movementX < -0.1f) BeachBowlesController.Instance.MoveLeft();
-        if (_movementX > 0.1f) BeachBowlesController.Instance.MoveRight();
+        if (_movementX < -0.1f) BeachBowlesController.Instance.MoveLeft(GetPlayerIndex());
+        if (_movementX > 0.1f) BeachBowlesController.Instance.MoveRight(GetPlayerIndex());
     }
 
     /// <summary>
@@ -22,7 +22,6 @@ public class BeachBowlesInputHandler : GenericInputHandler
     public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
     {
         base.Spawn(prefab, position, characterIndex, playerName, playerIndex);
-
         return null;
     }
 
@@ -51,5 +50,28 @@ public class BeachBowlesInputHandler : GenericInputHandler
         // the vector of the movement input from the user
         var movement = ctx.ReadValue<Vector2>();
         _movementX = movement.x;
+    }
+
+    public override void OnR1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.NextPage();
+        }
+        else
+        {
+            BeachBowlesController.Instance.CameraPreview(GetPlayerIndex());
+        }
+    }
+
+    /// <summary>
+    /// When the L1 event is triggered
+    /// </summary>
+    public override void OnL1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.PreviousPage();
+        }
     }
 }
