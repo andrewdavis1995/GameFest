@@ -165,7 +165,7 @@ public class LobbyInputHandler : GenericInputHandler
     /// </summary>
     private void GameSelectionComplete_()
     {
-        if (PlayerManagerScript.Instance.SelectedGames.Count > 2)
+        if (PlayerManagerScript.Instance.SelectedGames.Count > 0)
         {
             _state.SetState(PlayerStateEnum.Ready);
             _display.ShowReadyPanel(true);
@@ -173,7 +173,7 @@ public class LobbyInputHandler : GenericInputHandler
         else
         {
             // Not enough games selected
-            StartCoroutine(_display.ShowError("Please select at least 3 games"));
+            StartCoroutine(_display.ShowError("Please select at least 1 game"));
         }
     }
 

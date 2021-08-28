@@ -48,6 +48,7 @@ public class BeachScoreDisplayScript : MonoBehaviour
 
     public void Double()
     {
+        _value = _value > 0 ? _value : 0;
         imgDouble.SetActive(true);
     }
 }

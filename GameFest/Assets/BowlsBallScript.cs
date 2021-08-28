@@ -22,13 +22,14 @@ public class BowlsBallScript : MonoBehaviour
 
     // Unity objects
     public Rigidbody2D Body;
-    public SpriteRenderer BallShadow;
+    public Transform BallShadow;
+    public SpriteRenderer BallShadowSprite;
     public SpriteRenderer Ball;
 
     // Called upon startup
     private void Start()
     {
-        _shadowOffsetY = BallShadow.transform.localPosition.y;
+        _shadowOffsetY = BallShadowSprite.transform.localPosition.y;
     }
 
     /// <summary>
@@ -43,6 +44,8 @@ public class BowlsBallScript : MonoBehaviour
             float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
             Ball.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
         }
+
+        BallShadow.transform.rotation = Quaternion.Euler(0.0f, 0.0f, gameObject.transform.rotation.z * -1f);
 
         // if the ball is moving and slows to below specified speed, stop the ball
         if (Math.Abs(Body.velocity.y) < 0.2f && _running)
@@ -209,9 +212,9 @@ public class BowlsBallScript : MonoBehaviour
     /// <param name="shadowColourChange">How much to change the alpha value of the colour of the shadow by (can be negative)</param>
     void MoveBallHeight_(float shadowOffset, float ballScaleOffset, float shadowScaleOffset, float shadowColourChange)
     {
-        BallShadow.color = new Color(0, 0, 0, BallShadow.color.a + shadowColourChange);
-        BallShadow.transform.localScale += new Vector3(shadowScaleOffset, shadowScaleOffset, 0);
+        BallShadowSprite.color = new Color(0, 0, 0, BallShadowSprite.color.a + shadowColourChange);
+        BallShadowSprite.transform.localScale += new Vector3(shadowScaleOffset, shadowScaleOffset, 0);
         Ball.transform.localScale -= new Vector3(ballScaleOffset, ballScaleOffset, 0);
-        BallShadow.transform.localPosition = new Vector3(0, shadowOffset, 0.5f);
+        BallShadowSprite.transform.localPosition = new Vector3(0, shadowOffset, 0.5f);
     }
 }

@@ -20,6 +20,7 @@ public class BeachBowlesController : GenericController
     public Rigidbody2D Ball;
     public BowlsBallScript BallScript;
     public Transform Arrow;
+    public Transform MaxPowerLine;
     public Image ThrowStyleImage;
     public Sprite[] ThrowStyleSprites;
     public Image WindImage;
@@ -28,6 +29,7 @@ public class BeachBowlesController : GenericController
     public Text TxtShotCountDown;
     public Vector3 CameraZoomPosition;
     public TransitionFader EndFader;            // Fader for the end of game
+    public SwooshController SwooshControls;
 
     // score controls
     public BeachScoreDisplayScript[] RoundControls;
@@ -50,6 +52,7 @@ public class BeachBowlesController : GenericController
     List<BeachBowlesInputHandler> _players = new List<BeachBowlesInputHandler>();
     bool _cameraPreview;
     TimeLimit _playerLimit;
+    bool _cancelled = false;
 
     int _throwIndex = 0;
     int _roundIndex = 0;
@@ -101,11 +104,26 @@ public class BeachBowlesController : GenericController
 
     private void PlayerTimeoutCallback()
     {
+        _cancelled = true;
+        _selectingDirection = false;
+        _selectingDistance = false;
+        StopAllCoroutines();
+
+        var startIndex = _roundIndex * 3;
         for (int i = 0; i < 3; i++)
         {
-            PlayerScores[_activePlayerIndex].IndividualBreakDowns[i].Cancelled();
+            PlayerScores[_activePlayerIndex].IndividualBreakDowns[startIndex + i].Cancelled();
             RoundControls[i].Cancelled();
         }
+        _throwIndex = 2;
+        StartCoroutine(TimeOutReset_());
+    }
+
+    IEnumerator TimeOutReset_()
+    {
+        // TODO: Show message
+        yield return new WaitForSeconds(2);
+        NextShot_();
     }
 
     void FadeInComplete()
@@ -116,8 +134,6 @@ public class BeachBowlesController : GenericController
     void StartGame()
     {
         DisplayActivePlayer_();
-        _playerLimit.Restart();
-        _playerLimit.StartTimer();
         // move everything to starting position
         ResetPositions_();
     }
@@ -166,7 +182,9 @@ public class BeachBowlesController : GenericController
     /// </summary>
     internal void BallStopped()
     {
-        _pointsThisThrow += _activeZones.Count > 0 ? _activeZones.LastOrDefault().PointValue : 0;
+        var points  = _activeZones.Count > 0 ? _activeZones.LastOrDefault().PointValue : 0;
+        if (points < 0 && (_centreHitThisThrow || _doubleHitThisThrow)) points = 0;
+        _pointsThisThrow += points;
         StartCoroutine(ShowPoints_());
     }
 
@@ -242,7 +260,7 @@ public class BeachBowlesController : GenericController
 
     private void NextShot_()
     {
-        _playerLimit.Restart();
+        _cancelled = false;
 
         ResetPositions_();
 
@@ -275,6 +293,8 @@ public class BeachBowlesController : GenericController
     {
         _throwIndex = 0;
 
+        SwooshControls.DoSwoosh(Camera.main, Camera.main, null);
+
         _activePlayerIndex++;
 
         if (_activePlayerIndex == _players.Count)
@@ -286,7 +306,7 @@ public class BeachBowlesController : GenericController
 
             if (_roundIndex >= NUMBER_OF_ROUNDS)
             {
-                EndGame_();
+                Complete();
             }
         }
 
@@ -297,6 +317,31 @@ public class BeachBowlesController : GenericController
         _doubleFactor = 1;
 
         DisplayActivePlayer_();
+    }
+
+    private void Complete()
+    {
+        for (int i = 0; i < PlayerScores.Length && i < _players.Count; i++)
+        {
+            var score = 0;
+            foreach (var control in PlayerScores[i].RoundTotalScores)
+            {
+                score += control.GetValue();
+            }
+
+            _players[i].AddPoints(score);
+        }
+
+        var ordered = _players.OrderByDescending(p => p.GetPoints()).ToList();
+        int[] winnerPoints = new int[] { 200, 80, 20 };
+
+        for (int i = 0; i < ordered.Count(); i++)
+        {
+            ordered[i].AddPoints(winnerPoints[i]);
+        }
+
+        // TODO: Add points for winners
+        EndFader.StartFade(0, 1, EndGame_);
     }
 
     /// <summary>
@@ -321,16 +366,6 @@ public class BeachBowlesController : GenericController
     /// </summary>
     private void EndGame_()
     {
-        for (int i = 0; i < PlayerScores.Length && i < _players.Count; i++)
-        {
-            var score = 0;
-            foreach (var control in PlayerScores[i].RoundTotalScores)
-            {
-                score += control.GetValue();
-            }
-
-            _players[i].AddPoints(score);
-        }
         PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }
 
@@ -356,6 +391,9 @@ public class BeachBowlesController : GenericController
         Ball.transform.eulerAngles = new Vector3(0, 0, 0);
         Ball.GetComponent<BowlsBallScript>().ResetBall();
 
+        _playerLimit.Restart();
+        _playerLimit.StartTimer();
+
         // start moving arrow again
         StartCoroutine(SelectDirection());
     }
@@ -365,7 +403,9 @@ public class BeachBowlesController : GenericController
     /// </summary>
     public void CentreStickHit()
     {
-        _centreHitThisThrow = false;
+        if (_centreHitThisThrow) return;
+
+        _centreHitThisThrow = true;
         _pointsThisThrow += 80;
     }
 
@@ -414,7 +454,8 @@ public class BeachBowlesController : GenericController
         }
 
         // start selecting distance
-        StartCoroutine(SelectDistance());
+        if (!_cancelled)
+            StartCoroutine(SelectDistance());
     }
 
     /// <summary>
@@ -444,6 +485,8 @@ public class BeachBowlesController : GenericController
     {
         _selectingDistance = true;
 
+        Arrow.localScale = new Vector3(1, 0.5f, 1);
+
         // loop until confirm selected
         while (_selectingDistance)
         {
@@ -464,7 +507,9 @@ public class BeachBowlesController : GenericController
 
         // when done, hide arrow and 
         Arrow.gameObject.SetActive(false);
-        StartCoroutine(Fire_());
+
+        if (!_cancelled)
+            StartCoroutine(Fire_());
     }
 
     // Update is called once per frame
@@ -483,6 +528,9 @@ public class BeachBowlesController : GenericController
         {
             _overarm = !_overarm;
             ThrowStyleImage.sprite = ThrowStyleSprites[_overarm ? 1 : 0];
+
+            var yPos = _overarm ? 125.0822f : 96.4267f;
+            MaxPowerLine.transform.localPosition = new Vector3(MaxPowerLine.transform.localPosition.x, yPos, 0);
         }
     }
 
@@ -570,13 +618,21 @@ public class BeachBowlesController : GenericController
 
     private IEnumerator CameraPreview_()
     {
+        MaxPowerLine.gameObject.SetActive(true);
         _cameraPreview = true;
         while (Camera.main.transform.localPosition.y < CameraZoomPosition.y)
         {
             Camera.main.transform.Translate(new Vector3(0, CAMERA_MOVE_SPEED * Time.deltaTime, 0));
             yield return new WaitForSeconds(0.01f);
         }
-        yield return new WaitForSeconds(2f);
+
+        // slowly go up
+        for (int i = 0; i < (_overarm ? 380 : 150); i++)
+        {
+            Camera.main.transform.Translate(new Vector3(0, 10 * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
         while (Camera.main.transform.localPosition.y > _cameraLocation.y)
         {
             Camera.main.transform.Translate(new Vector3(0, -CAMERA_MOVE_SPEED * Time.deltaTime, 0));
@@ -584,5 +640,6 @@ public class BeachBowlesController : GenericController
         }
         Camera.main.transform.localPosition = _cameraLocation;
         _cameraPreview = false;
+        MaxPowerLine.gameObject.SetActive(false);
     }
 }

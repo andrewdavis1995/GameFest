@@ -24,7 +24,7 @@ public class GameDescriptionScript : MonoBehaviour
                 description = "Your spaceship is about to blow up! But none of the escape pods have enough power... Compete against each other to collect batteries for the escape pods and escape from the danger!";
                 break;
             case Scene.BeachBowles:
-                description = "Everyones favourite beach game! Toss the ball and attempt to make it stop in the targets! Careful to not go out of bounds!";
+                description = description = "Bowling meets curling meets shot put meets psychological warfare! Get your ball into the target zones to score big points! Hit the centre stick for even bigger points!";
                 break;
         }
 
