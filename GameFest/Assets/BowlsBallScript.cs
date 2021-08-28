@@ -160,6 +160,10 @@ public class BowlsBallScript : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Controls the size of the ball and shadow while it is "in the air"
+    /// </summary>
+    /// <param name="power">The power with which the ball is thrown</param>
     private IEnumerator ControlHeight(float power)
     {
         // reduce drag while in the air
