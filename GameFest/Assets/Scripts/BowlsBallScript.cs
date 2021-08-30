@@ -12,6 +12,7 @@ public class BowlsBallScript : MonoBehaviour
     bool _zooming = false;
     float _shadowOffsetY;
     Vector2 _windStrength;
+    bool _onGround = true;
 
     // constant values for drag
     const float DRAG_AIRBORNE = 0.35f;
@@ -91,6 +92,13 @@ public class BowlsBallScript : MonoBehaviour
         {
             var zone = collision.gameObject.GetComponent<BowlZoneScript>();
             BeachBowlesController.Instance.ZoneEntered(zone);
+        }
+        else if(collision.tag == "Bunker")
+        {
+            if(_onGround)
+            {
+                Body.velocity /= 5;
+            }
         }
     }
 
@@ -175,6 +183,8 @@ public class BowlsBallScript : MonoBehaviour
     /// <param name="power">The power with which the ball is thrown</param>
     private IEnumerator ControlHeight(float power)
     {
+        _onGround = false;
+
         // reduce drag while in the air
         Body.drag = DRAG_AIRBORNE;
 
@@ -208,6 +218,8 @@ public class BowlsBallScript : MonoBehaviour
             MoveBallHeight_(i, -0.01f, 0.005f, SHADOW_COLOUR_CHANGE);
             yield return new WaitForSeconds(0.007f);
         }
+
+        _onGround = true;
 
         // increase drag now that we are on the ground
         Body.drag = DRAG_GROUNDED;

@@ -35,7 +35,8 @@ public class BeachScoreDisplayScript : MonoBehaviour
     public void Cancelled()
     {
         TxtValue.text = "";
-        imgCancelled.SetActive(true);
+        if (!imgOut.activeInHierarchy)
+            imgCancelled.SetActive(true);
         _value = 0;
     }
 
