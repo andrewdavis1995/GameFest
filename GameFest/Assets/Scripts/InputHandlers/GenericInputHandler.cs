@@ -180,6 +180,8 @@ public abstract class GenericInputHandler : MonoBehaviour
     /// </summary>
     public virtual void OnOptions()
     {
+        Debug.Log("Pause request received");
+
         if (PauseGameHandler.Instance == null) return;
 
         // pause

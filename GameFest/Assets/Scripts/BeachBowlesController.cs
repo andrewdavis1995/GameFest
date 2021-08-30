@@ -30,11 +30,27 @@ public class BeachBowlesController : GenericController
     public Vector3 CameraZoomPosition;
     public TransitionFader EndFader;
     public SwooshController SwooshControls;
+    public Animator PlayerAnimator;
+    public Animator PlayerShadowAnimator;
+    public Animator[] PlayerBGAnimator;
+    public Animator[] PlayerBGShadowAnimator;
+    public RuntimeAnimatorController[] PlayerAnimatorControllers;
+    public GameObject PlayerUi;
+    public Text PlayerUiBehindLeader;
+    public Text PlayerUiPlayerName;
+    public Image PlayerUiPlayerColour;
+    public GameObject PlayerCam;
 
     // score controls
     public BeachScoreDisplayScript[] RoundControls;
     public BeachScoreDisplayScript RoundTotalScore;
     public OverallBeachDisplayScoreScript[] PlayerScores;
+
+    // cameras
+    public Camera GameplayCamera;
+    public Camera UmpireCamera;
+    public Camera PlayerCamera;
+    private float _cameraZoom;
 
     // status variables
     bool _selectingDirection = false;
@@ -46,6 +62,7 @@ public class BeachBowlesController : GenericController
     int _activePlayerIndex = 0;
     Vector2 _windDirection = new Vector2(0, 0);
     int _pointsThisThrow = 0;
+
     int _doubleFactor = 1;
     bool _doubleHitThisThrow = false;
     bool _centreHitThisThrow = false;
@@ -53,6 +70,8 @@ public class BeachBowlesController : GenericController
     bool _cameraPreview;
     TimeLimit _playerLimit;
     bool _cancelled = false;
+    float _cameraOffset;
+    bool _showingCharacter = false;
 
     int _throwIndex = 0;
     int _roundIndex = 0;
@@ -81,9 +100,13 @@ public class BeachBowlesController : GenericController
         // store static instance
         Instance = this;
 
+        _cameraZoom = GameplayCamera.orthographicSize;
+
         // Initialise the game
         SpawnPlayers_();
         SetWind_(0, 100);
+
+        InitialisePlayerPreviews_();
 
         // fade in
         EndFader.StartFade(1, 0, FadeInComplete);
@@ -92,10 +115,55 @@ public class BeachBowlesController : GenericController
 
         // get the location of the ball at the start
         _ballLocation = Ball.transform.localPosition;
-        _cameraLocation = Camera.main.transform.localPosition;
+        _cameraLocation = GameplayCamera.transform.localPosition;
+
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers);
 
         InitialiseScoreDisplays_();
     }
+
+    /// <summary>
+    /// Stes up the players in the player preview page
+    /// </summary>
+    private void InitialisePlayerPreviews_()
+    {
+        SetAnimators_("Idle");
+        for (int i = _players.Count - 1; i < PlayerBGAnimator.Length; i++)
+        {
+            PlayerBGAnimator[i].gameObject.SetActive(false);
+            PlayerBGShadowAnimator[i].gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Sets all animators for the player preview to Idle state
+    /// </summary>
+    private void SetAnimators_(string state)
+    {
+        PlayerAnimator.ResetTrigger("Idle");
+        PlayerAnimator.ResetTrigger("Celebrate");
+        PlayerShadowAnimator.ResetTrigger("Idle");
+        PlayerShadowAnimator.ResetTrigger("Celebrate");
+
+        PlayerAnimator.SetTrigger(state);
+        PlayerShadowAnimator.SetTrigger(state);
+
+        foreach (var anim in PlayerBGAnimator)
+        {
+            anim.ResetTrigger("Idle");
+            anim.ResetTrigger("Celebrate");
+            anim.SetTrigger(state);
+        }
+
+        foreach (var anim in PlayerBGShadowAnimator)
+        {
+            anim.ResetTrigger("Idle");
+            anim.ResetTrigger("Celebrate");
+            anim.SetTrigger(state);
+        }
+    }
+
 
     /// <summary>
     /// Displays the countdown clock for time remaining to take the shot
@@ -157,8 +225,38 @@ public class BeachBowlesController : GenericController
     void StartGame()
     {
         DisplayActivePlayer_();
-        // move everything to starting position
         ResetPositions_();
+
+        PlayerUi.SetActive(true);
+        PlayerUiPlayerColour.color = ColourFetcher.GetColour(_activePlayerIndex);
+        PlayerUiPlayerName.text = _players[_activePlayerIndex].GetPlayerName();
+        PlayerUiBehindLeader.text = "First shot";
+
+        PlayerCamera.enabled = true;
+        GameplayCamera.enabled = false;
+        _showingCharacter = true;
+    }
+
+    /// <summary>
+    /// Start zooming in on the vall
+    /// </summary>
+    internal void ZoomOnBall()
+    {
+        StartCoroutine(ZoomOnBall_());
+    }
+
+    /// <summary>
+    /// Zoomes in on the ball as it slows
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator ZoomOnBall_()
+    {
+        for (int i = 0; i < 60; i++)
+        {
+            _cameraOffset += 0.07f;
+            GameplayCamera.orthographicSize -= 0.14f;
+            yield return new WaitForSeconds(0.02f);
+        }
     }
 
     /// <summary>
@@ -205,7 +303,7 @@ public class BeachBowlesController : GenericController
     /// </summary>
     internal void BallStopped()
     {
-        var points  = _activeZones.Count > 0 ? _activeZones.LastOrDefault().PointValue : 0;
+        var points = _activeZones.Count > 0 ? _activeZones.LastOrDefault().PointValue : 0;
 
         // don't lose points if the ball hit either stick
         if (points < 0 && (_centreHitThisThrow || _doubleHitThisThrow)) points = 0;
@@ -299,14 +397,24 @@ public class BeachBowlesController : GenericController
     /// </summary>
     private void NextShot_()
     {
-        _cancelled = false;
-        ResetPositions_();
+        SwooshControls.DoSwoosh(null, SetupNextShot_);
+    }
 
+    void SetupNextShot_()
+    {
+        _cancelled = false;
+
+        PlayerCam.SetActive(false);
+        SetAnimators_("Idle");
+
+        ResetPositions_();
         _throwIndex++;
 
         // if that was the third shot, move to the next player
         if (_throwIndex > 2)
             NextPlayer_();
+        else
+            _playerLimit.StartTimer();
     }
 
     /// <summary>
@@ -334,10 +442,11 @@ public class BeachBowlesController : GenericController
     /// </summary>
     private void NextPlayer_()
     {
-        _throwIndex = 0;
+        _showingCharacter = true;
+        PlayerCamera.enabled = true;
+        GameplayCamera.enabled = false;
 
-        // TODO: do an animation 
-        SwooshControls.DoSwoosh(Camera.main, Camera.main, null);
+        _throwIndex = 0;
 
         _activePlayerIndex++;
 
@@ -366,6 +475,57 @@ public class BeachBowlesController : GenericController
 
         // display the new active player
         DisplayActivePlayer_();
+
+        StartCoroutine(ShowPlayerUi_());
+    }
+
+    /// <summary>
+    /// Shows the UI on the player preview
+    /// </summary>
+    private IEnumerator ShowPlayerUi_()
+    {
+        // wait for the swoosh to finish
+        yield return new WaitForSeconds(0.9f);
+
+        var activeScore = 0;
+        var highScore = 0;
+        var index = 0;
+
+        // loop through all players
+        foreach (var player in PlayerScores)
+        {
+            // add up all points
+            var score = 0;
+            foreach (var control in player.RoundTotalScores)
+            {
+                score += control.GetValue();
+            }
+
+            // display points
+            player.TxtTotalScore.text = score.ToString();
+
+            // if this is the current player, store their score
+            if (index == _activePlayerIndex)
+            {
+                activeScore = score;
+            }
+
+            // keep a record of the highest score
+            if (score > highScore)
+            {
+                highScore = score;
+            }
+
+
+            index++;
+        }
+
+        // display player info
+        var leaderText = (highScore - activeScore) <= 0 ? "Current Leader" : (highScore - activeScore) + " points behind leader";
+        PlayerUi.SetActive(true);
+        PlayerUiPlayerColour.color = ColourFetcher.GetColour(_activePlayerIndex);
+        PlayerUiPlayerName.text = _players[_activePlayerIndex].GetPlayerName();
+        PlayerUiBehindLeader.text = leaderText;
     }
 
     /// <summary>
@@ -410,6 +570,25 @@ public class BeachBowlesController : GenericController
         ActivePlayerColour.color = colour;
         Arrow.GetComponentInChildren<SpriteRenderer>().color = colour;
 
+        // display the player
+        PlayerAnimator.runtimeAnimatorController = PlayerAnimatorControllers[_players[_activePlayerIndex].GetCharacterIndex()];
+        PlayerShadowAnimator.runtimeAnimatorController = PlayerAnimatorControllers[_players[_activePlayerIndex].GetCharacterIndex()];
+
+        // display other players in the background
+        var currentIndex = _activePlayerIndex + 1;
+        if (currentIndex >= _players.Count) currentIndex = 0;
+
+        for (int i = 0; i < PlayerBGAnimator.Length; i++)
+        {
+            PlayerBGAnimator[i].runtimeAnimatorController = PlayerAnimatorControllers[_players[currentIndex].GetCharacterIndex()];
+            PlayerBGShadowAnimator[i].runtimeAnimatorController = PlayerAnimatorControllers[_players[currentIndex].GetCharacterIndex()];
+
+            currentIndex++;
+            if (currentIndex >= _players.Count) currentIndex = 0;
+        }
+
+        SetAnimators_("Idle");
+
         // display player active colour
         for (int i = 0; i < PlayerScores.Count(); i++)
         {
@@ -432,7 +611,7 @@ public class BeachBowlesController : GenericController
     {
         // clear statuses
         _overarm = false;
-        ThrowStyleImage.sprite = ThrowStyleSprites[_overarm ? 1 : 0];
+        UpdateThrowStyleDisplay_();
 
         _activeZones.Clear();
 
@@ -447,8 +626,9 @@ public class BeachBowlesController : GenericController
         Ball.transform.eulerAngles = new Vector3(0, 0, 0);
         Ball.GetComponent<BowlsBallScript>().ResetBall();
 
-        _playerLimit.Restart();
-        _playerLimit.StartTimer();
+        // reset camera
+        GameplayCamera.orthographicSize = _cameraZoom;
+        _cameraOffset = CAMERA_OFFSET;
 
         // start moving arrow again
         StartCoroutine(SelectDirection());
@@ -461,8 +641,16 @@ public class BeachBowlesController : GenericController
     {
         if (_centreHitThisThrow) return;
 
+        PlayerCelebration_();
+
         _centreHitThisThrow = true;
         _pointsThisThrow += 80;
+    }
+
+    private void PlayerCelebration_()
+    {
+        PlayerCam.SetActive(true);
+        SetAnimators_("Celebrate");
     }
 
     /// <summary>
@@ -470,6 +658,8 @@ public class BeachBowlesController : GenericController
     /// </summary>
     public void StickOfDoublePointsHit()
     {
+        PlayerCelebration_();
+
         _doubleFactor *= 2;
         _doubleHitThisThrow = true;
     }
@@ -576,7 +766,7 @@ public class BeachBowlesController : GenericController
         if (!_cameraPreview)
         {
             // follow the ball
-            Camera.main.transform.localPosition = Ball.transform.localPosition - new Vector3(CAMERA_OFFSET, 0, 5);
+            GameplayCamera.transform.localPosition = Ball.transform.localPosition - new Vector3(_cameraOffset, 0, 5);
         }
     }
 
@@ -591,12 +781,20 @@ public class BeachBowlesController : GenericController
         {
             // toggle the icon
             _overarm = !_overarm;
-            ThrowStyleImage.sprite = ThrowStyleSprites[_overarm ? 1 : 0];
-
-            // change the "MAX DISTANCE" indicator
-            var yPos = _overarm ? 125.0822f : 96.4267f;
-            MaxPowerLine.transform.localPosition = new Vector3(MaxPowerLine.transform.localPosition.x, yPos, 0);
+            UpdateThrowStyleDisplay_();
         }
+    }
+
+    /// <summary>
+    /// Updates the throw style indicator/icon, and the max power line
+    /// </summary>
+    private void UpdateThrowStyleDisplay_()
+    {
+        ThrowStyleImage.sprite = ThrowStyleSprites[_overarm ? 1 : 0];
+
+        // change the "MAX DISTANCE" indicator
+        var yPos = _overarm ? 125.0822f : 95f;
+        MaxPowerLine.transform.localPosition = new Vector3(MaxPowerLine.transform.localPosition.x, yPos, 0);
     }
 
     /// <summary>
@@ -606,9 +804,22 @@ public class BeachBowlesController : GenericController
     {
         if (index == _activePlayerIndex && !_cameraPreview)
         {
-            // clear status variables
-            _selectingDirection = false;
-            _selectingDistance = false;
+            if (_showingCharacter)
+            {
+                _showingCharacter = false;
+                PlayerCamera.enabled = false;
+                GameplayCamera.enabled = true;
+
+                _playerLimit.StartTimer();
+
+                PlayerUi.SetActive(false);
+            }
+            else
+            {
+                // clear status variables
+                _selectingDirection = false;
+                _selectingDistance = false;
+            }
         }
     }
 
@@ -695,27 +906,27 @@ public class BeachBowlesController : GenericController
         _cameraPreview = true;
 
         // move up quickly
-        while (Camera.main.transform.localPosition.y < CameraZoomPosition.y)
+        while (GameplayCamera.transform.localPosition.y < CameraZoomPosition.y)
         {
-            Camera.main.transform.Translate(new Vector3(0, CAMERA_MOVE_SPEED * Time.deltaTime, 0));
+            GameplayCamera.transform.Translate(new Vector3(0, CAMERA_MOVE_SPEED * Time.deltaTime, 0));
             yield return new WaitForSeconds(0.01f);
         }
 
         // slowly go up through the top part
         for (int i = 0; i < (_overarm ? 380 : 150); i++)
         {
-            Camera.main.transform.Translate(new Vector3(0, 10 * Time.deltaTime, 0));
+            GameplayCamera.transform.Translate(new Vector3(0, 10 * Time.deltaTime, 0));
             yield return new WaitForSeconds(0.01f);
         }
 
         // move down quickly
-        while (Camera.main.transform.localPosition.y > _cameraLocation.y)
+        while (GameplayCamera.transform.localPosition.y > _cameraLocation.y)
         {
-            Camera.main.transform.Translate(new Vector3(0, -CAMERA_MOVE_SPEED * Time.deltaTime, 0));
+            GameplayCamera.transform.Translate(new Vector3(0, -CAMERA_MOVE_SPEED * Time.deltaTime, 0));
             yield return new WaitForSeconds(0.01f);
         }
 
-        Camera.main.transform.localPosition = _cameraLocation;
+        GameplayCamera.transform.localPosition = _cameraLocation;
         _cameraPreview = false;
         MaxPowerLine.gameObject.SetActive(false);
     }

@@ -126,7 +126,8 @@ public class PunchlineBlingController : GenericController
 
         SpinWheel.Initialise(_players.ToList());
 
-        PauseGameHandler.Instance.Initialise(_players.ToList());
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers);
     }
 
     /// <summary>

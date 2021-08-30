@@ -9,6 +9,7 @@ public class BowlsBallScript : MonoBehaviour
 {
     // status variables
     bool _running = false;
+    bool _zooming = false;
     float _shadowOffsetY;
     Vector2 _windStrength;
 
@@ -47,8 +48,15 @@ public class BowlsBallScript : MonoBehaviour
 
         BallShadow.transform.rotation = Quaternion.Euler(0.0f, 0.0f, gameObject.transform.rotation.z * -1f);
 
+        // if the ball is moving and slows to below specified speed, zoom in on it
+        if (Math.Abs(Body.velocity.y) < 3f && !_zooming && _running)
+        {
+            _zooming = true;
+            BeachBowlesController.Instance.ZoomOnBall();
+        }
+
         // if the ball is moving and slows to below specified speed, stop the ball
-        if (Math.Abs(Body.velocity.y) < 0.2f && _running)
+        if (Math.Abs(Body.velocity.x) < 0.2f && Math.Abs(Body.velocity.y) < 0.2f && _running)
         {
             _running = false;
             Body.velocity = Vector3.zero;
@@ -127,6 +135,7 @@ public class BowlsBallScript : MonoBehaviour
     /// <param name="windDirection">The strength of the wind</param>
     internal void Started(bool overarm, float power, Vector2 windDirection)
     {
+        _zooming = false;
         _running = true;
         _windStrength = windDirection;
 

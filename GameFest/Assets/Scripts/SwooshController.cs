@@ -8,9 +8,9 @@ public class SwooshController : MonoBehaviour
     public Transform SwooshLogo;
     public Camera SwooshCamera;
 
-    const float SIZE_INCREASE_RATE = 0.085f;
-    const float MOVE_SPEED = -0.15f;
-    const float DISTANCE = 30;
+    const float SIZE_INCREASE_RATE = 0.045f;
+    const float MOVE_SPEED = -0.3f;
+    const float DISTANCE = 35;
 
     Vector3 _logoScale;
 
@@ -24,21 +24,20 @@ public class SwooshController : MonoBehaviour
     /// <summary>
     /// Triggers the start of the swoosh
     /// </summary>
-    /// <param name="camera1">The camera that is currently active</param>
-    /// <param name="camera2">The camera that is active after the logo swoosh completes</param>
     /// <param name="callbackAction">Function to call once swoosh is complete</param>
-    public void DoSwoosh(Camera camera1, Camera camera2, Action callbackAction)
+    /// <param name="midpointAction">Function to call once swoosh is in the middle</param>
+    public void DoSwoosh(Action callbackAction, Action midpointAction)
     {
-        StartCoroutine(DoSwoosh_(camera1, camera2, callbackAction));
+        StartCoroutine(DoSwoosh_(callbackAction, midpointAction));
     }
 
     /// <summary>
     /// Controls the swoosh
     /// </summary>
-    /// <param name="camera1">The camera that is currently active</param>
-    /// <param name="camera2">The camera that is active after the logo swoosh completes</param>
     /// <param name="callbackAction">Function to call once swoosh is complete</param>
-    IEnumerator DoSwoosh_(Camera camera1, Camera camera2, Action callbackAction)
+    /// <param name="midpointAction">Function to call once swoosh is in the middle</param>
+    /// <param name="speed">Speed at which to move</param>
+    IEnumerator DoSwoosh_(Action callbackAction, Action midpointAction, float speed = 0.001f)
     {
         SwooshCamera.enabled = true;
         SwooshLogo.localScale = _logoScale;
@@ -56,19 +55,18 @@ public class SwooshController : MonoBehaviour
         {
             SwooshLogo.transform.Translate(new Vector3(MOVE_SPEED, 0, 0));
             SwooshLogo.localScale += new Vector3(SIZE_INCREASE_RATE, SIZE_INCREASE_RATE, 0);
-            yield return new WaitForSeconds(0.01f);
+            yield return new WaitForSeconds(speed);
         }
 
         // swap cameras
-        camera1.enabled = false;
-        camera2.enabled = true;
+        midpointAction?.Invoke();
 
         // move and shrink away from the middle
         while (SwooshLogo.localPosition.x > endPoint.x)
         {
             SwooshLogo.transform.Translate(new Vector3(MOVE_SPEED, 0, 0));
             SwooshLogo.localScale -= new Vector3(SIZE_INCREASE_RATE, SIZE_INCREASE_RATE, 0);
-            yield return new WaitForSeconds(0.01f);
+            yield return new WaitForSeconds(speed);
         }
 
         SwooshLogo.gameObject.SetActive(false);

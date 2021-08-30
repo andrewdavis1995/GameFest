@@ -219,7 +219,7 @@ public class PauseGameHandler : MonoBehaviour
     /// Initialises the pause popups
     /// </summary>
     /// <param name="players">The list of players involved in the game</param>
-    public void Initialise(List<PunchlineBlingInputHandler> players)
+    public void Initialise(List<GenericInputHandler> players)
     {
         // loop through the players and configure the pause request messages
         for(int i = 1; i < players.Count; i++)
