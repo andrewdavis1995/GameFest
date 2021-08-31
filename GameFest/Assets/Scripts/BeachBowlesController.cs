@@ -89,7 +89,9 @@ public class BeachBowlesController : GenericController
     const float CAMERA_OFFSET = -9f;
     const float CAMERA_MOVE_SPEED = 75f;
 
-    private const int NUMBER_OF_ROUNDS = 3;
+    const int NUMBER_OF_ROUNDS = 3;
+    
+    const int OUT_OF_BOUNDS_SCORE = -9999;
 
     // static instance that can be accessed from other scripts
     public static BeachBowlesController Instance;
@@ -318,8 +320,8 @@ public class BeachBowlesController : GenericController
     /// </summary>
     void CheckOutOfBounds_(int index)
     {
-        // -9999 is used for zones outwith playing area
-        if (_pointsThisThrow == -9999 && !_doubleHitThisThrow && !_centreHitThisThrow)
+        // -OUT_OF_BOUNDS_SCORE is used for zones outwith playing area
+        if (_pointsThisThrow == OUT_OF_BOUNDS_SCORE && !_doubleHitThisThrow && !_centreHitThisThrow)
         {
             _doubleFactor = 1;
             _pointsThisThrow = 0;
@@ -515,7 +517,6 @@ public class BeachBowlesController : GenericController
             {
                 highScore = score;
             }
-
 
             index++;
         }
