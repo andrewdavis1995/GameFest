@@ -598,14 +598,6 @@ public class BeachBowlesController : GenericController
     }
 
     /// <summary>
-    /// Ends the game and returns to the menu
-    /// </summary>
-    private void EndGame_()
-    {
-        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
-    }
-
-    /// <summary>
     /// Moves all items back to their starting places
     /// </summary>
     void ResetPositions_()
