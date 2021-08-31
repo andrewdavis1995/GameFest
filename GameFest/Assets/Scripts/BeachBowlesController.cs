@@ -140,30 +140,36 @@ public class BeachBowlesController : GenericController
     }
 
     /// <summary>
-    /// Sets all animators for the player preview to Idle state
+    /// Sets the specified animator to the specified state
     /// </summary>
+    /// <param name="animator">The animator to update</param>
+    /// <param name="state">The trigger to set on the animator</param>
+    private void SetAnimator_(Animator animator, string state)
+    {
+        animator.ResetTrigger("Idle");
+        animator.ResetTrigger("Celebrate");
+        animator.SetTrigger(state);
+    }
+
+    /// <summary>
+    /// Sets all animators for the player preview to specified state
+    /// </summary>
+    /// <param name="state">The trigger to set on the animators</param>
     private void SetAnimators_(string state)
     {
-        PlayerAnimator.ResetTrigger("Idle");
-        PlayerAnimator.ResetTrigger("Celebrate");
-        PlayerShadowAnimator.ResetTrigger("Idle");
-        PlayerShadowAnimator.ResetTrigger("Celebrate");
+        SetAnimator(PlayerAnimator, state);
+        SetAnimator(PlayerShadowAnimator, state);
 
-        PlayerAnimator.SetTrigger(state);
-        PlayerShadowAnimator.SetTrigger(state);
-
+        // set background players display animator
         foreach (var anim in PlayerBGAnimator)
         {
-            anim.ResetTrigger("Idle");
-            anim.ResetTrigger("Celebrate");
-            anim.SetTrigger(state);
+            SetAnimator(anim, state);
         }
 
+        // set background player shadow display animator
         foreach (var anim in PlayerBGShadowAnimator)
         {
-            anim.ResetTrigger("Idle");
-            anim.ResetTrigger("Celebrate");
-            anim.SetTrigger(state);
+            SetAnimator(anim, state);
         }
     }
 
@@ -171,7 +177,7 @@ public class BeachBowlesController : GenericController
     /// <summary>
     /// Displays the countdown clock for time remaining to take the shot
     /// </summary>
-    /// <param name="time"></param>
+    /// <param name="time">Remaining time</param>
     private void DisplayCountdown(int time)
     {
         TxtShotCountDown.text = TextFormatter.GetTimeString(time);
