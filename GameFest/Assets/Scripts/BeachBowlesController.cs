@@ -40,6 +40,7 @@ public class BeachBowlesController : GenericController
     public Text PlayerUiPlayerName;
     public Image PlayerUiPlayerColour;
     public GameObject PlayerCam;
+    public ResultsPageScreen ResultsScreen;
 
     // score controls
     public BeachScoreDisplayScript[] RoundControls;
@@ -557,8 +558,7 @@ public class BeachBowlesController : GenericController
             ordered[i].AddPoints(winnerPoints[i]);
         }
 
-        // fade out to menu
-        EndFader.StartFade(0, 1, EndGame_);
+        StartCoroutine(Complete_());
     }
 
     /// <summary>
@@ -931,4 +931,28 @@ public class BeachBowlesController : GenericController
         _cameraPreview = false;
         MaxPowerLine.gameObject.SetActive(false);
     }
+    
+    /// <summary>
+    /// Show the results window, and then return to menu
+    /// </summary>
+    private IEnumerator Complete_()
+    {
+        ResultsScreen.Setup();
+        ResultsScreen.SetPlayers(_players);
+
+        yield return new WaitForSeconds(4 + _players.Length);
+
+        // fade out
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Moves back to the central screen
+    /// </summary>
+    void ReturnToCentral_()
+    {
+        // when no more players, move to the central page
+        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+    }
+    
 }
