@@ -41,6 +41,8 @@ public class BeachBowlesController : GenericController
     public Image PlayerUiPlayerColour;
     public GameObject PlayerCam;
     public ResultsPageScreen ResultsScreen;
+    public Text RoundLabel;
+    public Text ThrowLabel;
 
     // score controls
     public BeachScoreDisplayScript[] RoundControls;
@@ -91,7 +93,7 @@ public class BeachBowlesController : GenericController
     const float CAMERA_MOVE_SPEED = 75f;
 
     const int NUMBER_OF_ROUNDS = 3;
-    
+
     const int OUT_OF_BOUNDS_SCORE = -9999;
 
     // static instance that can be accessed from other scripts
@@ -157,19 +159,19 @@ public class BeachBowlesController : GenericController
     /// <param name="state">The trigger to set on the animators</param>
     private void SetAnimators_(string state)
     {
-        SetAnimator(PlayerAnimator, state);
-        SetAnimator(PlayerShadowAnimator, state);
+        SetAnimator_(PlayerAnimator, state);
+        SetAnimator_(PlayerShadowAnimator, state);
 
         // set background players display animator
         foreach (var anim in PlayerBGAnimator)
         {
-            SetAnimator(anim, state);
+            SetAnimator_(anim, state);
         }
 
         // set background player shadow display animator
         foreach (var anim in PlayerBGShadowAnimator)
         {
-            SetAnimator(anim, state);
+            SetAnimator_(anim, state);
         }
     }
 
@@ -424,6 +426,9 @@ public class BeachBowlesController : GenericController
             NextPlayer_();
         else
             _playerLimit.StartTimer();
+
+
+        ThrowLabel.text = "THROW " + (_throwIndex + 1);
     }
 
     /// <summary>
@@ -472,6 +477,10 @@ public class BeachBowlesController : GenericController
             if (_roundIndex >= NUMBER_OF_ROUNDS)
             {
                 Complete();
+            }
+            else
+            {
+                RoundLabel.text = "ROUND " + (_roundIndex + 1);
             }
         }
 
@@ -722,7 +731,7 @@ public class BeachBowlesController : GenericController
         // display the image with suitable size
         var size = Math.Abs(xWind);
         WindImage.rectTransform.eulerAngles = xWind > 0 ? new Vector3(0, 0, 180) : Vector3.zero;
-        WindImage.rectTransform.localScale = new Vector3(size, 1, 1);
+        WindImage.fillAmount = size;
     }
 
     /// <summary>
@@ -929,16 +938,17 @@ public class BeachBowlesController : GenericController
         _cameraPreview = false;
         MaxPowerLine.gameObject.SetActive(false);
     }
-    
+
     /// <summary>
     /// Show the results window, and then return to menu
     /// </summary>
     private IEnumerator Complete_()
     {
         ResultsScreen.Setup();
-        ResultsScreen.SetPlayers(_players);
+        GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
+        ResultsScreen.SetPlayers(genericPlayers);
 
-        yield return new WaitForSeconds(4 + _players.Length);
+        yield return new WaitForSeconds(4 + genericPlayers.Length);
 
         // fade out
         EndFader.StartFade(0, 1, ReturnToCentral_);
@@ -952,5 +962,5 @@ public class BeachBowlesController : GenericController
         // when no more players, move to the central page
         PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }
-    
+
 }

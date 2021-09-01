@@ -11,6 +11,7 @@ public class ResultsPageScreen : MonoBehaviour
     public Image BackgroundImage;
     public Image LogoImage;
     public Text[] Texts;
+    public Sprite[] CharacterIcons;
 
     /// <summary>
     /// Configure the display with the specified values
@@ -70,7 +71,7 @@ public class ResultsPageScreen : MonoBehaviour
 
             // set image appearance
             imgs[0].color = ColourFetcher.GetColour(sorted[i].GetPlayerIndex());
-            imgs[1].sprite = PunchlineBlingController.Instance.CharacterIcons[sorted[i].GetCharacterIndex()];
+            imgs[1].sprite = CharacterIcons[sorted[i].GetCharacterIndex()];
 
             // get player info
             var points = sorted[i].GetPoints();
