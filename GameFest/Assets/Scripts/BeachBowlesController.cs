@@ -174,7 +174,6 @@ public class BeachBowlesController : GenericController
         }
     }
 
-
     /// <summary>
     /// Displays the countdown clock for time remaining to take the shot
     /// </summary>
@@ -228,12 +227,20 @@ public class BeachBowlesController : GenericController
     {
         PauseGameHandler.Instance.Pause(true, CoursePreviewStart_);
     }
-
-
+    
+    /// <summary>
+    /// Runs the course preview at the start of the game
+    /// </summary>
     void CoursePreviewStart_()
     {
+        DisplayActivePlayer_();
+        ResetPositions_();
         CoursePreview_(() => (SwooshControls.DoSwoosh(null, StartGame)));
     }
+    
+    /// <summary>
+    /// Runs the course preview at the start of each round (excluding first)
+    /// </summary>
     void CoursePreview()
     {
         CoursePreview_(() => (SwooshControls.DoSwoosh(null, DisplayNextPlayer_)));
@@ -244,9 +251,6 @@ public class BeachBowlesController : GenericController
     /// </summary>
     void StartGame()
     {
-        DisplayActivePlayer_();
-        ResetPositions_();
-
         PlayerUi.SetActive(true);
         PlayerUiPlayerColour.color = ColourFetcher.GetColour(_activePlayerIndex);
         PlayerUiPlayerName.text = _players[_activePlayerIndex].GetPlayerName();
@@ -420,6 +424,9 @@ public class BeachBowlesController : GenericController
         SwooshControls.DoSwoosh(null, SetupNextShot_);
     }
 
+    /// <summary>
+    /// Sets up all elements for the next shot
+    /// </summary>
     void SetupNextShot_()
     {
         _cancelled = false;
@@ -503,6 +510,9 @@ public class BeachBowlesController : GenericController
         StartCoroutine(ShowPlayerUi_());
     }
     
+    /// <summary>
+    /// Displays the screen to show next player
+    /// </summary>
     void DisplayNextPlayer_()
     {    
         _showingCharacter = true;
@@ -668,6 +678,9 @@ public class BeachBowlesController : GenericController
         _pointsThisThrow += 80;
     }
 
+    /// <summary>
+    /// Shows the player(s) celebrating
+    /// </summary>
     private void PlayerCelebration_()
     {
         PlayerCam.SetActive(true);
