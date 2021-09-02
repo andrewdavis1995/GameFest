@@ -71,6 +71,7 @@ public class BeachBowlesController : GenericController
     bool _centreHitThisThrow = false;
     List<BeachBowlesInputHandler> _players = new List<BeachBowlesInputHandler>();
     bool _cameraPreview;
+    bool _coursePreview;
     TimeLimit _playerLimit;
     bool _cancelled = false;
     float _cameraOffset;
@@ -175,7 +176,6 @@ public class BeachBowlesController : GenericController
         }
     }
 
-
     /// <summary>
     /// Displays the countdown clock for time remaining to take the shot
     /// </summary>
@@ -227,7 +227,25 @@ public class BeachBowlesController : GenericController
     /// </summary>
     void FadeInComplete()
     {
-        PauseGameHandler.Instance.Pause(true, StartGame);
+        PauseGameHandler.Instance.Pause(true, CoursePreviewStart_);
+    }
+    
+    /// <summary>
+    /// Runs the course preview at the start of the game
+    /// </summary>
+    void CoursePreviewStart_()
+    {
+        DisplayActivePlayer_();
+        ResetPositions_();
+        CoursePreview_(() => (SwooshControls.DoSwoosh(null, StartGame)));
+    }
+    
+    /// <summary>
+    /// Runs the course preview at the start of each round (excluding first)
+    /// </summary>
+    void CoursePreview()
+    {
+        CoursePreview_(() => (SwooshControls.DoSwoosh(null, DisplayNextPlayer_)));
     }
 
     /// <summary>
@@ -235,9 +253,6 @@ public class BeachBowlesController : GenericController
     /// </summary>
     void StartGame()
     {
-        DisplayActivePlayer_();
-        ResetPositions_();
-
         PlayerUi.SetActive(true);
         PlayerUiPlayerColour.color = ColourFetcher.GetColour(_activePlayerIndex);
         PlayerUiPlayerName.text = _players[_activePlayerIndex].GetPlayerName();
@@ -411,6 +426,9 @@ public class BeachBowlesController : GenericController
         SwooshControls.DoSwoosh(null, SetupNextShot_);
     }
 
+    /// <summary>
+    /// Sets up all elements for the next shot
+    /// </summary>
     void SetupNextShot_()
     {
         _cancelled = false;
@@ -456,19 +474,19 @@ public class BeachBowlesController : GenericController
     /// </summary>
     private void NextPlayer_()
     {
-        _showingCharacter = true;
-        PlayerCamera.enabled = true;
-        GameplayCamera.enabled = false;
+        bool nextRound = _activePlayerIndex == _players.Count;
 
         _throwIndex = 0;
 
         _activePlayerIndex++;
 
         // that was the last player, so we move to the new round
-        if (_activePlayerIndex == _players.Count)
+        if (nextRound)
         {
+            CoursePreview();
+            
             _activePlayerIndex = 0;
-            _roundIndex++;
+            _roundIndex++;            
 
             // change the wind
             SetWind_(_roundIndex * 140, _roundIndex * 250);
@@ -483,6 +501,10 @@ public class BeachBowlesController : GenericController
                 RoundLabel.text = "ROUND " + (_roundIndex + 1);
             }
         }
+        else
+        {
+            DisplayNextPlayer();
+        }
 
         // reset the score displays for the current round
         foreach (var score in RoundControls)
@@ -496,6 +518,16 @@ public class BeachBowlesController : GenericController
 
         StartCoroutine(ShowPlayerUi_());
     }
+    
+    /// <summary>
+    /// Displays the screen to show next player
+    /// </summary>
+    void DisplayNextPlayer_()
+    {    
+        _showingCharacter = true;
+        PlayerCamera.enabled = true;
+        GameplayCamera.enabled = false;
+    }    
 
     /// <summary>
     /// Shows the UI on the player preview
@@ -655,6 +687,9 @@ public class BeachBowlesController : GenericController
         _pointsThisThrow += 80;
     }
 
+    /// <summary>
+    /// Shows the player(s) celebrating
+    /// </summary>
     private void PlayerCelebration_()
     {
         PlayerCam.SetActive(true);
@@ -899,7 +934,7 @@ public class BeachBowlesController : GenericController
     public void CameraPreview(int index)
     {
         // only valid if the current player is active, and there is not a preview in progress
-        if (index == _activePlayerIndex && !_cameraPreview)
+        if (index == _activePlayerIndex && !_cameraPreview && !_coursePreview)
         {
             StartCoroutine(CameraPreview_());
         }
@@ -937,6 +972,32 @@ public class BeachBowlesController : GenericController
         GameplayCamera.transform.localPosition = _cameraLocation;
         _cameraPreview = false;
         MaxPowerLine.gameObject.SetActive(false);
+    }    
+
+    /// <summary>
+    /// Moves the camera through the course
+    /// </summary>
+    /// <param name="action">The function to call upon completion</param>
+    private IEnumerator CoursePreview_(Action action)
+    {
+        _coursePreview = true;    
+        var currentPosition = GameplayCamera.transform.localPosition;            
+        GameplayCamera.transform.localPosition = new Vector3(currentPosition.x, _cameraZoomPosition.y, currentPosition.z);
+        
+        // briefly pause to show course
+        yield return new WaitForSeconds(1.5f);
+
+        // move down quickly
+        while (GameplayCamera.transform.localPosition.y > _cameraLocation.y)
+        {
+            GameplayCamera.transform.Translate(new Vector3(0, (-CAMERA_MOVE_SPEED*1.2f) * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        GameplayCamera.transform.localPosition = _cameraLocation;        
+        _coursePreview = false;
+        
+        action?.Invoke();
     }
 
     /// <summary>
