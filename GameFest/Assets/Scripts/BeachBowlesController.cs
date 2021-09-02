@@ -972,13 +972,16 @@ public class BeachBowlesController : GenericController
     private IEnumerator CoursePreview_(Action action)
     {
         _coursePreview = true;    
-        var currentPosition = GameplayCamera.transform.localPosition;
+        var currentPosition = GameplayCamera.transform.localPosition;            
         GameplayCamera.transform.localPosition = new Vector3(currentPosition.x, _cameraZoomPosition.y, currentPosition.z);
+        
+        // briefly pause to show course
+        yield return new WaitForSeconds(1.5f);
 
         // move down quickly
         while (GameplayCamera.transform.localPosition.y > _cameraLocation.y)
         {
-            GameplayCamera.transform.Translate(new Vector3(0, (-CAMERA_MOVE_SPEED/3) * Time.deltaTime, 0));
+            GameplayCamera.transform.Translate(new Vector3(0, (-CAMERA_MOVE_SPEED*1.2f) * Time.deltaTime, 0));
             yield return new WaitForSeconds(0.01f);
         }
 
