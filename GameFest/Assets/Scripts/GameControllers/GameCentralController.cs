@@ -135,14 +135,14 @@ public class GameCentralController : MonoBehaviour
 
     IEnumerator ReadIntro()
     {
-        yield return new WaitForSeconds(4);
+        yield return new WaitForSeconds(0.1f);
 
         MisterA.Fly(-100f, null);
 
         StartCoroutine(HidePlayersIEnum_());
 
         // let players start to go down
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(0.1f);
         EndFader.StartFade(0, 1, LoadMiniGame);
     }
 

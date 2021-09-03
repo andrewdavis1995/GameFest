@@ -10295,6 +10295,10 @@ PrefabInstance:
       propertyPath: Formatter
       value: 
       objectReference: {fileID: 1811615048}
+    - target: {fileID: 8732399068446546265, guid: 9b5377d18dff63743b196340557dd0bd, type: 3}
+      propertyPath: Texts.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9b5377d18dff63743b196340557dd0bd, type: 3}
 --- !u!1001 &4535340731970881496

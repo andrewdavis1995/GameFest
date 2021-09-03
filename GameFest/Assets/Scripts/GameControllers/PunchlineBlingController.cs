@@ -569,7 +569,7 @@ public class PunchlineBlingController : GenericController
                 Speak(joke.Punchline);
 
                 // add points
-                var newPoints = UnityEngine.Random.Range(90, 110);
+                var newPoints = Random.Range(90, 110);
                 _players[_resultsPlayerIndex].AddPoints(newPoints);
 
                 yield return new WaitForSeconds(2 * _endSpeed);

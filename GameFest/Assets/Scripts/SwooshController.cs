@@ -58,6 +58,8 @@ public class SwooshController : MonoBehaviour
             yield return new WaitForSeconds(speed);
         }
 
+        Debug.Log("doing midpoint action");
+
         // swap cameras
         midpointAction?.Invoke();
 

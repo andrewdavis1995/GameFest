@@ -6,6 +6,14 @@ public abstract class GenericInputHandler : MonoBehaviour
 {
     [SerializeField]
     private int _points = 0;
+    private int _bonusPoints = 0;
+
+    // status variables
+    int _playerIndex;
+    int _characterIndex;
+    string _playerName;
+
+    bool _pausePopupActive = false;
 
     public virtual Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
     {
@@ -28,13 +36,6 @@ public abstract class GenericInputHandler : MonoBehaviour
 
     public virtual void TriggerEnter(Collision2D collision) { }
     public virtual void TriggerExit(Collision2D collision) { }
-
-    // status variables
-    int _playerIndex;
-    int _characterIndex;
-    string _playerName;
-
-    bool _pausePopupActive = false;
 
     /// <summary>
     /// Returns of the character being used by this player
@@ -79,6 +80,24 @@ public abstract class GenericInputHandler : MonoBehaviour
     public virtual void AddPoints(int points)
     {
         _points += points;
+    }
+
+    /// <summary>
+    /// Sets how many bonus points this player got this game
+    /// </summary>
+    /// <param name="points">The points earned</param>
+    public virtual void SetBonusPoints(int points)
+    {
+        _bonusPoints = points;
+    }
+
+    /// <summary>
+    /// Sets how many bonus points this player got this game
+    /// </summary>
+    /// <returns>The points earned</returns>
+    public virtual int GetBonusPoints()
+    {
+        return _bonusPoints;
     }
 
     /// <summary>

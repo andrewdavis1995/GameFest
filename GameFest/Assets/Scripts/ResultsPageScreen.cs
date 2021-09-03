@@ -6,12 +6,10 @@ using UnityEngine.UI;
 public class ResultsPageScreen : MonoBehaviour
 {
     // Unity configure
-    public GameObject[] Controls;
+    public PointDisplayBreakdown[] Controls;
     public UIFormatter Formatter;
     public Image BackgroundImage;
     public Image LogoImage;
-    public Text[] Texts;
-    public Sprite[] CharacterIcons;
 
     /// <summary>
     /// Configure the display with the specified values
@@ -23,7 +21,7 @@ public class ResultsPageScreen : MonoBehaviour
 
         // hide all player info
         foreach (var go in Controls)
-            go.SetActive(false);
+            go.gameObject.SetActive(false);
 
         // set the appearance of the background image
         BackgroundImage.color = Formatter.BackgroundTransparencyColour;
@@ -31,13 +29,6 @@ public class ResultsPageScreen : MonoBehaviour
 
         // the appearance of the background image
         LogoImage.sprite = Formatter.LogoImage;
-
-        // set the appearance of each text element
-        foreach (var txt in Texts)
-        {
-            txt.font = Formatter.MainFont;
-            txt.color = Formatter.FontColour;
-        }
     }
 
     /// <summary>
@@ -65,24 +56,10 @@ public class ResultsPageScreen : MonoBehaviour
         // loop through all players
         for (int i = 0; i < sorted.Count; i++)
         {
-            // get components
-            var imgs = Controls[i].GetComponentsInChildren<Image>();
-            var txts = Controls[i].GetComponentsInChildren<Text>();
-
-            // set image appearance
-            imgs[0].color = ColourFetcher.GetColour(sorted[i].GetPlayerIndex());
-            imgs[1].sprite = CharacterIcons[sorted[i].GetCharacterIndex()];
-
-            // get player info
-            var points = sorted[i].GetPoints();
-            var playerName = sorted[i].GetPlayerName();
-
-            // display player info
-            txts[0].text = playerName;
-            txts[1].text = points.ToString();
+            Controls[i].SetValues(sorted[i]);
 
             // show the display
-            Controls[i].SetActive(true);
+            Controls[i].gameObject.SetActive(true);
 
             // wait a second between each player
             yield return new WaitForSeconds(1);
