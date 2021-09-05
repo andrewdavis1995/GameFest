@@ -18,6 +18,8 @@ public class BowlsBallScript : MonoBehaviour
     const float DRAG_AIRBORNE = 0.35f;
     const float DRAG_GROUNDED = 0.6f;
     const float WIND_INTERVAL = 0.1f;
+    const float BUNKER_MIN_SPEED = 7.8f;
+    const float BUNKER_EFFECT = 5f;
 
     // constant values for appearance
     const float SHADOW_COLOUR_CHANGE = 0.007f;
@@ -93,11 +95,16 @@ public class BowlsBallScript : MonoBehaviour
             var zone = collision.gameObject.GetComponent<BowlZoneScript>();
             BeachBowlesController.Instance.ZoneEntered(zone);
         }
-        else if(collision.tag == "Bunker")
+        else if (collision.tag == "Bunker")
         {
-            if(_onGround)
+            if (_onGround)
             {
-                Body.velocity /= 5;
+                Body.velocity /= BUNKER_EFFECT;
+
+                if (Body.velocity.y < BUNKER_MIN_SPEED)
+                {
+                    BeachBowlesController.Instance.BunkerHit();
+                }
             }
         }
     }

@@ -5,10 +5,27 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Structure to store player scores
+/// </summary>
 struct PlayerScores
 {
     public PlayerControls Player { get; set; }
     public int[][] Scores { get; set; }
+}
+
+/// <summary>
+/// Collection of images for the score animations
+/// </summary>
+[Serializable]
+public class ImageCollection
+{
+    public Sprite[] Images;
+}
+
+enum ImageCollectionIndexes
+{
+    SCORE_1, SCORE_2, SCORE_3, SCORE_7, SCORE_14
 }
 
 /// <summary>
@@ -46,6 +63,15 @@ public class BeachBowlesController : GenericController
     public SpriteRenderer RoundStartLabel;
     public Sprite[] RoundStartSprites;
     public GameObject[] ZonesToExclude;
+    public Transform ScoreScreen;
+    public Image ImgScoreAnimation;
+    public GameObject FinalRoundDescription;
+    public ImageCollection[] ScreenImages;
+    public Sprite[] TimeupImages;
+    public Sprite EndOfGameImage;
+    public GameObject Bunker;
+    public GameObject[] BunkerWalls;
+    public Image SotpSign;
 
     // score controls
     public BeachScoreDisplayScript[] RoundControls;
@@ -79,6 +105,9 @@ public class BeachBowlesController : GenericController
     float _cameraOffset;
     bool _showingCharacter = false;
 
+    Vector3 _scoreScreenPosition;
+    Vector3 _sotpSignPosition;
+
     int _throwIndex = 0;
     int _roundIndex = 0;
 
@@ -95,9 +124,15 @@ public class BeachBowlesController : GenericController
     const float CAMERA_OFFSET = -9f;
     const float CAMERA_MOVE_SPEED = 75f;
 
+    const float SCREEN_SPEED = 750f;
+
     const int NUMBER_OF_ROUNDS = 3;
 
+    const int CENTRE_STICK_SCORE = 80;
     const int OUT_OF_BOUNDS_SCORE = -9999;
+
+    const int SCORE_7_INDEX = 3;
+    const int SCORE_14_INDEX = 4;
 
     // static instance that can be accessed from other scripts
     public static BeachBowlesController Instance;
@@ -107,6 +142,15 @@ public class BeachBowlesController : GenericController
     {
         // store static instance
         Instance = this;
+
+        _scoreScreenPosition = ScoreScreen.localPosition;
+        _sotpSignPosition = SotpSign.transform.localPosition;
+
+        ScoreScreen.Translate(new Vector3(0, Screen.height + 50, 0));
+        ScoreScreen.gameObject.SetActive(false);
+
+        SotpSign.transform.Translate(new Vector3(0, Screen.height + 50, 0));
+        SotpSign.gameObject.SetActive(false);
 
         _cameraZoom = GameplayCamera.orthographicSize;
 
@@ -129,6 +173,17 @@ public class BeachBowlesController : GenericController
         PauseGameHandler.Instance.Initialise(genericPlayers);
 
         InitialiseScoreDisplays_();
+    }
+
+    /// <summary>
+    /// When the ball hits the bunker (and is moving slowly enough), enable the bunker walls
+    /// </summary>
+    internal void BunkerHit()
+    {
+        foreach (var wall in BunkerWalls)
+        {
+            wall.SetActive(true);
+        }
     }
 
     /// <summary>
@@ -219,8 +274,60 @@ public class BeachBowlesController : GenericController
     /// <returns></returns>
     IEnumerator TimeOutReset_()
     {
-        // TODO: Show message
+        // TODO: Refactor the moving of the screen
+
+        yield return new WaitForSeconds(1);
+        ImgScoreAnimation.color = new Color(1, 1, 1, 0);
+        ImgScoreAnimation.sprite = TimeupImages[0];
+
+        // slide screen in
+        ScoreScreen.gameObject.SetActive(true);
+
+        while (ScoreScreen.localPosition.y > _scoreScreenPosition.y)
+        {
+            ScoreScreen.Translate(new Vector3(0, -SCREEN_SPEED * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        ScoreScreen.transform.localPosition = _scoreScreenPosition;
+
+        for (float i = 0; i < 0.89f; i += 0.025f)
+        {
+            ImgScoreAnimation.color = new Color(1, 1, 1, i);
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        // animate the image
+        for (int i = 0; i < 4; i++)
+        {
+            for (int j = 0; j < TimeupImages.Length; j++)
+            {
+                ImgScoreAnimation.sprite = TimeupImages[j];
+                yield return new WaitForSeconds(0.35f);
+            }
+        }
+
+        for (float i = 0.89f; i > 0; i -= 0.025f)
+        {
+            ImgScoreAnimation.color = new Color(1, 1, 1, i);
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        ImgScoreAnimation.color = new Color(1, 1, 1, 0);
+
+        var endPosition = Screen.height + 50;
+
+        // make screen slide off
+        while (ScoreScreen.localPosition.y < endPosition)
+        {
+            ScoreScreen.Translate(new Vector3(0, SCREEN_SPEED * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        ScoreScreen.gameObject.SetActive(false);
+
         yield return new WaitForSeconds(2);
+
         NextShot_();
     }
 
@@ -238,7 +345,7 @@ public class BeachBowlesController : GenericController
     void CoursePreviewStart_()
     {
         DisplayActivePlayer_();
-        StartCoroutine(CoursePreview_(() => SwooshControls.DoSwoosh(()=> _coursePreview = false, StartGame)));
+        StartCoroutine(CoursePreview_(() => SwooshControls.DoSwoosh(() => _coursePreview = false, StartGame)));
     }
 
     /// <summary>
@@ -257,15 +364,24 @@ public class BeachBowlesController : GenericController
     void StartGame()
     {
         ResetPositions_();
+        StartCoroutine(DelayedUiShow_());
+        PlayerCamera.enabled = true;
+        GameplayCamera.enabled = false;
+        _showingCharacter = true;
+    }
+
+    /// <summary>
+    /// Delay the UI loading for player preview until the swoosh has cleared
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator DelayedUiShow_()
+    {
+        yield return new WaitForSeconds(0.9f);
 
         PlayerUi.SetActive(true);
         PlayerUiPlayerColour.color = ColourFetcher.GetColour(_activePlayerIndex);
         PlayerUiPlayerName.text = _players[_activePlayerIndex].GetPlayerName();
         PlayerUiBehindLeader.text = "First shot";
-
-        PlayerCamera.enabled = true;
-        GameplayCamera.enabled = false;
-        _showingCharacter = true;
     }
 
     /// <summary>
@@ -339,9 +455,12 @@ public class BeachBowlesController : GenericController
         // don't lose points if the ball hit either stick
         if (points < 0 && (_centreHitThisThrow || _doubleHitThisThrow)) points = 0;
 
-        // first round, the 2 & 3 zones don't exist, so just allocate 1 point
-        if (_roundIndex == 0 && (points == 2 || points == 3))
+        // first and third round, the 2 & 3 zones don't exist, so just allocate 1 point
+        if ((_roundIndex == 0 || _roundIndex == 2) && (points == 2 || points == 3))
             points = 1;
+
+        if (_throwIndex == 2 && _roundIndex == 2 && points > 0)
+            points *= 2;
 
         // add points and display them
         _pointsThisThrow += points;
@@ -369,10 +488,32 @@ public class BeachBowlesController : GenericController
                 RoundControls[i].Cancelled();
             }
 
+            // cancel all previous rounds in the bottom section
             for (int i = index - _throwIndex; i < index; i++)
             {
                 PlayerScores[_activePlayerIndex].IndividualBreakDowns[i].Cancelled();
             }
+
+            // if it's the last round, clear all points
+            if (_roundIndex == 2 && _throwIndex == 2)
+            {
+                CancelAllScores_();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Sets all scores for the current player to 0
+    /// </summary>
+    private void CancelAllScores_()
+    {
+        for (int i = 0; i < ((NUMBER_OF_ROUNDS * 3) - 2); i++)
+        {
+            PlayerScores[_activePlayerIndex].IndividualBreakDowns[i].Cancelled();
+        }
+        for (int i = 0; i < PlayerScores[_activePlayerIndex].RoundTotalScores.Length; i++)
+        {
+            PlayerScores[_activePlayerIndex].RoundTotalScores[i].SetValue(0);
         }
     }
 
@@ -395,11 +536,90 @@ public class BeachBowlesController : GenericController
     }
 
     /// <summary>
-    /// Shows the points 
+    /// Returns the index of the array of images to use
+    /// </summary>
+    /// <returns>The index of the images in the arrray</returns>
+    public int GetImageIndexFromScore_()
+    {
+        var index = 0;
+
+        switch (_pointsThisThrow)
+        {
+            case 1:
+            case 2:
+            case 3:
+                index = _pointsThisThrow - 1; break;
+            case 7:
+                index = 3; break;
+            case 14:
+                index = 4; break;
+        }
+
+        return index;
+    }
+
+    /// <summary>
+    /// Shows the points
     /// </summary>
     IEnumerator ShowPoints_()
     {
         yield return new WaitForSeconds(1);
+        ImgScoreAnimation.color = new Color(1, 1, 1, 0);
+        ImgScoreAnimation.sprite = ScreenImages[GetImageIndexFromScore_()].Images[0];
+
+        // slide screen in
+        ScoreScreen.gameObject.SetActive(true);
+
+        while (ScoreScreen.localPosition.y > _scoreScreenPosition.y)
+        {
+            ScoreScreen.Translate(new Vector3(0, -SCREEN_SPEED * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        ScoreScreen.transform.localPosition = _scoreScreenPosition;
+
+        // show sign for SoTP
+        if (_doubleHitThisThrow)
+        {
+            StartCoroutine(ShowSotpSign_());
+        }
+
+        for (float i = 0; i < 0.89f; i += 0.025f)
+        {
+            ImgScoreAnimation.color = new Color(1, 1, 1, i);
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        // animate the image
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < ScreenImages[GetImageIndexFromScore_()].Images.Length; j++)
+            {
+                ImgScoreAnimation.sprite = ScreenImages[GetImageIndexFromScore_()].Images[j];
+                yield return new WaitForSeconds(0.45f);
+            }
+        }
+
+        for (float i = 0.89f; i > 0; i -= 0.025f)
+        {
+            ImgScoreAnimation.color = new Color(1, 1, 1, i);
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        ImgScoreAnimation.color = new Color(1, 1, 1, 0);
+
+        var endPosition = Screen.height + 35;
+
+        // make screen slide off
+        while (ScoreScreen.localPosition.y < endPosition)
+        {
+            ScoreScreen.Translate(new Vector3(0, SCREEN_SPEED * Time.deltaTime, 0));
+            SotpSign.transform.Translate(new Vector3(0, SCREEN_SPEED * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        ScoreScreen.gameObject.SetActive(false);
+        SotpSign.gameObject.SetActive(false);
 
         var index = _roundIndex * 3 + _throwIndex;
 
@@ -421,10 +641,47 @@ public class BeachBowlesController : GenericController
         UpdateRoundTotalScore_();
         UpdateTotalScores_();
 
-        yield return new WaitForSeconds(2);
-
         // move everything back to their original locations
         NextShot_();
+    }
+
+    /// <summary>
+    /// Shows the sign when Stick of Double Points is hit
+    /// </summary>
+    private IEnumerator ShowSotpSign_()
+    {
+        var offset = 150f;
+        SotpSign.gameObject.SetActive(true);
+
+        while(offset > 0)
+        {
+            SotpSign.transform.localPosition = _sotpSignPosition + new Vector3(0, offset, 0);
+
+            while (SotpSign.transform.localPosition.y > _sotpSignPosition.y)
+            {
+                SotpSign.transform.Translate(new Vector3(0, -450 * Time.deltaTime, 0));
+                yield return new WaitForSeconds(0.001f);
+            }
+
+            // bounce back up
+            offset /= 7.5f;
+
+            // stop jittering
+            if(offset < 10f)
+            {
+                offset = 0;
+            }
+
+            var endPoint = SotpSign.transform.localPosition + new Vector3(0, offset, 0);
+
+            while (SotpSign.transform.localPosition.y < endPoint.y)
+            {
+                SotpSign.transform.Translate(new Vector3(0, 220 * Time.deltaTime, 0));
+                yield return new WaitForSeconds(0.001f);
+            }
+        }
+
+        SotpSign.transform.localPosition = _sotpSignPosition;
     }
 
     /// <summary>
@@ -440,8 +697,6 @@ public class BeachBowlesController : GenericController
     /// </summary>
     void SetupNextShot_()
     {
-        Debug.Log("Setting up next shot");
-
         _cancelled = false;
 
         PlayerCam.SetActive(false);
@@ -455,6 +710,8 @@ public class BeachBowlesController : GenericController
             NextPlayer_();
         else
             _playerLimit.StartTimer();
+
+        FinalRoundDescription.SetActive((_roundIndex == 2 && _throwIndex == 2));
 
         ThrowLabel.text = "THROW " + (_throwIndex + 1);
     }
@@ -494,10 +751,10 @@ public class BeachBowlesController : GenericController
             _activePlayerIndex = 0;
             _roundIndex++;
 
-            // show missing zones
-            foreach(var zone in ZonesToExclude)
+            // only show the 2 & 3 zones in second round
+            foreach (var zone in ZonesToExclude)
             {
-                zone.SetActive(true);
+                zone.SetActive(_roundIndex == 1);
             }
 
             // change the wind
@@ -516,18 +773,25 @@ public class BeachBowlesController : GenericController
         }
         else
         {
+            // only display player if it is not the end of a round. If it is the end of the round, the player is shown after the course preview
             DisplayNextPlayer_();
+        }
+
+        // end game when no more rounds
+        if (_roundIndex < NUMBER_OF_ROUNDS)
+        {
+            // display the new active player
+            DisplayActivePlayer_();
         }
 
         // reset the score displays for the current round
         foreach (var score in RoundControls)
             score.ResetControl();
 
+        Bunker.SetActive(_roundIndex == 2);
+
         RoundTotalScore.ResetControl();
         _doubleFactor = 1;
-
-        // display the new active player
-        DisplayActivePlayer_();
     }
 
     /// <summary>
@@ -535,7 +799,6 @@ public class BeachBowlesController : GenericController
     /// </summary>
     void DisplayNextPlayer_()
     {
-        Debug.Log("DisplaynextPlayer");
         _showingCharacter = true;
         PlayerCamera.enabled = true;
         GameplayCamera.enabled = false;
@@ -548,9 +811,6 @@ public class BeachBowlesController : GenericController
     /// </summary>
     private IEnumerator ShowPlayerUi_()
     {
-        Debug.Log("ShowPlayerUI");
-        Debug.Log("Active Player: " + _activePlayerIndex);
-
         // wait for the swoosh to finish
         yield return new WaitForSeconds(0.9f);
 
@@ -558,13 +818,9 @@ public class BeachBowlesController : GenericController
         var highScore = 0;
         var index = 0;
 
-        Debug.Log("PlayerScores" + PlayerScores.Length);
-
         // loop through all players
         foreach (var player in PlayerScores)
         {
-            Debug.Log("PLAYER");
-
             // add up all points
             var score = 0;
             foreach (var control in player.RoundTotalScores)
@@ -590,9 +846,6 @@ public class BeachBowlesController : GenericController
             index++;
         }
 
-        Debug.Log("Active Player bottom: " + _activePlayerIndex);
-        Debug.Log("_players: " + _players.Count);
-
         // display player info
         var leaderText = (highScore - activeScore) <= 0 ? "Current Leader" : (highScore - activeScore) + " points behind leader";
         PlayerUi.SetActive(true);
@@ -606,6 +859,10 @@ public class BeachBowlesController : GenericController
     /// </summary>
     private void Complete()
     {
+        _selectingDistance = false;
+        _selectingDirection = false;
+        Ball.gameObject.SetActive(false);
+
         // get points for each player
         for (int i = 0; i < PlayerScores.Length && i < _players.Count; i++)
         {
@@ -674,13 +931,19 @@ public class BeachBowlesController : GenericController
     /// </summary>
     void ResetPositions_()
     {
-        Debug.Log("Resetting positions");
-
         // clear statuses
         _overarm = false;
         UpdateThrowStyleDisplay_();
 
         _activeZones.Clear();
+
+        Bunker.SetActive(_roundIndex == 2);
+
+        // put walls down again
+        foreach (var wall in BunkerWalls)
+        {
+            wall.SetActive(false);
+        }
 
         // info about this round
         _pointsThisThrow = 0;
@@ -711,7 +974,8 @@ public class BeachBowlesController : GenericController
         PlayerCelebration_();
 
         _centreHitThisThrow = true;
-        _pointsThisThrow += 80;
+        var finalThrow = _throwIndex == 2 && _roundIndex == 2;
+        _pointsThisThrow += (finalThrow ? CENTRE_STICK_SCORE : CENTRE_STICK_SCORE * 2);
     }
 
     /// <summary>
@@ -961,7 +1225,7 @@ public class BeachBowlesController : GenericController
     public void CameraPreview(int index)
     {
         // only valid if the current player is active, and there is not a preview in progress
-        if (index == _activePlayerIndex && !_cameraPreview && !_coursePreview && !PauseGameHandler.Instance.IsPaused())
+        if (index == _activePlayerIndex && !_cameraPreview && !_coursePreview && !PauseGameHandler.Instance.IsPaused() && (_selectingDirection || _selectingDistance))
         {
             StartCoroutine(CameraPreview_());
         }
@@ -1033,7 +1297,7 @@ public class BeachBowlesController : GenericController
 
         action?.Invoke();
 
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(0.8f);
 
         Ball.gameObject.SetActive(true);
     }
@@ -1043,6 +1307,50 @@ public class BeachBowlesController : GenericController
     /// </summary>
     private IEnumerator Complete_()
     {
+        // TODO: Refactor the moving of the screen
+
+        yield return new WaitForSeconds(1);
+        ImgScoreAnimation.color = new Color(1, 1, 1, 0);
+        ImgScoreAnimation.sprite = EndOfGameImage;
+
+        // slide screen in
+        ScoreScreen.gameObject.SetActive(true);
+
+        while (ScoreScreen.localPosition.y > _scoreScreenPosition.y)
+        {
+            ScoreScreen.Translate(new Vector3(0, -SCREEN_SPEED * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        ScoreScreen.transform.localPosition = _scoreScreenPosition;
+
+        for (float i = 0; i < 0.89f; i += 0.025f)
+        {
+            ImgScoreAnimation.color = new Color(1, 1, 1, i);
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        yield return new WaitForSeconds(2.5f);
+
+        for (float i = 0.89f; i > 0; i -= 0.025f)
+        {
+            ImgScoreAnimation.color = new Color(1, 1, 1, i);
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        ImgScoreAnimation.color = new Color(1, 1, 1, 0);
+
+        var endPosition = Screen.height + 50;
+
+        // make screen slide off
+        while (ScoreScreen.localPosition.y < endPosition)
+        {
+            ScoreScreen.Translate(new Vector3(0, SCREEN_SPEED * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        ScoreScreen.gameObject.SetActive(false);
+
         ResultsScreen.Setup();
         GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
         ResultsScreen.SetPlayers(genericPlayers);

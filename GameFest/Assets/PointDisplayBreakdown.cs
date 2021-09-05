@@ -25,7 +25,7 @@ public class PointDisplayBreakdown : MonoBehaviour
         TxtOverallScore.text = player.GetPoints().ToString();
         TxtBonusScore.text = "+" + player.GetBonusPoints().ToString();
         TxtOriginalScore.text = (player.GetPoints() - player.GetBonusPoints()).ToString();
-        TxtName.text = name;
+        TxtName.text = player.GetPlayerName();
         ImgPlayerImage.sprite = PlayerIcons[player.GetCharacterIndex()];
         ImgBackground.color = ColourFetcher.GetColour(player.GetPlayerIndex());
 
