@@ -676,10 +676,42 @@ PrefabInstance:
     - target: {fileID: 385784408, guid: 1b91574573e527948b8e935cd9968144, type: 3}
       propertyPath: m_Texture
       value: 
-      objectReference: {fileID: 8400000, guid: 975dd53b1c7642d46a290472add44d64, type: 2}
+      objectReference: {fileID: 8400000, guid: b8f1b93746776fc4a81436f862b7c769, type: 2}
     - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
       propertyPath: m_VideoClip
       value: 
+      objectReference: {fileID: 32900000, guid: 17d828b0d0556334ba0da3f251b71dc0, type: 3}
+    - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
+      propertyPath: m_TargetTexture
+      value: 
+      objectReference: {fileID: 8400000, guid: b8f1b93746776fc4a81436f862b7c769, type: 2}
+    - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
+      propertyPath: m_ControlledAudioTrackCount
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
+      propertyPath: m_DirectAudioMutes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
+      propertyPath: m_DirectAudioVolumes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
+      propertyPath: m_EnabledAudioTracks.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
+      propertyPath: m_TargetAudioSources.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
+      propertyPath: m_DirectAudioVolumes.Array.data[0]
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
+      propertyPath: m_EnabledAudioTracks.Array.data[0]
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3026993966366500025, guid: 1b91574573e527948b8e935cd9968144, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1984,6 +2016,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 579972864}
   m_CullTransparentMesh: 1
+--- !u!114 &613497006 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6224874840843385599, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+  m_PrefabInstance: {fileID: 1753452096}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: caf99ba07ad30684781e3a501c5bdfc8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &643985567
 GameObject:
   m_ObjectHideFlags: 0
@@ -5287,6 +5330,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1764731672}
   m_CullTransparentMesh: 1
+--- !u!114 &1777338530 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6224874840843385599, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+  m_PrefabInstance: {fileID: 459326264}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: caf99ba07ad30684781e3a501c5bdfc8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1780770029
 GameObject:
   m_ObjectHideFlags: 0
@@ -5453,6 +5507,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a173f76e7e58c543bcc05652967ee24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlayerDisplays:
+  - {fileID: 1966347934}
+  - {fileID: 1777338530}
+  - {fileID: 613497006}
+  - {fileID: 2128336670}
   Manager: {fileID: 1963328877}
   CharacterControllers:
   - {fileID: 9100000, guid: 48ea3fe01c006264f8e781bcf8bbd1b1, type: 2}
@@ -5501,6 +5560,17 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1966347934 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6224874840843385599, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+  m_PrefabInstance: {fileID: 1143614826}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: caf99ba07ad30684781e3a501c5bdfc8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1969560544
 GameObject:
   m_ObjectHideFlags: 0
@@ -5824,6 +5894,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2097728492}
   m_CullTransparentMesh: 1
+--- !u!114 &2128336670 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6224874840843385599, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+  m_PrefabInstance: {fileID: 171065947}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: caf99ba07ad30684781e3a501c5bdfc8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &217137097185927178
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5852,6 +5933,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 486660668}
     m_Modifications:
+    - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
+      propertyPath: m_TargetTexture
+      value: 
+      objectReference: {fileID: 8400000, guid: b04dc2348e249a443a7cc18cd7feeef6, type: 2}
     - target: {fileID: 3026993968010342686, guid: 1b91574573e527948b8e935cd9968144, type: 3}
       propertyPath: m_Name
       value: PnlGameSelection

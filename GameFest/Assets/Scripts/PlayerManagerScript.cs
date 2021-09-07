@@ -11,6 +11,8 @@ using UnityEngine.UI;
 /// </summary>
 public class PlayerManagerScript : MonoBehaviour
 {
+    public LobbyDisplayScript[] PlayerDisplays;
+
     public PlayerInputManager Manager;
 
     public static PlayerManagerScript Instance;

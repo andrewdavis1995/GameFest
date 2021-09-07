@@ -2138,7 +2138,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &304561019
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2318,9 +2318,9 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.0107313795, y: 0.01786391}
+  m_Offset: {x: -0.00036621094, y: 0.025262356}
   serializedVersion: 2
-  m_Radius: 0.9670064
+  m_Radius: 0.9041228
 --- !u!212 &309680786
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -4583,9 +4583,9 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.022331238, y: 0}
+  m_Offset: {x: -0.0002190272, y: 0.02653424}
   serializedVersion: 2
-  m_Radius: 0.9739857
+  m_Radius: 0.86342543
 --- !u!212 &711653072
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -5889,9 +5889,9 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.022330921, y: 0}
+  m_Offset: {x: 0.017470997, y: 0.026531857}
   serializedVersion: 2
-  m_Radius: 0.96505326
+  m_Radius: 0.8987195
 --- !u!212 &883840127
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -6911,7 +6911,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &953478822
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12502,9 +12502,9 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.008932432, y: 0}
+  m_Offset: {x: 0.008932432, y: 0.017690023}
   serializedVersion: 2
-  m_Radius: 0.95165473
+  m_Radius: 0.88974
 --- !u!212 &1857895665
 SpriteRenderer:
   m_ObjectHideFlags: 0

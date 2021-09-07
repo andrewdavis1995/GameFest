@@ -975,7 +975,7 @@ public class BeachBowlesController : GenericController
 
         _centreHitThisThrow = true;
         var finalThrow = _throwIndex == 2 && _roundIndex == 2;
-        _pointsThisThrow += (finalThrow ? CENTRE_STICK_SCORE : CENTRE_STICK_SCORE * 2);
+        _pointsThisThrow += (finalThrow ? CENTRE_STICK_SCORE * 2 : CENTRE_STICK_SCORE);
     }
 
     /// <summary>

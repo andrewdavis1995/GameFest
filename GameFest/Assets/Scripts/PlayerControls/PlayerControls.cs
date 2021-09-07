@@ -106,9 +106,7 @@ public class PlayerControls : MonoBehaviour
     /// </summary>
     void UpdateMenu()
     {
-        // find all panels
-        var panels = GameObject.FindGameObjectsWithTag("PlayerColourDisplay");
-        var lobbyDisplay = panels[PlayerInput.playerIndex].GetComponentInChildren<LobbyDisplayScript>();
+        var lobbyDisplay = PlayerManagerScript.Instance.PlayerDisplays[PlayerInput.playerIndex];
 
         // set the panel that corresponds to this player with the correct colour and device
         lobbyDisplay.PlayerStarted(_colour, _device, PlayerInput.playerIndex);
