@@ -47,6 +47,8 @@ public class ShopDropController : GenericController
     int _playerResultIndex = 0;
     public Vector2[] CameraResultPositions;
 
+    List<ShopDropInputHandler> _players = new List<ShopDropInputHandler>();
+
     /// <summary>
     /// Runs at start
     /// </summary>
@@ -186,14 +188,10 @@ public class ShopDropController : GenericController
         Receipt.gameObject.SetActive(true);
         yield return new WaitForSeconds(1);
 
-        // display total title
-        Receipt.TotalHeader.text = "Total: ";
-        yield return new WaitForSeconds(1);
-
         // get the food that the player has collected
         var data = PlayerManagerScript.Instance.GetPlayers()[_playerResultIndex].GetComponent<ShopDropInputHandler>().GetFood();
         // group it by food
-        var grouped = data.GroupBy(g => g.Food);
+        var grouped = data.GroupBy(g => g.Food).OrderBy(g => g.Sum(i => i.Points)).Reverse();
 
         var index = 0;
         // loop through the grouped data
@@ -201,7 +199,12 @@ public class ShopDropController : GenericController
         {
             // display the points for this item
             var points = value.Sum(v => v.Points);
-            Receipt.SetText(index++, value.Key, points);
+            Receipt.SetText(index++, value.Key, points, value.Count());
+            if(index >= Receipt.ReceiptTexts.Length)
+            {
+                Receipt.ResetTexts();
+                index = 0;
+            }
             yield return new WaitForSeconds(1);
         }
 
@@ -227,6 +230,9 @@ public class ShopDropController : GenericController
 
         // show total
         Receipt.TotalText.text = totalPoints.ToString();
+
+        // display total title
+        Receipt.TotalHeader.text = "Total: ";
     }
 
     /// <summary>
@@ -246,8 +252,38 @@ public class ShopDropController : GenericController
         }
         else
         {
-            // when no more players, move to the central page
-            SceneManager.LoadScene(1);
+            StartCoroutine(Complete_());
+        }
+    }
+
+    /// <summary>
+    /// Adds bonus points and out of the game
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator Complete_()
+    {
+        AssignBonusPoints_();
+
+        yield return new WaitForSeconds(2);
+
+        // when no more players, move to the central page
+        SceneManager.LoadScene(1);
+    }
+
+    /// <summary>
+    /// Assigns bonus points to the winner
+    /// </summary>
+    private void AssignBonusPoints_()
+    {
+        // sort the players by points scored
+        var ordered = _players.OrderByDescending(p => p.GetPoints()).ToList();
+        int[] winnerPoints = new int[] { 150, 60, 10 };
+
+        // add winning score points 
+        for (int i = 0; i < ordered.Count(); i++)
+        {
+            ordered[i].AddPoints(winnerPoints[i]);
+            ordered[i].SetBonusPoints(winnerPoints[i]);
         }
     }
 
@@ -260,7 +296,7 @@ public class ShopDropController : GenericController
         // hide the remaining texts
         for (; index < Receipt.ReceiptTexts.Length; index++)
         {
-            Receipt.SetText(index, "", 0);
+            Receipt.SetText(index, "", 0, 0);
         }
     }
 
@@ -315,7 +351,7 @@ public class ShopDropController : GenericController
         {
             CreateBall_();
             yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, _ballDelayUpper));
-            _ballDelayUpper -= 0.01f;
+            _ballDelayUpper -= 0.0115f;
         }
     }
 
@@ -348,7 +384,9 @@ public class ShopDropController : GenericController
 
             // create the "visual" player at the start point - only used for turning
             player.Spawn(PlayerPrefab, StartPositions[index]);
-            player.GetComponent<ShopDropInputHandler>().AssignPaddles(index);
+            var inputHandler = player.GetComponent<ShopDropInputHandler>();
+            inputHandler.AssignPaddles(index);
+            _players.Add(inputHandler);
             index++;
         }
     }

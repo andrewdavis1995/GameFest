@@ -95,8 +95,7 @@ GameObject:
   - component: {fileID: 1550602333045081057}
   - component: {fileID: -1434124717557218755}
   - component: {fileID: 1391693623483816896}
-  - component: {fileID: 32005497875903951}
-  - component: {fileID: 6391923885991828626}
+  - component: {fileID: 3653595630002576562}
   m_Layer: 0
   m_Name: Paddle
   m_TagString: Untagged
@@ -201,8 +200,8 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.48660865
---- !u!68 &32005497875903951
-EdgeCollider2D:
+--- !u!60 &3653595630002576562
+PolygonCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -215,38 +214,72 @@ EdgeCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  m_EdgeRadius: 0
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 5, y: 1}
+    newSize: {x: 5, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
   m_Points:
-  - {x: 0.37250602, y: -0.3020798}
-  - {x: 2.2980733, y: -0.09740418}
-  - {x: 2.299229, y: -0.08751387}
-  - {x: 2.3022668, y: 0.052967712}
-  - {x: 0.36417353, y: 0.32102922}
-  m_AdjacentStartPoint: {x: 0, y: 0}
-  m_AdjacentEndPoint: {x: 0, y: 0}
-  m_UseAdjacentStartPoint: 0
-  m_UseAdjacentEndPoint: 0
---- !u!68 &6391923885991828626
-EdgeCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8854957196334273048}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_EdgeRadius: 0
-  m_Points:
-  - {x: -0.3933316, y: -0.27553812}
-  - {x: -2.318261, y: -0.09737982}
-  - {x: -2.316029, y: 0.017088035}
-  - {x: -0.36483318, y: 0.31946102}
-  m_AdjacentStartPoint: {x: 0, y: 0}
-  m_AdjacentEndPoint: {x: 0, y: 0}
-  m_UseAdjacentStartPoint: 0
-  m_UseAdjacentEndPoint: 0
+    m_Paths:
+    - - {x: 0.41, y: -0.31}
+      - {x: 0.48, y: -0.29999998}
+      - {x: 1.1899999, y: -0.19}
+      - {x: 1.5899999, y: -0.13}
+      - {x: 2.3, y: -0.02}
+      - {x: 2.32, y: 0}
+      - {x: 2.32, y: 0.06}
+      - {x: 2.3, y: 0.08}
+      - {x: 2.1499999, y: 0.099999994}
+      - {x: 2.01, y: 0.12}
+      - {x: 1.64, y: 0.17}
+      - {x: 0.53999996, y: 0.32}
+      - {x: 0.39, y: 0.34}
+      - {x: 0.35999998, y: 0.34}
+      - {x: 0.28, y: 0.42}
+      - {x: 0.19, y: 0.47}
+      - {x: 0.099999994, y: 0.5}
+      - {x: -0.12, y: 0.5}
+      - {x: -0.22, y: 0.48}
+      - {x: -0.31, y: 0.42}
+      - {x: -0.42, y: 0.34}
+      - {x: -0.48999998, y: 0.32999998}
+      - {x: -0.88, y: 0.26999998}
+      - {x: -0.94, y: 0.26}
+      - {x: -1.01, y: 0.25}
+      - {x: -1.0699999, y: 0.24}
+      - {x: -1.14, y: 0.22999999}
+      - {x: -1.1999999, y: 0.22}
+      - {x: -1.4, y: 0.19}
+      - {x: -1.4699999, y: 0.17999999}
+      - {x: -1.53, y: 0.17}
+      - {x: -1.5999999, y: 0.16}
+      - {x: -1.73, y: 0.14}
+      - {x: -1.79, y: 0.13}
+      - {x: -1.86, y: 0.12}
+      - {x: -1.92, y: 0.11}
+      - {x: -1.99, y: 0.099999994}
+      - {x: -2.05, y: 0.089999996}
+      - {x: -2.12, y: 0.08}
+      - {x: -2.18, y: 0.07}
+      - {x: -2.25, y: 0.06}
+      - {x: -2.31, y: 0.049999997}
+      - {x: -2.33, y: 0.03}
+      - {x: -2.33, y: -0.03}
+      - {x: -2.31, y: -0.049999997}
+      - {x: -2.1599998, y: -0.07}
+      - {x: -2.02, y: -0.089999996}
+      - {x: -1.65, y: -0.14}
+      - {x: -0.55, y: -0.29}
+      - {x: -0.47, y: -0.29999998}
+      - {x: -0.42, y: -0.29999998}
+      - {x: -0.31, y: -0.42}
+      - {x: -0.19, y: -0.48}
+      - {x: -0.12, y: -0.5}
+      - {x: 0.099999994, y: -0.5}
+      - {x: 0.17999999, y: -0.48999998}
+      - {x: 0.29, y: -0.42}
+      - {x: 0.39, y: -0.31}
