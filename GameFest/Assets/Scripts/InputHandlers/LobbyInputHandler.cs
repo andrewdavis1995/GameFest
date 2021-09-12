@@ -150,6 +150,9 @@ public class LobbyInputHandler : GenericInputHandler
         _display.UpdateState(_state.GetState());
     }
 
+    /// <summary>
+    /// When the triangle key is pressed
+    /// </summary>
     public override void OnTriangle()
     {
         switch (_state.GetState())
@@ -197,8 +200,8 @@ public class LobbyInputHandler : GenericInputHandler
     /// Assigns a UI display to the handler
     /// </summary>
     /// <param name="display">The UI element to update</param>
-    /// <param name="nameCallback">The callback function to call when the name is updated</param>
-    /// <param name="isHost">Is this player the host (player 1)</param>
+    /// <param name="detailsCallback">The callback function to call when the details are confirmed</param>
+    /// <param name="playerIndex">The index of the player</param>
     public void SetDisplay(LobbyDisplayScript display, Action<string, int> detailsCallback, int playerIndex)
     {
         _display = display;

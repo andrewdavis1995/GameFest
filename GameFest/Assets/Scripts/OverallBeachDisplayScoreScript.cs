@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,5 +17,17 @@ public class OverallBeachDisplayScoreScript : MonoBehaviour
         TxtPlayerName.text = name;
         foreach (var img in ColourImages)
             img.color = ColourFetcher.GetColour(playerIndex);
+    }
+
+    internal void UpdateTotalScore()
+    {
+        // add up all points
+        var score = 0;
+        foreach (var control in RoundTotalScores)
+        {
+            score += control.GetValue();
+        }
+
+        TxtTotalScore.text = score.ToString();
     }
 }
