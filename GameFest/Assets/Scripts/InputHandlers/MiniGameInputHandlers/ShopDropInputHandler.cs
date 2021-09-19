@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ public class ShopDropInputHandler : GenericInputHandler
 
     // links to other scripts
     List<ShopDropBallScript> _foodCollected = new List<ShopDropBallScript>();
-    PlayerAnimation _animator;
+    PlayerAnimation[] _animators;
 
     // how many coroutines are running (for celebration animation)
     int _animationCoroutines = 0;
@@ -37,10 +38,21 @@ public class ShopDropInputHandler : GenericInputHandler
         var imgs = _trolley.GetComponentsInChildren<SpriteRenderer>();
 
         // set the colour of the trolley
-        for(int i = 1; i < imgs.Count(); i++)
+        for (int i = 1; i < imgs.Count(); i++)
         {
-            imgs[i].color = ColourFetcher.GetColour(GetPlayerIndex());
+            if (!imgs[i].gameObject.name.ToLower().Contains("shadow"))
+                imgs[i].color = ColourFetcher.GetColour(GetPlayerIndex());
         }
+    }
+
+    /// <summary>
+    /// Ball lost after hit by bomb
+    /// </summary>
+    /// <param name="ball">The item to remove</param>
+    internal void FoodLost(ShopDropBallScript ball)
+    {
+        _foodCollected.Remove(ball);
+        AddPoints(-ball.Points);
     }
 
     /// <summary>
@@ -80,13 +92,21 @@ public class ShopDropInputHandler : GenericInputHandler
         _animationCoroutines++;
 
         // start celebrating
-        _animator.SetAnimation("Celebrate");
+        foreach (var anim in _animators)
+        {
+            anim.SetAnimation("Celebrate");
+        }
         yield return new WaitForSeconds(1f);
         _animationCoroutines--;
 
         // if there are no other coroutines waiting, reset to Idle
         if (_animationCoroutines == 0)
-            _animator.SetAnimation("Idle");
+        {
+            foreach (var anim in _animators)
+            {
+                anim.SetAnimation("Idle");
+            }
+        }
     }
 
     /// <summary>
@@ -129,8 +149,36 @@ public class ShopDropInputHandler : GenericInputHandler
         SetAnimation(_playerTransform, characterIndex);
 
         // get animator and set player to idle
-        _animator = _playerTransform.GetComponent<PlayerAnimation>();
+        _animators = _playerTransform.GetComponentsInChildren<PlayerAnimation>();
+
+        // show shadows
+        foreach (var anim in _animators)
+        {
+            anim.GetComponent<SpriteRenderer>().enabled = true;
+        }
 
         return _playerTransform;
+    }
+
+    /// <summary>
+    /// Event handler for R1
+    /// </summary>
+    public override void OnR1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.NextPage();
+        }
+    }
+
+    /// <summary>
+    /// Event handler for L1
+    /// </summary>
+    public override void OnL1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.PreviousPage();
+        }
     }
 }

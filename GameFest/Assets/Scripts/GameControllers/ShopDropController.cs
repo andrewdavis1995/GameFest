@@ -16,11 +16,14 @@ public class ShopDropController : GenericController
     public float RightBound;
     public float BallDropHeight;
     private float _ballDelayUpper = 3f;
-    private const int GAME_TIMEOUT = 90;
+    private const int GAME_TIMEOUT = 120;
 
     // objects
     public Transform[] Trolleys;
     public TextMesh CountdownTimer;
+    public TextMesh CountdownTimerShadow;
+    public TransitionFader EndFader;
+    public ResultsPageScreen ResultsScreen;
 
     // links to other scripts
     public FoodFetcher Fetcher;
@@ -30,6 +33,7 @@ public class ShopDropController : GenericController
     // prefabs
     public Transform PlayerPrefab;
     public Transform BallPrefab;
+    public Transform BombPrefab;
 
     // time out
     TimeLimit _overallLimit;
@@ -49,6 +53,8 @@ public class ShopDropController : GenericController
 
     List<ShopDropInputHandler> _players = new List<ShopDropInputHandler>();
 
+    private Color _timeShadowColour;
+
     /// <summary>
     /// Runs at start
     /// </summary>
@@ -63,6 +69,8 @@ public class ShopDropController : GenericController
         // assign zones to players
         SetZones_();
 
+        _timeShadowColour = CountdownTimerShadow.color;
+
         // create players
         SpawnPlayers_();
 
@@ -70,8 +78,16 @@ public class ShopDropController : GenericController
         _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _overallLimit.Initialise(GAME_TIMEOUT, OnTimeLimitTick, OnTimeUp);
 
-        // start the game
-        StartGame_();
+        // fade in
+        EndFader.StartFade(1, 0, FadeInComplete);
+    }
+
+    /// <summary>
+    /// Called once fully faded in
+    /// </summary>
+    private void FadeInComplete()
+    {
+        PauseGameHandler.Instance.Pause(true, StartGame_);
     }
 
     /// <summary>
@@ -195,17 +211,23 @@ public class ShopDropController : GenericController
 
         var index = 0;
         // loop through the grouped data
-        foreach(var value in grouped)
+        foreach (var value in grouped)
         {
-            // display the points for this item
             var points = value.Sum(v => v.Points);
-            Receipt.SetText(index++, value.Key, points, value.Count());
-            if(index >= Receipt.ReceiptTexts.Length)
+            // only show items which made a difference
+            if (points > 0)
             {
-                Receipt.ResetTexts();
-                index = 0;
+                // display the points for this item
+                Receipt.SetText(index++, value.Key, points, value.Count());
+                yield return new WaitForSeconds(1);
+
+                if (index >= Receipt.ReceiptTexts.Length)
+                {
+                    Receipt.ResetTexts();
+                    index = 0;
+                    yield return new WaitForSeconds(1);
+                }
             }
-            yield return new WaitForSeconds(1);
         }
 
         // clear the rest
@@ -263,11 +285,24 @@ public class ShopDropController : GenericController
     IEnumerator Complete_()
     {
         AssignBonusPoints_();
+        ResultsScreen.Setup();
 
-        yield return new WaitForSeconds(2);
+        GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
+        ResultsScreen.SetPlayers(genericPlayers);
 
+        yield return new WaitForSeconds(4 + _players.Count);
+
+        // fade out
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Moves back to the central screen
+    /// </summary>
+    void ReturnToCentral_()
+    {
         // when no more players, move to the central page
-        SceneManager.LoadScene(1);
+        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }
 
     /// <summary>
@@ -339,6 +374,103 @@ public class ShopDropController : GenericController
     {
         // display countdown from 10 to 0
         CountdownTimer.text = seconds <= 10 ? seconds.ToString() : "";
+        CountdownTimerShadow.text = seconds <= 10 ? seconds.ToString() : "";
+
+        if (seconds == 0)
+        {
+            CountdownTimer.text = "Time's Up!";
+            CountdownTimerShadow.text = "Time's Up!";
+            CountdownTimer.fontSize /= 4;
+            CountdownTimerShadow.fontSize /= 4;
+        }
+
+        // display time briefly
+        if (seconds <= 10)
+        {
+            if (seconds > 0)
+                StartCoroutine(TimeFlash_());
+            else
+                StartCoroutine(TimeupMessage_());
+        }
+
+        // spawn empire biscuits
+        if (seconds == 30)
+        {
+            SpawnEmpireBiscuit_();
+        }
+        // bombs
+        else if (seconds == 99 || seconds == 82 || seconds == 61 || seconds == 43 || seconds == 38 || seconds == 26)
+        {
+            SpawnBomb_();
+        }
+    }
+
+    /// <summary>
+    /// Shows the Time Up message
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator TimeupMessage_()
+    {
+        CountdownTimer.color = new Color(1, 1, 1);
+        CountdownTimerShadow.color = _timeShadowColour;
+
+        yield return new WaitForSeconds(2f);
+
+        while (CountdownTimer.color.a > 0)
+        {
+            var col = CountdownTimer.color;
+            CountdownTimer.color = new Color(1, 1, 1, col.a - 0.1f);
+            CountdownTimerShadow.color = new Color(1, 1, 1, col.a - 0.1f);
+        }
+        yield return new WaitForSeconds(0.02f);
+    }
+
+    /// <summary>
+    /// Flash the time then fade out
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator TimeFlash_()
+    {
+        CountdownTimer.color = new Color(1, 1, 1);
+        CountdownTimerShadow.color = _timeShadowColour;
+
+        while (CountdownTimer.color.a > 0)
+        {
+            var col = CountdownTimer.color;
+            CountdownTimer.color = new Color(1, 1, 1, col.a - 0.1f);
+            CountdownTimerShadow.color = new Color(1, 1, 1, col.a - 0.1f);
+            yield return new WaitForSeconds(0.0225f);
+        }
+    }
+
+    /// <summary>
+    /// Spawns an empire biscuit object
+    /// </summary>
+    private void SpawnEmpireBiscuit_()
+    {
+        // x position
+        var left = UnityEngine.Random.Range(LeftBound, RightBound);
+
+        // create a ball
+        var ball = Instantiate(BallPrefab, new Vector2(left, BallDropHeight), Quaternion.identity);
+
+        // assign an empire biscuit to the ball
+        Fetcher.GetEmpireBiscuit(ball.GetComponent<ShopDropBallScript>());
+    }
+
+    /// <summary>
+    /// Spawns a bomb
+    /// </summary>
+    private void SpawnBomb_()
+    {
+        // x position
+        var left = UnityEngine.Random.Range(LeftBound, RightBound);
+
+        // create a ball
+        var ball = Instantiate(BombPrefab, new Vector2(left, BallDropHeight), Quaternion.identity);
+
+        // assign an empire biscuit to the ball
+        Fetcher.GetBomb(ball.GetComponent<ShopDropBallScript>());
     }
 
     /// <summary>

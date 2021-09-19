@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 public class ShopDropBallScript : MonoBehaviour
@@ -7,6 +8,7 @@ public class ShopDropBallScript : MonoBehaviour
     public int Points { get; set; } = 0;
     public string Food { get; set; }
     private bool _complete = false;
+    int _playerIndex;
 
     public Rigidbody2D RigidBodyBall;
 
@@ -21,6 +23,12 @@ public class ShopDropBallScript : MonoBehaviour
             var index = int.Parse(collision.gameObject.name.Replace("AREA_", ""));
             StartCoroutine(BallComplete(index));
         }
+        // if collided with a bomb explosion, destroy it
+        else if(collision.gameObject.name.ToLower().Contains("bomb"))
+        {
+            PlayerManagerScript.Instance.GetPlayers()[_playerIndex].GetComponent<ShopDropInputHandler>().FoodLost(this);
+            Destroy(gameObject);
+        }
     }
 
     /// <summary>
@@ -28,9 +36,12 @@ public class ShopDropBallScript : MonoBehaviour
     /// </summary>
     private IEnumerator BallComplete(int playerIndex)
     {
+        _playerIndex = playerIndex;
+
         // wait a second, then destroy the object
         yield return new WaitForSeconds(1);
         PlayerManagerScript.Instance.GetPlayers()[playerIndex].GetComponent<ShopDropInputHandler>().FoodCollected(this);
+        Detonate();
     }
 
     /// <summary>
@@ -54,4 +65,17 @@ public class ShopDropBallScript : MonoBehaviour
             transform.localScale /= 1.8f;
         }
     }
+
+    /// <summary>
+    /// If this item is a bomb, detonate it
+    /// </summary>
+    public void Detonate()
+    {
+        var bomb = GetComponent<DropBombScript>();
+        if (bomb != null)
+        {
+            StartCoroutine(bomb.Detonate());
+        }
+    }
+
 }

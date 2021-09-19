@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -173,7 +174,7 @@ public abstract class GenericInputHandler : MonoBehaviour
     public void SetAnimation(Transform spawned, int characterIndex)
     {
         // update the animation controller
-        spawned.GetComponent<Animator>().runtimeAnimatorController = PlayerManagerScript.Instance.CharacterControllers[characterIndex];
+        spawned.GetComponentsInChildren<Animator>().All(a => { a.runtimeAnimatorController = PlayerManagerScript.Instance.CharacterControllers[characterIndex]; return false; });
     }
 
     /// <summary>

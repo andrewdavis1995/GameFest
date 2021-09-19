@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-enum FoodType { BirthdayCake, Chicken, Gammon, ChristmasPudding, Sweets, Watermelon, WashingUpLiquid, BreadRoll, Lettuce, Pineapple, Orange, Potato, Sponge, ToiletRoll }
+enum FoodType { BirthdayCake, Cheese, Gammon, ChristmasPudding, Sweets, Watermelon, WashingUpLiquid, BreadRoll, Lettuce, Pineapple, Orange, Potato, Sponge, ToiletRoll }
 
 public class FoodFetcher : MonoBehaviour
 {
     public Sprite[] Sprites;
+    public Sprite EmpireBiscuitSprite;
+    public Sprite BombSprite;
 
     /// <summary>
     /// Gets the distribution of the items to spawn - how likely each is to be spawned
@@ -16,7 +18,7 @@ public class FoodFetcher : MonoBehaviour
     {
         List<Tuple<FoodType, int>> distribution = new List<Tuple<FoodType, int>>();
         distribution.Add(new Tuple<FoodType, int>(FoodType.BirthdayCake, 1));
-        distribution.Add(new Tuple<FoodType, int>(FoodType.Chicken, 3));
+        distribution.Add(new Tuple<FoodType, int>(FoodType.Cheese, 3));
         distribution.Add(new Tuple<FoodType, int>(FoodType.Gammon, 3));
         distribution.Add(new Tuple<FoodType, int>(FoodType.ChristmasPudding, 3));
         distribution.Add(new Tuple<FoodType, int>(FoodType.Sweets, 4));
@@ -33,26 +35,27 @@ public class FoodFetcher : MonoBehaviour
         return distribution;
     }
 
+    /// <summary>
+    /// Populates the ball with the attributes of a randomised shopping item
+    /// </summary>
+    /// <param name="ball">The script to update</param>
     public void GetFood(ShopDropBallScript ball)
     {
+        // get a (semi) random shopping element
         var numValues = Enum.GetValues(typeof(FoodType)).Length;
         var value = SpawnItemDistributionFetcher<FoodType>.GetRandomEnumValue(GetDistribution());
 
         var points = 0;
         var foodName = "";
-
         var offset = new Vector3(0, 0);
+
+        // set values for points, size, and name based on the item type
         switch(value)
         {
             case FoodType.BirthdayCake:
                 foodName = "Birthday Cake";
                 offset = new Vector2(0.11f, 0.11f);
                 points = 40;
-                break;
-            case FoodType.Chicken:
-                foodName = "Chicken";
-                offset = new Vector2(0.04f, 0.04f);
-                points = 35;
                 break;
             case FoodType.Gammon:
                 foodName = "Gammon";
@@ -63,6 +66,11 @@ public class FoodFetcher : MonoBehaviour
                 foodName = "Christmas Pudding";
                 offset = new Vector2(-0.1f, -0.1f);
                 points = 29;
+                break;
+            case FoodType.Cheese:
+                foodName = "Cheese";
+                offset = new Vector2(0.04f, 0.04f);
+                points = 25;
                 break;
             case FoodType.Sweets:
                 foodName = "Sweets";
@@ -76,12 +84,12 @@ public class FoodFetcher : MonoBehaviour
                 break;
             case FoodType.WashingUpLiquid:
                 foodName = "Washing-up Liquid";
-                offset = new Vector2(-0.09f, -0.09f);
-                points = 16;
+                offset = new Vector2(-0.08f, 0.06f);
+                points = 15;
                 break;
             case FoodType.BreadRoll:
                 foodName = "Bread Roll";
-                offset = new Vector2(-0.11f, -0.11f);
+                offset = new Vector2(-0.08f, -0.08f);
                 points = 14;
                 break;
             case FoodType.Lettuce:
@@ -116,9 +124,34 @@ public class FoodFetcher : MonoBehaviour
                 break;
         }
 
+        // update item properties and appearance
         ball.transform.localScale += offset;
         ball.GetComponent<SpriteRenderer>().sprite = Sprites[(int)value];
         ball.Points = points;
         ball.Food = foodName;
+    }
+
+    /// <summary>
+    /// Populates the ball with the attributes of an empire biscuit
+    /// </summary>
+    /// <param name="ball">The script to update</param>
+    public void GetEmpireBiscuit(ShopDropBallScript ball)
+    {
+        ball.transform.localScale += new Vector3(-.1f, -.1f);
+        ball.GetComponent<SpriteRenderer>().sprite = EmpireBiscuitSprite;
+        ball.Points = 80;
+        ball.Food = "Empire Biscuit";
+    }
+
+    /// <summary>
+    /// Populates the ball with the attributes of an empire biscuit
+    /// </summary>
+    /// <param name="ball">The script to update</param>
+    public void GetBomb(ShopDropBallScript ball)
+    {
+        ball.transform.localScale += new Vector3(-.02f, -.02f);
+        ball.GetComponent<SpriteRenderer>().sprite = BombSprite;
+        ball.Points = 0;
+        ball.Food = "BOMB";
     }
 }

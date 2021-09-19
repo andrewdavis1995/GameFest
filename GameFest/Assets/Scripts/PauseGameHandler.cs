@@ -176,7 +176,7 @@ public class PauseGameHandler : MonoBehaviour
     public void TogglePause()
     {
         // don't pause if the game is not in a pauseable stage
-        if (!ActiveGameController.CanPause() && _tutorialComplete) return;
+        if (!(ActiveGameController.CanPause() && _tutorialComplete)) return;
 
         if (_isPaused) Resume();
         else Pause(false);

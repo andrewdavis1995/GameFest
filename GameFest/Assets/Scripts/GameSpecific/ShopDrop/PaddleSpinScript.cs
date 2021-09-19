@@ -6,7 +6,7 @@ public class PaddleSpinScript : MonoBehaviour
 
     private void Start()
     {
-        _spinRate = Random.Range(0.085f, 0.27f);
+        _spinRate = Random.Range(0.1f, 0.3f);
     }
 
     // Update is called once per frame
