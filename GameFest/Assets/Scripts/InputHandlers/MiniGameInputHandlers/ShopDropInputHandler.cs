@@ -71,7 +71,8 @@ public class ShopDropInputHandler : GenericInputHandler
         ball.MoveToTrolley(_trolley);
 
         // trigger the celebration animation
-        StartCoroutine(Celebrate());
+        if (!ball.gameObject.name.ToLower().Contains("bomb"))
+            StartCoroutine(Celebrate());
     }
 
     /// <summary>

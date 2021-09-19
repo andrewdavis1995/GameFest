@@ -1,9 +1,7 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Controls the flow of the "Shop Drop" mini game
@@ -15,7 +13,7 @@ public class ShopDropController : GenericController
     public float LeftBound;
     public float RightBound;
     public float BallDropHeight;
-    private float _ballDelayUpper = 3f;
+    private float _ballDelayUpper = 2.8f;
     private const int GAME_TIMEOUT = 120;
 
     // objects
@@ -73,6 +71,10 @@ public class ShopDropController : GenericController
 
         // create players
         SpawnPlayers_();
+
+        // setup pause handler
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers);
 
         // setup the timeout
         _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
@@ -312,7 +314,7 @@ public class ShopDropController : GenericController
     {
         // sort the players by points scored
         var ordered = _players.OrderByDescending(p => p.GetPoints()).ToList();
-        int[] winnerPoints = new int[] { 150, 60, 10 };
+        int[] winnerPoints = new int[] { 180, 90, 20 };
 
         // add winning score points 
         for (int i = 0; i < ordered.Count(); i++)
@@ -348,7 +350,7 @@ public class ShopDropController : GenericController
     /// </summary>
     void ShowPlayerEndData()
     {
-        CameraScript.StartMovement(CameraResultPositions[_playerResultIndex], 1.6f);
+        CameraScript.StartMovement(CameraResultPositions[_playerResultIndex], 1.8f);
         CameraScript.SetCallback(ResultCallback);
     }
 
@@ -399,7 +401,7 @@ public class ShopDropController : GenericController
             SpawnEmpireBiscuit_();
         }
         // bombs
-        else if (seconds == 99 || seconds == 82 || seconds == 61 || seconds == 43 || seconds == 38 || seconds == 26)
+        else if (seconds == 99 || seconds == 82 || seconds == 61 || seconds == 43)
         {
             SpawnBomb_();
         }
@@ -449,7 +451,7 @@ public class ShopDropController : GenericController
     private void SpawnEmpireBiscuit_()
     {
         // x position
-        var left = UnityEngine.Random.Range(LeftBound, RightBound);
+        var left = Random.Range(LeftBound, RightBound);
 
         // create a ball
         var ball = Instantiate(BallPrefab, new Vector2(left, BallDropHeight), Quaternion.identity);
@@ -464,7 +466,7 @@ public class ShopDropController : GenericController
     private void SpawnBomb_()
     {
         // x position
-        var left = UnityEngine.Random.Range(LeftBound, RightBound);
+        var left = Random.Range(LeftBound, RightBound);
 
         // create a ball
         var ball = Instantiate(BombPrefab, new Vector2(left, BallDropHeight), Quaternion.identity);
@@ -482,8 +484,8 @@ public class ShopDropController : GenericController
         while (_gameRunning)
         {
             CreateBall_();
-            yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, _ballDelayUpper));
-            _ballDelayUpper -= 0.0115f;
+            yield return new WaitForSeconds(UnityEngine.Random.Range(0.4f, _ballDelayUpper));
+            _ballDelayUpper -= 0.012f;
         }
     }
 

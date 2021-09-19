@@ -174,7 +174,8 @@ public abstract class GenericInputHandler : MonoBehaviour
     public void SetAnimation(Transform spawned, int characterIndex)
     {
         // update the animation controller
-        spawned.GetComponentsInChildren<Animator>().All(a => { a.runtimeAnimatorController = PlayerManagerScript.Instance.CharacterControllers[characterIndex]; return false; });
+        foreach (var anim in spawned.GetComponentsInChildren<Animator>())
+            anim.runtimeAnimatorController = PlayerManagerScript.Instance.CharacterControllers[characterIndex];
     }
 
     /// <summary>
