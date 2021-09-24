@@ -7,8 +7,11 @@ public class RocketResultScript : MonoBehaviour
 {
     // unity configuration
     public SpriteRenderer Rocket;
+    public SpriteRenderer Player;
     public TextMesh TxtPlayerName;
     public TextMesh TxtScore;
+    public Sprite[] CharacterImages;
+    public SpriteRenderer[] Propulsion;
 
     // status variables
     bool _started = false;
@@ -30,8 +33,6 @@ public class RocketResultScript : MonoBehaviour
             // if no longer accelerating, decrease speed
             if (!_powerRemaining)
             {
-                // TODO: Change animation image (splutter then die)
-
                 _moveSpeed -= 0.03f;
 
                 // stop once no more battery
@@ -61,7 +62,7 @@ public class RocketResultScript : MonoBehaviour
     /// <param name="playerName">Name of the player</param>
     /// <param name="playerIndex">Index of the player</param>
     /// <param name="died">Whether the player died</param>
-    internal void Initialise(List<int> points, string playerName, int playerIndex, bool died)
+    internal void Initialise(List<int> points, string playerName, int playerIndex, bool died, int characterindex)
     {
         Rocket.color = ColourFetcher.GetColour(playerIndex);
         _values = points;
@@ -72,6 +73,7 @@ public class RocketResultScript : MonoBehaviour
         {
             _moveSpeed = 0;
             Rocket.transform.eulerAngles = Vector3.zero;
+            Player.sprite = CharacterImages[characterindex];
         }
     }
 
@@ -117,6 +119,33 @@ public class RocketResultScript : MonoBehaviour
 
         // no longer has power - glide
         _powerRemaining = false;
+
+        StartCoroutine(KillPower_());
+    }
+
+    /// <summary>
+    /// Hides the propulsion graphics
+    /// </summary>
+    private IEnumerator KillPower_()
+    {
+        foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.4f);
+        yield return new WaitForSeconds(0.1f);
+        foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.9f);
+        yield return new WaitForSeconds(0.2f);
+        foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.1f);
+        yield return new WaitForSeconds(0.1f);
+        foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.7f);
+        yield return new WaitForSeconds(0.2f);
+        foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.2f);
+        yield return new WaitForSeconds(0.1f);
+        foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.8f);
+        yield return new WaitForSeconds(0.2f);
+
+        while(Propulsion[0].color.a > 0)
+        {
+            foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, p.color.a - 0.1f);
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 
     /// <summary>

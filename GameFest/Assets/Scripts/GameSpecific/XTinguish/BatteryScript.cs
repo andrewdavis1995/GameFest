@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using UnityEngine;
 
 public class BatteryScript : MonoBehaviour
@@ -8,6 +10,28 @@ public class BatteryScript : MonoBehaviour
 
     // status variables
     private int _value = 0;
+    private Vector3 _size;
+
+    private void Start()
+    {
+        _size = transform.localScale;
+        transform.localScale = Vector3.zero;
+
+        StartCoroutine(ShowBattery_());
+    }
+
+    /// <summary>on startup
+    /// Grows the battery 
+    /// </summary>
+    private IEnumerator ShowBattery_()
+    {
+        while(transform.localScale.x < _size.x)
+        {
+            transform.localScale += new Vector3(0.1f, 0.1f, 0.1f);
+            yield return new WaitForSeconds(0.05f);
+        }
+        transform.localScale = _size;
+    }
 
     // Update is called once per frame
     void Update()

@@ -29,6 +29,10 @@ public class ZeroGravityMovement : MonoBehaviour
     SpriteRenderer _playerSprite;
     [SerializeField]
     SpriteMask _spriteMask;
+    [SerializeField]
+    GameObject _inZoneIndicator;
+    [SerializeField]
+    Sprite[] _spacemanImages;
 
     public Sprite[] IdleImages;
 
@@ -101,7 +105,7 @@ public class ZeroGravityMovement : MonoBehaviour
         if (!_isComplete)
         {
             // move player
-            _xMovement += 0.1f * _lastXInput;
+            _xMovement += 0.15f * _lastXInput;
 
             if (_xMovement > MAX_SPEED) _xMovement = MAX_SPEED;
             if (_xMovement < -MAX_SPEED) _xMovement = -MAX_SPEED;
@@ -110,8 +114,8 @@ public class ZeroGravityMovement : MonoBehaviour
             bool moving = _lastXInput > 0.01f || _lastXInput < -0.01f;
             if (!moving)
             {
-                if (_xMovement > 0) _xMovement -= 0.1f;
-                else if (_xMovement < 0) _xMovement += 0.1f;
+                if (_xMovement > 0) _xMovement -= 0.15f;
+                else if (_xMovement < 0) _xMovement += 0.15f;
             }
             else
             {
@@ -127,9 +131,13 @@ public class ZeroGravityMovement : MonoBehaviour
             if (_lastYInput > 0.2f)
                 Propulsion();
 
+            // stop flicker
+            if (Math.Abs(_xMovement) < 0.08f && Math.Abs(_lastYInput) < 0.1f)
+                _xMovement = 0;
+
             // move and rotate player
             transform.Translate(new Vector3(_xMovement * Time.deltaTime, 0));
-            _spaceman.transform.eulerAngles = new Vector3(0, 0, -_xMovement * 7f);
+            _spaceman.transform.eulerAngles = new Vector3(0, 0, -_xMovement * 6.5f);
         }
         else if (_isDead)
         {
@@ -224,6 +232,9 @@ public class ZeroGravityMovement : MonoBehaviour
         {
             // decrease health
             _health -= 15;
+            var healthImage = (int)(_health / (100f / _spacemanImages.Count()));
+            if (healthImage < 0) healthImage = 0;
+            _spaceman.sprite = _spacemanImages[healthImage];
 
             // calculate size and position
             var width = _health / 100f;
@@ -321,6 +332,7 @@ public class ZeroGravityMovement : MonoBehaviour
         {
             // we are currently in the exit zone
             _inDoorZone = true;
+            _inZoneIndicator.SetActive(true);
         }
     }
 
@@ -335,6 +347,7 @@ public class ZeroGravityMovement : MonoBehaviour
         {
             // we have left the exit zone
             _inDoorZone = false;
+            _inZoneIndicator.SetActive(false);
         }
     }
 

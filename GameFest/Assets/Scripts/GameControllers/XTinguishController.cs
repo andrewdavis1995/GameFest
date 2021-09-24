@@ -8,6 +8,7 @@ public class XTinguishController : GenericController
 {
     // configuration
     private const int GAME_TIMEOUT = 120;
+    const float END_GAME_TIMEOUT = 5f;
 
     // unity configuration
     public TextMesh TxtCountdown;
@@ -24,6 +25,7 @@ public class XTinguishController : GenericController
     public Transform RocketPrefab;
     public CameraFollow CameraFollowScript;
     public CameraZoomFollow CameraZoomFollowScript;
+    public Transform[] Rockets;
 
     // fire encroachment
     private float _fireMoveX = 0.0015f;
@@ -32,6 +34,10 @@ public class XTinguishController : GenericController
     // battery spawn times
     float _minBatteryWait = 4;
     float _maxBatteryWait = 9;
+
+    // end scene
+    bool _encroaching = false;
+    float _rocketSpeed = 0.1f;
 
     // static instance
     public static XTinguishController Instance;
@@ -44,7 +50,7 @@ public class XTinguishController : GenericController
     TimeLimit _overallLimit;
 
     // links to other scripts
-    List<RocketResultScript> _rockets = new List<RocketResultScript>();
+    List<RocketResultScript> _endRockets = new List<RocketResultScript>();
 
     // Start is called before the first frame update
     void Start()
@@ -84,14 +90,14 @@ public class XTinguishController : GenericController
     List<Tuple<int, int>> GetDistribution()
     {
         List<Tuple<int, int>> distribution = new List<Tuple<int, int>>();
-        distribution.Add(new Tuple<int, int>(10, 19));
-        distribution.Add(new Tuple<int, int>(20, 16));
-        distribution.Add(new Tuple<int, int>(30, 15));
-        distribution.Add(new Tuple<int, int>(40, 12));
-        distribution.Add(new Tuple<int, int>(50, 11));
-        distribution.Add(new Tuple<int, int>(60, 8));
-        distribution.Add(new Tuple<int, int>(70, 7));
-        distribution.Add(new Tuple<int, int>(80, 6));
+        distribution.Add(new Tuple<int, int>(10, 9));
+        distribution.Add(new Tuple<int, int>(20, 10));
+        distribution.Add(new Tuple<int, int>(30, 12));
+        distribution.Add(new Tuple<int, int>(40, 16));
+        distribution.Add(new Tuple<int, int>(50, 19));
+        distribution.Add(new Tuple<int, int>(60, 12));
+        distribution.Add(new Tuple<int, int>(70, 9));
+        distribution.Add(new Tuple<int, int>(80, 7));
         distribution.Add(new Tuple<int, int>(90, 4));
         distribution.Add(new Tuple<int, int>(100, 2));
 
@@ -114,7 +120,7 @@ public class XTinguishController : GenericController
             var value = SpawnItemDistributionFetcher<int>.GetRandomEnumValue(GetDistribution());
 
             // spawn a battery, and assign its value
-            var spawned = Instantiate(BatteryPrefab, new Vector3(positionX, positionY, 0), Quaternion.identity);
+            var spawned = Instantiate(BatteryPrefab, new Vector3(positionX, positionY, -3), Quaternion.identity);
             spawned.GetComponent<BatteryScript>().Initialise(value);
 
             // wait a random amount of time before spawning another
@@ -145,6 +151,8 @@ public class XTinguishController : GenericController
         {
             // switch to use an input handler suitable for this scene
             player.SetActiveScript(typeof(XTinguishInputHandler));
+
+            Rockets[index].gameObject.SetActive(true);
 
             // create the "visual" player at the start point
             var spawned = player.Spawn(PlayerPrefab, SpawnPositions[index]);
@@ -201,7 +209,7 @@ public class XTinguishController : GenericController
     public void CheckForComplete()
     {
         var allComplete = _players.All(p => p.IsComplete());
-        if(allComplete)
+        if (allComplete)
         {
             // all players are complete, so end the game
             StartCoroutine(EndGame_());
@@ -220,7 +228,13 @@ public class XTinguishController : GenericController
         // stop the timer
         _overallLimit.Abort();
 
-        yield return new WaitForSeconds(4.5f);
+        _encroaching = true;
+
+        StartCoroutine(RocketsFly_());
+
+        yield return new WaitForSeconds(END_GAME_TIMEOUT);
+
+        _encroaching = false;
 
         Camera.main.transform.position = ResultCameraPosition;
 
@@ -229,32 +243,70 @@ public class XTinguishController : GenericController
         foreach (var v in FireCollidersY)
             v.gameObject.SetActive(false);
 
-        SpawnRockets_();
-
-        // TODO: probably need a delay
+        SpawnEndRockets_();
 
         // sets the players
-        CameraFollowScript.SetPlayers(_rockets.Select(r => r.transform).ToList(), FollowDirection.Right);
-        CameraZoomFollowScript.SetPlayers(_rockets.Select(r => r.transform).ToList(), FollowDirection.Right);
+        CameraFollowScript.SetPlayers(_endRockets.Select(r => r.transform).ToList(), FollowDirection.Right);
+        CameraZoomFollowScript.SetPlayers(_endRockets.Select(r => r.transform).ToList(), FollowDirection.Right);
 
         // move the rockets
-        foreach (var rocket in _rockets)
+        foreach (var rocket in _endRockets)
         {
             rocket.StartMove();
+        }
+    }
+
+    // makes the rockets fly upwards
+    private IEnumerator RocketsFly_()
+    {
+        while (_encroaching)
+        {
+            _rocketSpeed *= 1.01f;
+            foreach (var r in Rockets)
+            {
+                var script = r.GetComponentInChildren<BackgroundRocketScript>();
+                if (script != null)
+                    script.TakeOff();
+            }
+
+            for (int i = 0; i < _players.Count; i++)
+            {
+                if (!_players[i].Died())
+                    Rockets[i].Translate(new Vector3(0, _rocketSpeed, 0));
+            }
+
+            yield return new WaitForSeconds(0.01f);
+        }
+    }
+
+    /// <summary>
+    /// Assigns bonus points to the winner
+    /// </summary>
+    private void AssignBonusPoints_()
+    {
+        // sort the players by points scored
+        var ordered = _players.OrderByDescending(p => p.GetPoints()).ToList();
+        int[] winnerPoints = new int[] { 180, 90, 20 };
+
+        // add winning score points 
+        for (int i = 0; i < ordered.Count(); i++)
+        {
+            ordered[i].AddPoints(winnerPoints[i]);
+            ordered[i].SetBonusPoints(winnerPoints[i]);
         }
     }
 
     /// <summary>
     /// Spawns the rockets to be used to show the result
     /// </summary>
-    void SpawnRockets_()
+    void SpawnEndRockets_()
     {
         foreach (var p in _players)
         {
             var rocket = Instantiate(RocketPrefab, ResultsSpawnPositionsTop - (new Vector3(0, 3, 0) * p.GetPlayerIndex()), Quaternion.identity);
             var rocketScript = rocket.gameObject.GetComponent<RocketResultScript>();
-            rocketScript.Initialise(p.GetBatteryList(), p.GetPlayerName(), p.GetPlayerIndex(), p.Died());
-            _rockets.Add(rocketScript);
+            rocketScript.Initialise(p.GetBatteryList(), p.GetPlayerName(), p.GetPlayerIndex(), p.Died(), p.GetCharacterIndex());
+            _endRockets.Add(rocketScript);
         }
     }
 
@@ -263,7 +315,18 @@ public class XTinguishController : GenericController
     /// </summary>
     public void CheckResultsComplete()
     {
-        if (_rockets.All(r => r.IsComplete()))
-            PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        if (_endRockets.All(r => r.IsComplete()))
+            StartCoroutine(Complete_());
+    }
+
+    private IEnumerator Complete_()
+    {
+        AssignBonusPoints_();
+        yield return new WaitForSeconds(1);
+
+        // TODO: Fade out
+        // TODO: Results table
+
+        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }
 }

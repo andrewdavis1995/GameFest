@@ -27,7 +27,7 @@ public class XTinguishInputHandler : GenericInputHandler
         var player = Instantiate(prefab, position, Quaternion.identity);
 
         // set the height of the object
-        SetHeight(player, characterIndex);
+        //SetHeight(player, characterIndex);
 
         // get the movement script - disable it to stop the animations getting in each others way
         _zeroGravityScript = player.GetComponent<ZeroGravityMovement>();
