@@ -30,6 +30,8 @@ public class ZeroGravityMovement : MonoBehaviour
     [SerializeField]
     SpriteMask _spriteMask;
     [SerializeField]
+    ParticleSystem _particles;
+    [SerializeField]
     GameObject _inZoneIndicator;
     [SerializeField]
     Sprite[] _spacemanImages;
@@ -45,6 +47,7 @@ public class ZeroGravityMovement : MonoBehaviour
     float _lastXInput = 0;
     float _lastYInput = 0;
     int _playerIndex;
+    Vector3 _emissionsOffset;
 
     // status
     float _health = 100f;
@@ -58,6 +61,7 @@ public class ZeroGravityMovement : MonoBehaviour
     private void Start()
     {
         _rigidBody = GetComponent<Rigidbody2D>();
+        _emissionsOffset = _particles.transform.localPosition;
     }
 
     /// <summary>
@@ -125,6 +129,8 @@ public class ZeroGravityMovement : MonoBehaviour
                 _colourDetails.flipX = _xMovement < 0;
                 _playerSprite.flipX = _xMovement < 0;
                 _spriteMask.transform.localScale = new Vector3(_xMovement < 0 ? -1 : 1, 1, 1);
+                _particles.transform.localScale = new Vector3(_xMovement < 0 ? -1 : 1, 1, 1);
+                _particles.transform.localPosition = new Vector3((_xMovement < 0 ? -1 * _emissionsOffset.x : _emissionsOffset.x), _emissionsOffset.y, _emissionsOffset.z);
             }
 
             // boost up
@@ -138,6 +144,10 @@ public class ZeroGravityMovement : MonoBehaviour
             // move and rotate player
             transform.Translate(new Vector3(_xMovement * Time.deltaTime, 0));
             _spaceman.transform.eulerAngles = new Vector3(0, 0, -_xMovement * 6.5f);
+
+            // adjust emission rate
+            var emission = _particles.emission;
+            emission.rateOverTime = 750f * _lastYInput;
         }
         else if (_isDead)
         {
@@ -164,9 +174,6 @@ public class ZeroGravityMovement : MonoBehaviour
 
         // show playing escaping
         StartCoroutine(Teleport());
-
-        // inform the controller that this player is finished
-        XTinguishController.Instance.CheckForComplete();
     }
 
     /// <summary>
@@ -175,12 +182,60 @@ public class ZeroGravityMovement : MonoBehaviour
     private IEnumerator Teleport()
     {
         LockPlayer_();
-        _spaceman.gameObject.SetActive(false);
+
+        // find all sprite renderers
+        var srs = _spaceman.gameObject.GetComponentsInChildren<SpriteRenderer>();
+
+        // get alpha of each image
+        var a = srs.Select(s => s.color.a).ToArray();
+
+        while (srs.Any(sr => sr.color.a > 0))
+        {
+            // fade out each image
+            foreach (var sr in srs)
+            {
+                sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, sr.color.a >= 0 ? sr.color.a - 0.1f : 0f);
+            }
+            yield return new WaitForSeconds(0.04f);
+        }
+
+        // correct rotation
         _spaceman.transform.eulerAngles = new Vector3(0, 0, 0);
+
+        // sort flip
+        _spaceman.flipX = false;
+        _extinguisher.flipX = false;
+        _colourDetails.flipX = false;
+        _playerSprite.flipX = false;
+        _spriteMask.transform.localScale = new Vector3(1, 1, 1);
+        _particles.transform.localScale = new Vector3(1, 1, 1);
+        _particles.transform.localPosition = _emissionsOffset;
+
+        // adjust emission rate
+        var emission = _particles.emission;
+        emission.rateOverTime = 0;
+
         // move behind window
-        transform.position = XTinguishController.Instance.TransportPosition + (new Vector3(2, 0, 0) * _playerIndex);
+        transform.position = XTinguishController.Instance.TransportPositions[_playerIndex];
+        transform.parent = XTinguishController.Instance.Rockets[_playerIndex];
+
         yield return new WaitForSeconds(1);
-        _spaceman.gameObject.SetActive(true);
+
+        // we know first one is full opacity
+        while (srs.First().color.a < 1)
+        {
+            var index = 0;
+            // fade in each image
+            foreach (var sr in srs)
+            {
+                sr.color = new Color(sr.color.r, sr.color.g, sr.color.b, sr.color.a < a[index] ? sr.color.a + 0.1f : a[index]);
+                index++;
+            }
+            yield return new WaitForSeconds(0.04f);
+        }
+
+        // inform the controller that this player is finished
+        XTinguishController.Instance.CheckForComplete();
     }
 
     /// <summary>
@@ -322,6 +377,7 @@ public class ZeroGravityMovement : MonoBehaviour
         {
             // store the value of the battery
             var value = collision.GetComponent<BatteryScript>().GetValue();
+            collision.GetComponent<BatteryScript>().StopAllCoroutines();
             _pointsCollected.Add(value);
 
             // destroy the battery object

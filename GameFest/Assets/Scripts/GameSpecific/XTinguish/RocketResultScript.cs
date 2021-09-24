@@ -62,18 +62,24 @@ public class RocketResultScript : MonoBehaviour
     /// <param name="playerName">Name of the player</param>
     /// <param name="playerIndex">Index of the player</param>
     /// <param name="died">Whether the player died</param>
+    /// <param name="characterindex">Index of the character being used</param>
     internal void Initialise(List<int> points, string playerName, int playerIndex, bool died, int characterindex)
     {
         Rocket.color = ColourFetcher.GetColour(playerIndex);
         _values = points;
         TxtPlayerName.text = playerName;
+        Player.sprite = CharacterImages[characterindex];
 
         // if the player died, disable the rocket
         if (died)
         {
             _moveSpeed = 0;
             Rocket.transform.eulerAngles = Vector3.zero;
-            Player.sprite = CharacterImages[characterindex];
+
+            // hide it
+            Rocket.gameObject.SetActive(false);
+            TxtPlayerName.text = "";
+            TxtScore.text = "";
         }
     }
 
@@ -94,14 +100,15 @@ public class RocketResultScript : MonoBehaviour
     {
         int index = 0;
 
+        // random delay
+        yield return new WaitForSeconds(UnityEngine.Random.Range(0f, 0.25f));
+
         // loop through each power source
         foreach (var value in _values)
         {
             int currentValue = value;
             do
             {
-                // TODO: Update display
-
                 // deplete value
                 currentValue -= 10;
 
@@ -113,8 +120,10 @@ public class RocketResultScript : MonoBehaviour
                 yield return new WaitForSeconds(.3f);
             } while (currentValue > 0);
 
-            // TODO: make output grey/disabled
             index++;
+
+            // random delay
+            yield return new WaitForSeconds(UnityEngine.Random.Range(0f, 0.25f));
         }
 
         // no longer has power - glide

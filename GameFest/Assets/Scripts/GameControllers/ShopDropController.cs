@@ -319,8 +319,11 @@ public class ShopDropController : GenericController
         // add winning score points 
         for (int i = 0; i < ordered.Count(); i++)
         {
-            ordered[i].AddPoints(winnerPoints[i]);
-            ordered[i].SetBonusPoints(winnerPoints[i]);
+            if (ordered[i].GetPoints() > 0)
+            {
+                ordered[i].AddPoints(winnerPoints[i]);
+                ordered[i].SetBonusPoints(winnerPoints[i]);
+            }
         }
     }
 

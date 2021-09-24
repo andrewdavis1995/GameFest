@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class BatteryScript : MonoBehaviour
 {
+    private const float BATTERY_LIFE = 7.5f;
+
     // Unity configuration
     public Sprite[] BatteryImages;
     public SpriteRenderer Renderer;
@@ -31,6 +33,26 @@ public class BatteryScript : MonoBehaviour
             yield return new WaitForSeconds(0.05f);
         }
         transform.localScale = _size;
+
+        StartCoroutine(KillBattery_());
+    }
+
+    /// <summary>on startup
+    /// Grows the battery 
+    /// </summary>
+    private IEnumerator KillBattery_()
+    {
+        yield return new WaitForSeconds(BATTERY_LIFE);
+
+        // shrink and kill
+        while (transform.localScale.x > 0)
+        {
+            transform.localScale -= new Vector3(0.1f, 0.1f, 0.1f);
+            yield return new WaitForSeconds(0.05f);
+        }
+        transform.localScale = _size;
+
+        Destroy(gameObject);
     }
 
     // Update is called once per frame

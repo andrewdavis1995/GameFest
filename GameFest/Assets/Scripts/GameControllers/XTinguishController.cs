@@ -19,13 +19,15 @@ public class XTinguishController : GenericController
     public BoxCollider2D[] FireCollidersY;
     public Transform PlayerPrefab;
     public Vector3[] SpawnPositions;
-    public Vector3 TransportPosition;
+    public Vector3[] TransportPositions;
     public Vector3 ResultsSpawnPositionsTop;
     public Vector3 ResultCameraPosition;
     public Transform RocketPrefab;
     public CameraFollow CameraFollowScript;
     public CameraZoomFollow CameraZoomFollowScript;
     public Transform[] Rockets;
+    public SpriteRenderer AlarmIndicator;
+    public SpriteRenderer AlarmOverlay;
 
     // fire encroachment
     private float _fireMoveX = 0.0015f;
@@ -36,7 +38,8 @@ public class XTinguishController : GenericController
     float _maxBatteryWait = 9;
 
     // end scene
-    bool _encroaching = false;
+    bool _fastFireMove = false;
+    bool _ended = false;
     float _rocketSpeed = 0.1f;
 
     // static instance
@@ -136,6 +139,39 @@ public class XTinguishController : GenericController
     {
         // display the countdown
         TxtCountdown.text = seconds.ToString();
+
+        if (seconds == 25)
+        {
+            StartCoroutine(FlashWarning_());
+        }
+    }
+
+    /// <summary>
+    /// Flashes the warning light on and off
+    /// </summary>
+    private IEnumerator FlashWarning_()
+    {
+        AlarmOverlay.enabled = true;
+
+        var a = 0f;
+        var c = AlarmOverlay.color;
+        AlarmOverlay.color = new Color(c.r, c.g, c.b, a);
+
+        while (!_ended)
+        {
+            for (; a <= 0.35f; a += 0.05f)
+            {
+                AlarmOverlay.color = new Color(c.r, c.g, c.b, a);
+                AlarmIndicator.color = new Color(1, 1, 1, a);
+                yield return new WaitForSeconds(0.05f);
+            }
+            for (; a >= 0; a -= 0.05f)
+            {
+                AlarmOverlay.color = new Color(c.r, c.g, c.b, a);
+                AlarmIndicator.color = new Color(1, 1, 1, a);
+                yield return new WaitForSeconds(0.05f);
+            }
+        }
     }
 
     /// <summary>
@@ -228,38 +264,48 @@ public class XTinguishController : GenericController
         // stop the timer
         _overallLimit.Abort();
 
-        _encroaching = true;
+        _fastFireMove = true;
 
         StartCoroutine(RocketsFly_());
 
         yield return new WaitForSeconds(END_GAME_TIMEOUT);
 
-        _encroaching = false;
+        _fastFireMove = false;
 
-        Camera.main.transform.position = ResultCameraPosition;
+        _ended = true;
+        AlarmOverlay.enabled = false;
 
-        foreach (var v in FireCollidersX)
-            v.gameObject.SetActive(false);
-        foreach (var v in FireCollidersY)
-            v.gameObject.SetActive(false);
-
-        SpawnEndRockets_();
-
-        // sets the players
-        CameraFollowScript.SetPlayers(_endRockets.Select(r => r.transform).ToList(), FollowDirection.Right);
-        CameraZoomFollowScript.SetPlayers(_endRockets.Select(r => r.transform).ToList(), FollowDirection.Right);
-
-        // move the rockets
-        foreach (var rocket in _endRockets)
+        if (_players.Any(p => !p.Died()))
         {
-            rocket.StartMove();
+            Camera.main.transform.position = ResultCameraPosition;
+
+            foreach (var v in FireCollidersX)
+                v.gameObject.SetActive(false);
+            foreach (var v in FireCollidersY)
+                v.gameObject.SetActive(false);
+
+            SpawnEndRockets_();
+
+            // sets the players
+            CameraFollowScript.SetPlayers(_endRockets.Select(r => r.transform).ToList(), FollowDirection.Right);
+            CameraZoomFollowScript.SetPlayers(_endRockets.Where(p => p.Rocket.gameObject.activeInHierarchy).Select(r => r.transform).ToList(), FollowDirection.Right);
+
+            // move the rockets
+            foreach (var rocket in _endRockets)
+            {
+                rocket.StartMove();
+            }
+        }
+        else
+        {
+            StartCoroutine(Complete_());
         }
     }
 
     // makes the rockets fly upwards
     private IEnumerator RocketsFly_()
     {
-        while (_encroaching)
+        while (_fastFireMove)
         {
             _rocketSpeed *= 1.01f;
             foreach (var r in Rockets)
@@ -291,8 +337,11 @@ public class XTinguishController : GenericController
         // add winning score points 
         for (int i = 0; i < ordered.Count(); i++)
         {
-            ordered[i].AddPoints(winnerPoints[i]);
-            ordered[i].SetBonusPoints(winnerPoints[i]);
+            if (ordered[i].GetPoints() > 0)
+            {
+                ordered[i].AddPoints(winnerPoints[i]);
+                ordered[i].SetBonusPoints(winnerPoints[i]);
+            }
         }
     }
 
@@ -303,7 +352,7 @@ public class XTinguishController : GenericController
     {
         foreach (var p in _players)
         {
-            var rocket = Instantiate(RocketPrefab, ResultsSpawnPositionsTop - (new Vector3(0, 3, 0) * p.GetPlayerIndex()), Quaternion.identity);
+            var rocket = Instantiate(RocketPrefab, ResultsSpawnPositionsTop - (new Vector3(0, 4, 0) * p.GetPlayerIndex()), Quaternion.identity);
             var rocketScript = rocket.gameObject.GetComponent<RocketResultScript>();
             rocketScript.Initialise(p.GetBatteryList(), p.GetPlayerName(), p.GetPlayerIndex(), p.Died(), p.GetCharacterIndex());
             _endRockets.Add(rocketScript);
