@@ -5,6 +5,8 @@ using System;
 
 public class RocketResultScript : MonoBehaviour
 {
+    private const int MHATHIA_POINTS = 100;
+
     // unity configuration
     public SpriteRenderer Rocket;
     public SpriteRenderer Player;
@@ -16,16 +18,31 @@ public class RocketResultScript : MonoBehaviour
     // status variables
     bool _started = false;
     bool _complete = false;
+    bool _mhathiaReached = false;
     List<int> _values = new List<int>();
     float _moveSpeed = 6f;
     bool _powerRemaining = false;
     int _score = 0;
+    Action<int> _pointsCallback;
+    int _playerIndex;
+    float _mhathiaCentreX;
+    float _mhathiaTriggerX;
+
+    void Start()
+    {
+        var mhathia = GameObject.Find("Mhathia").transform;
+
+        _mhathiaCentreX = mhathia.localPosition.x;
+        _mhathiaTriggerX = _mhathiaCentreX - 60f;
+    }
 
     // Update is called once per frame
     void Update()
     {
+
+        Debug.Log(_mhathiaTriggerX + " is trihhrt");
         // do nothing if complete - wait for others
-        if (!_complete && _started)
+        if (!_complete && _started && !_mhathiaReached)
         {
             // move the rocket
             transform.Translate(new Vector3(_moveSpeed * Time.deltaTime, 0));
@@ -42,13 +59,37 @@ public class RocketResultScript : MonoBehaviour
                     StartCoroutine(DelayBeforeComplete());
                 }
             }
+
+            if(!_mhathiaReached && transform.localPosition.x > _mhathiaTriggerX && _mhathiaTriggerX > 0)
+            {
+                _pointsCallback(MHATHIA_POINTS);
+                _mhathiaReached = true;
+            }
+        }
+        else if(_mhathiaReached && !_complete && _started)
+        {
+            // shrink
+            transform.localScale -= new Vector3(0.05f* Time.deltaTime, 0.05f * Time.deltaTime, 0);
+            var yOffset = 0f;
+            switch(_playerIndex)
+            {
+                case 0: yOffset = -0.03f; break;
+                case 1: yOffset = -0.015f; break;
+            }
+            transform.Translate(new Vector3(_moveSpeed * Time.deltaTime *1.5f, yOffset));
+
+            if (transform.localPosition.x >= _mhathiaCentreX || transform.localScale.x <= 0)
+            {
+                _moveSpeed = 0;
+                _complete = true;
+                StartCoroutine(DelayBeforeComplete());
+            }
         }
     }
 
     /// <summary>
     /// Delay slightly before completing
     /// </summary>
-    /// <returns></returns>
     private IEnumerator DelayBeforeComplete()
     {
         yield return new WaitForSeconds(2);
@@ -63,12 +104,14 @@ public class RocketResultScript : MonoBehaviour
     /// <param name="playerIndex">Index of the player</param>
     /// <param name="died">Whether the player died</param>
     /// <param name="characterindex">Index of the character being used</param>
-    internal void Initialise(List<int> points, string playerName, int playerIndex, bool died, int characterindex)
+    internal void Initialise(List<int> points, string playerName, int playerIndex, bool died, int characterindex, Action<int> addPointsCallback)
     {
         Rocket.color = ColourFetcher.GetColour(playerIndex);
         _values = points;
         TxtPlayerName.text = playerName;
         Player.sprite = CharacterImages[characterindex];
+        _pointsCallback = addPointsCallback;
+        _playerIndex = playerIndex;
 
         // if the player died, disable the rocket
         if (died)
@@ -80,6 +123,13 @@ public class RocketResultScript : MonoBehaviour
             Rocket.gameObject.SetActive(false);
             TxtPlayerName.text = "";
             TxtScore.text = "";
+            _complete = true;
+        }
+
+        if(points.Count == 0)
+        {
+            _moveSpeed = 0;
+            _complete = true;
         }
     }
 

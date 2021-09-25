@@ -111,24 +111,6 @@ public class XTinguishInputHandler : GenericInputHandler
         return _zeroGravityScript.IsComplete();
     }
 
-    #region Input Handlers
-    public override void OnMove(InputAction.CallbackContext ctx)
-    {
-        // get the value from the input
-        var movement = ctx.ReadValue<Vector2>();
-
-        // cause the player to move left to right
-        _zeroGravityScript.X_Movement(movement.x);
-
-        // set value to be used for propulsion
-        _zeroGravityScript.Y_Movement(movement.y);
-    }
-
-    public override void OnTriangle()
-    {
-        // if the player is in the door and chooses to bail, make them exit
-        _zeroGravityScript.Escape();
-    }
 
     /// <summary>
     /// End the player on timeout
@@ -154,6 +136,47 @@ public class XTinguishInputHandler : GenericInputHandler
     internal bool Died()
     {
         return _zeroGravityScript.IsDead();
+    }
+
+    #region Input Handlers
+    public override void OnMove(InputAction.CallbackContext ctx)
+    {
+        // get the value from the input
+        var movement = ctx.ReadValue<Vector2>();
+
+        // cause the player to move left to right
+        _zeroGravityScript.X_Movement(movement.x);
+
+        // set value to be used for propulsion
+        _zeroGravityScript.Y_Movement(movement.y);
+    }
+
+    public override void OnTriangle()
+    {
+        // if the player is in the door and chooses to bail, make them exit
+        _zeroGravityScript.Escape();
+    }
+
+    /// <summary>
+    /// Event handler for R1
+    /// </summary>
+    public override void OnR1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.NextPage();
+        }
+    }
+
+    /// <summary>
+    /// Event handler for L1
+    /// </summary>
+    public override void OnL1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.PreviousPage();
+        }
     }
     #endregion
 }

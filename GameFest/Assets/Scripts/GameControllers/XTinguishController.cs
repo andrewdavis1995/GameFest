@@ -28,6 +28,8 @@ public class XTinguishController : GenericController
     public Transform[] Rockets;
     public SpriteRenderer AlarmIndicator;
     public SpriteRenderer AlarmOverlay;
+    public TransitionFader Fader;
+    public ResultsPageScreen ResultsScreen;
 
     // fire encroachment
     private float _fireMoveX = 0.0015f;
@@ -68,8 +70,20 @@ public class XTinguishController : GenericController
         // spawn player objects
         SpawnPlayers_();
 
-        // begin the game
-        StartGame_();
+        // setup pause
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers);
+
+        // fade in
+        Fader.StartFade(1, 0, FadeInComplete);
+    }
+
+    /// <summary>
+    /// Callback for when the fade image has fully faded out
+    /// </summary>
+    void FadeInComplete()
+    {
+        PauseGameHandler.Instance.Pause(true, StartGame_);
     }
 
     /// <summary>
@@ -354,7 +368,7 @@ public class XTinguishController : GenericController
         {
             var rocket = Instantiate(RocketPrefab, ResultsSpawnPositionsTop - (new Vector3(0, 4, 0) * p.GetPlayerIndex()), Quaternion.identity);
             var rocketScript = rocket.gameObject.GetComponent<RocketResultScript>();
-            rocketScript.Initialise(p.GetBatteryList(), p.GetPlayerName(), p.GetPlayerIndex(), p.Died(), p.GetCharacterIndex());
+            rocketScript.Initialise(p.GetBatteryList(), p.GetPlayerName(), p.GetPlayerIndex(), p.Died(), p.GetCharacterIndex(), p.AddPoints);
             _endRockets.Add(rocketScript);
         }
     }
@@ -368,14 +382,30 @@ public class XTinguishController : GenericController
             StartCoroutine(Complete_());
     }
 
+    /// <summary>
+    /// Completes the game
+    /// </summary>
     private IEnumerator Complete_()
     {
         AssignBonusPoints_();
+
         yield return new WaitForSeconds(1);
 
-        // TODO: Fade out
-        // TODO: Results table
+        ResultsScreen.Setup();
+        GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
+        ResultsScreen.SetPlayers(genericPlayers);
+        yield return new WaitForSeconds(4 + genericPlayers.Length);
 
+        // fade out
+        Fader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Moves back to the central screen
+    /// </summary>
+    void ReturnToCentral_()
+    {
+        // when no more players, move to the central page
         PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }
 }

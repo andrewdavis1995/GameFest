@@ -4940,11 +4940,15 @@ PrefabInstance:
     - target: {fileID: 385784408, guid: 1b91574573e527948b8e935cd9968144, type: 3}
       propertyPath: m_Texture
       value: 
-      objectReference: {fileID: 8400000, guid: 975dd53b1c7642d46a290472add44d64, type: 2}
+      objectReference: {fileID: 8400000, guid: 42858a06d0cf52247bfda90da49d5ada, type: 2}
     - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
       propertyPath: m_VideoClip
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 32900000, guid: 078192f2164a88444a473dc3bb747072, type: 3}
+    - target: {fileID: 632004689, guid: 1b91574573e527948b8e935cd9968144, type: 3}
+      propertyPath: m_TargetTexture
+      value: 
+      objectReference: {fileID: 8400000, guid: 42858a06d0cf52247bfda90da49d5ada, type: 2}
     - target: {fileID: 3026993967204867291, guid: 1b91574573e527948b8e935cd9968144, type: 3}
       propertyPath: m_Sprite
       value: 
