@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,7 @@ public class MarshLandController : GenericController
     public Vector2 PlayerEndPositionStart;
     public Transform PlayerPrefab;
     public CameraFollow CameraFollowScript;
+    public CameraZoomFollow CameraFollowZoomScript;
     public Text CountdownTimer;
     public MarshLandInputDisplay[] InputDisplays;
     public Text PointsCountdown;
@@ -50,6 +52,7 @@ public class MarshLandController : GenericController
 
         // assign players to the camera
         CameraFollowScript.SetPlayers(playerTransforms, FollowDirection.Right);
+        CameraFollowZoomScript.SetPlayers(playerTransforms, FollowDirection.Right);
 
         // display correct colours
         SetDisplays_();
@@ -84,7 +87,7 @@ public class MarshLandController : GenericController
         // set all colours
         for (; i < PlayerManagerScript.Instance.GetPlayerCount(); i++)
         {
-            InputDisplays[i].SetColour(i);
+            InputDisplays[i].SetColour(i, PlayerManagerScript.Instance.GetPlayers()[i].GetPlayerName());
         }
         // hide unused
         for (; i < PlayerManagerScript.Instance.Manager.maxPlayerCount; i++)
@@ -160,7 +163,7 @@ public class MarshLandController : GenericController
         UpdateDisplays_();
 
         // if all complete, end the game
-        if (allComplete)
+        if (allComplete && CameraFollowScript.enabled)
         {
             StartCoroutine(EndGame_());
         }
@@ -200,10 +203,12 @@ public class MarshLandController : GenericController
         var allPlayers = FindObjectsOfType<PlayerJumper>();
         int index = 0;
 
-        // loop through playerSSS
+        // loop through players
         foreach (var player in allPlayers)
         {
+            player.transform.parent = null;
             player.transform.position = PlayerEndPositionStart + new Vector2(index++, 0);
+            player.transform.localScale *= 1.75f;
         }
     }
 
@@ -234,6 +239,24 @@ public class MarshLandController : GenericController
                 if (marshmallow.OffsetX == 0)
                     marshmallow.gameObject.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// Updates UI for player falling into water
+    /// </summary>
+    /// <param name="playerIndex">Index of the player</param>
+    internal void Fall(int playerIndex)
+    {
+        InputDisplays[playerIndex].FallInWater();
+    }
+
+    /// <summary>
+    /// Updates UI for player getting out of water
+    /// </summary>
+    /// <param name="playerIndex">Index of the player</param>
+    internal void RecoverPlayer(int playerIndex)
+    {
+        InputDisplays[playerIndex].Recover();
     }
 
     /// <summary>
@@ -331,14 +354,17 @@ public class MarshLandController : GenericController
     /// </summary>
     IEnumerator CallNextPlayer()
     {
-        yield return new WaitForSeconds(1.5f);
-        var handler = PlayerManagerScript.Instance.GetPlayers()[_resultsPlayerIndex].GetComponent<MarshLandInputHandler>();
-        Speak(handler.GetPoints() + " points\nfor\n" + handler.PlayerName());
-        // wait a second, then make the player walk on
-        yield return new WaitForSeconds(1f);
-        handler.WalkOn(PlayerOrderComplete);
-        yield return new WaitForSeconds(2.5f);
-        HideSpeech();
+        if (_completedPlayers.Any(p => p == _resultsPlayerIndex))
+        {
+            yield return new WaitForSeconds(1.5f);
+            var handler = PlayerManagerScript.Instance.GetPlayers()[_resultsPlayerIndex].GetComponent<MarshLandInputHandler>();
+            Speak(handler.GetPoints() + " points\nfor\n" + handler.PlayerName());
+            // wait a second, then make the player walk on
+            yield return new WaitForSeconds(1f);
+            handler.WalkOn(PlayerOrderComplete);
+            yield return new WaitForSeconds(2.5f);
+            HideSpeech();
+        }
     }
 
     /// <summary>

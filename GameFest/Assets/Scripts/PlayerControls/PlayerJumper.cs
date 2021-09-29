@@ -11,6 +11,8 @@ public class PlayerJumper : MonoBehaviour
     MarshmallowScript _platformScript;
     PlayerAnimation _animator;
     Rigidbody2D _rigidBody;
+    [SerializeField]
+    ParticleSystem _particles;
 
     // callback functions
     Action<Collision2D> _onCollisionCallback;
@@ -171,5 +173,23 @@ public class PlayerJumper : MonoBehaviour
         SetColliderA_(state);
         SetColliderB_(!state);
         SetPositionLock_(!state);
+    }
+
+    /// <summary>
+    /// Start the splash from particle system
+    /// </summary>
+    internal void StartSplash()
+    {
+        _particles.gameObject.SetActive(true);
+        _particles.Play();
+    }
+
+    /// <summary>
+    /// Stop the splash from particle system
+    /// </summary>
+    internal void StopSplash()
+    {
+        _particles.Stop();
+        _particles.gameObject.SetActive(false);
     }
 }

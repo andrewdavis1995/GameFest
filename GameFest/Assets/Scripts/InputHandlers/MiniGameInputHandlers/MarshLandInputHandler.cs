@@ -149,7 +149,7 @@ public class MarshLandInputHandler : GenericInputHandler
         _currentPlatform = collision.gameObject.GetComponent<MarshmallowScript>();
 
         // if the new platform is the finish
-        if (collision.gameObject.name.Contains("End"))
+        if (collision.gameObject.name.Contains("End") && Active())
         {
             // disable the player
             Active(false);
@@ -241,14 +241,29 @@ public class MarshLandInputHandler : GenericInputHandler
     /// </summary>
     void Fall_()
     {
-        // can't fall off fof start
+        // can't fall off of start
         if (!_leftStartPoint) return;
 
         // start the recoveryy process
         _recoveryPressesRemaining = 20;
         _inWater = true;
 
+        StartCoroutine(Splash_());
+
         _jumpScript.RecoveryComplete(false);
+
+        MarshLandController.Instance.Fall(_playerIndex);
+    }
+
+    /// <summary>
+    /// Cause a splash from the particle system
+    /// </summary>
+    private IEnumerator Splash_()
+    {
+        yield return new WaitForSeconds(0.15f);
+        _jumpScript.StartSplash();
+        yield return new WaitForSeconds(2.5f);
+        _jumpScript.StopSplash();
     }
 
     /// <summary>
@@ -307,6 +322,8 @@ public class MarshLandInputHandler : GenericInputHandler
         // allow time to get above marshmallow
         yield return new WaitForSeconds(0.5f);
         _jumpScript.RecoveryComplete(true);
+
+        MarshLandController.Instance.RecoverPlayer(_playerIndex);
     }
 
     /// <summary>

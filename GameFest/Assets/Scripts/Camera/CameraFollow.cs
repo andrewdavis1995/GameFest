@@ -14,7 +14,7 @@ public class CameraFollow : MonoBehaviour
 
     private void Update()
     {
-        if (!enabled) return;
+        if (!_enabled) return;
 
         // if no players, nothing to do here
         if (_players.Count == 0) return;
@@ -33,7 +33,7 @@ public class CameraFollow : MonoBehaviour
     /// </summary>
     public void Disable()
     {
-        enabled = false;
+        _enabled = false;
     }
 
     /// <summary>

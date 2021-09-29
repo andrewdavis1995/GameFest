@@ -291,8 +291,6 @@ public class XTinguishController : GenericController
 
         if (_players.Any(p => !p.Died()))
         {
-            Camera.main.transform.position = ResultCameraPosition;
-
             foreach (var v in FireCollidersX)
                 v.gameObject.SetActive(false);
             foreach (var v in FireCollidersY)

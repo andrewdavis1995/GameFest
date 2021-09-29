@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -9,14 +10,54 @@ public class MarshLandInputDisplay : MonoBehaviour
 
     public Sprite[] ControllerImages;
     public Sprite[] KeyboardImages;
+    public Text TxtName;
+
+    Color _normalColour;
+    bool _inWater;
 
     /// <summary>
     /// Sets the colour of the display
     /// </summary>
     /// <param name="playerIndex">Index of the player</param>
-    public void SetColour(int playerIndex)
+    /// <param name="plName">Name of the player</param>
+    public void SetColour(int playerIndex, string plName)
     {
-        ColourPanel.color = ColourFetcher.GetColour(playerIndex);
+        _normalColour  = ColourFetcher.GetColour(playerIndex);
+        ColourPanel.color = _normalColour;
+        TxtName.text = plName;
+    }
+
+    /// <summary>
+    /// When the player falls into the water
+    /// </summary>
+    public void FallInWater()
+    {
+        _inWater = true;
+        StartCoroutine(FallInWater_());
+    }
+
+    /// <summary>
+    /// When the player gets out of the water
+    /// </summary>
+    public void Recover()
+    {
+        StopCoroutine(FallInWater_());
+        _inWater = false;
+        ColourPanel.color = _normalColour;
+    }
+
+    /// <summary>
+    /// Coroutine for when the player falls into the water
+    /// </summary>
+    IEnumerator FallInWater_()
+    {
+        while(_inWater)
+        {
+            ColourPanel.color = _normalColour;
+            yield return new WaitForSeconds(0.1f);
+            ColourPanel.color = new Color(_normalColour.r*1.2f, _normalColour.g * 1.2f, _normalColour.b * 1.2f);
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 
     /// <summary>
