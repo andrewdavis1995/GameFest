@@ -143,23 +143,26 @@ public class MarshLandInputHandler : GenericInputHandler
     /// <summary>
     /// Checks if the player has collided with a finish platform
     /// </summary>
-    /// <param name="collision"></param>
+    /// <param name="collision">The item that was collided with</param>
     void CheckFinish_(Collision2D collision)
     {
         _currentPlatform = collision.gameObject.GetComponent<MarshmallowScript>();
 
-        // if the new platform is the finish
-        if (collision.gameObject.name.Contains("End") && Active())
+        if (_active)
         {
-            // disable the player
-            Active(false);
+            // if the new platform is the finish
+            if (collision.gameObject.name.Contains("End"))
+            {
+                // disable the player
+                Active(false);
 
-            // celebrate
-            StartCoroutine(Celebrate());
-        }
-        else
-        {
-            NextAction_();
+                // celebrate
+                StartCoroutine(Celebrate());
+            }
+            else
+            {
+                NextAction_();
+            }
         }
     }
 
@@ -244,7 +247,9 @@ public class MarshLandInputHandler : GenericInputHandler
         // can't fall off of start
         if (!_leftStartPoint) return;
 
-        // start the recoveryy process
+        _jumpScript.SetAnimation("Flail");
+
+        // start the recovery processr
         _recoveryPressesRemaining = 20;
         _inWater = true;
 
@@ -323,6 +328,8 @@ public class MarshLandInputHandler : GenericInputHandler
         yield return new WaitForSeconds(0.5f);
         _jumpScript.RecoveryComplete(true);
 
+        _jumpScript.SetAnimation("Jump");
+
         MarshLandController.Instance.RecoverPlayer(_playerIndex);
     }
 
@@ -360,12 +367,26 @@ public class MarshLandInputHandler : GenericInputHandler
 
     public override void OnL1()
     {
-        InputReceived_(MarshLandInputAction.L1);
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.PreviousPage();
+        }
+        else
+        {
+            InputReceived_(MarshLandInputAction.L1);
+        }
     }
 
     public override void OnR1()
     {
-        InputReceived_(MarshLandInputAction.R1);
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.NextPage();
+        }
+        else
+        {
+            InputReceived_(MarshLandInputAction.R1);
+        }
     }
     #endregion
 

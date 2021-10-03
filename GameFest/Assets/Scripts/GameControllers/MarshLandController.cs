@@ -8,8 +8,8 @@ using UnityEngine.UI;
 public class MarshLandController : GenericController
 {
     // configuration
-    private const int GAME_TIMEOUT = 180;
-    private const int MAX_POINTS = 1800;
+    private const int GAME_TIMEOUT = 160;
+    private const int MAX_POINTS = 1600;
     private int[] POSITIONAL_POINTS = { 160, 70, 20 };
 
     // Unity configuration
@@ -26,6 +26,13 @@ public class MarshLandController : GenericController
     public int ServingPosition;
     public GameObject SpeechBubble;
     public TextMesh SpeechBubbleText;
+    const float MAX_WAVE_MOVEMENT = 5f;
+    const float WAVE_MOVEMENT_DELAY = 0.14f;
+    const float WAVE_MOVEMENT_SPEED = 0.05f;
+    public Transform[] Masks;
+    public TransitionFader EndFader;
+    public ResultsPageScreen ResultsScreen;
+    public Text TxtStartCountdown;
 
     // time out
     TimeLimit _overallLimit;
@@ -33,6 +40,7 @@ public class MarshLandController : GenericController
 
     // static instance
     public static MarshLandController Instance;
+    List<MarshLandInputHandler> _players = new List<MarshLandInputHandler>();
 
     // race status
     List<int> _completedPlayers = new List<int>();
@@ -44,11 +52,18 @@ public class MarshLandController : GenericController
     {
         Instance = this;
 
+        // make waves bob up and down
+        StartCoroutine(ControlWaves_());
+
         // hides the marshmallows that aren't assigned to any player
         HideUnusedMarshmallows_();
 
         // create players
         var playerTransforms = SpawnPlayers_();
+
+        // initialise pause handler
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers);
 
         // assign players to the camera
         CameraFollowScript.SetPlayers(playerTransforms, FollowDirection.Right);
@@ -63,9 +78,50 @@ public class MarshLandController : GenericController
         _pointCountdown = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _pointCountdown.Initialise(MAX_POINTS, OnPointsTick, null, 0.1f);
 
+        // fade in
+        EndFader.StartFade(1, 0, FadeInComplete);
+    }
+
+    /// <summary>
+    /// Called once fully faded in
+    /// </summary>
+    private void FadeInComplete()
+    {
+        PauseGameHandler.Instance.Pause(true, StartGame_);
+    }
+
+    /// <summary>
+    /// Starts a countdown before the race starts
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator StartCountdown_()
+    {
+        for(int i = 3; i > 0; i--)
+        {
+            TxtStartCountdown.text = i.ToString();
+            yield return new WaitForSeconds(1);
+        }
+        TxtStartCountdown.text = "";
+
+        // setup action list and show first action
+        foreach (var p in _players)
+        {
+            var marshmallows = FindObjectsOfType<MarshmallowScript>();
+            var playerMarshmallows = marshmallows.Where(m => m.name.Contains((p.GetPlayerIndex() + 1).ToString()));
+            p.SetActionList(playerMarshmallows.Count() - 1);
+        }
+
         // start the timer
         _overallLimit.StartTimer();
         _pointCountdown.StartTimer();
+    }
+
+    /// <summary>
+    /// Starts the game
+    /// </summary>
+    void StartGame_()
+    {
+        StartCoroutine(StartCountdown_());
     }
 
     /// <summary>
@@ -116,10 +172,7 @@ public class MarshLandController : GenericController
             playerTransforms.Add(playerTransform);
 
             // create action list, based on how many marshmallows this player must jump
-            var marshmallows = FindObjectsOfType<MarshmallowScript>();
-            var playerMarshmallows = marshmallows.Where(m => m.name.Contains((player.PlayerInput.playerIndex + 1).ToString()));
-            player.GetComponent<MarshLandInputHandler>().SetActionList(playerMarshmallows.Count() - 1);
-
+            _players.Add(player.GetComponent<MarshLandInputHandler>());
             index++;
         }
 
@@ -207,8 +260,8 @@ public class MarshLandController : GenericController
         foreach (var player in allPlayers)
         {
             player.transform.parent = null;
-            player.transform.position = PlayerEndPositionStart + new Vector2(index++, 0);
-            player.transform.localScale *= 1.75f;
+            player.transform.position = PlayerEndPositionStart + new Vector2(2*(index++), 0);
+            player.transform.localScale *= 1.85f;
         }
     }
 
@@ -332,9 +385,30 @@ public class MarshLandController : GenericController
         }
         else
         {
-            // otherwise, go back to central page
-            StartCoroutine(ReturnToCentral());
+            AssignBonusPoints_();
+
+            StartCoroutine(Complete_());
         }
+    }
+
+    /// <summary>
+    /// Completes the game and return to object
+    /// </summary>
+    IEnumerator Complete_()
+    {
+        yield return new WaitForSeconds(2f);
+
+        // fade out
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Moves back to the central screen
+    /// </summary>
+    void ReturnToCentral_()
+    {
+        // when no more players, move to the central page
+        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
     }
 
     /// <summary>
@@ -358,12 +432,16 @@ public class MarshLandController : GenericController
         {
             yield return new WaitForSeconds(1.5f);
             var handler = PlayerManagerScript.Instance.GetPlayers()[_resultsPlayerIndex].GetComponent<MarshLandInputHandler>();
-            Speak(handler.GetPoints() + " points\nfor\n" + handler.PlayerName());
+            Speak(handler.GetPoints() + " points for " + handler.PlayerName());
             // wait a second, then make the player walk on
             yield return new WaitForSeconds(1f);
             handler.WalkOn(PlayerOrderComplete);
             yield return new WaitForSeconds(2.5f);
             HideSpeech();
+        }
+        else
+        {
+            PlayerOrderComplete();
         }
     }
 
@@ -374,7 +452,7 @@ public class MarshLandController : GenericController
     void Speak(string msg)
     {
         SpeechBubble.SetActive(true);
-        SpeechBubbleText.text = TextFormatter.GetBubbleJokeString(msg);
+        SpeechBubbleText.text = TextFormatter.GetBubbleOrderString(msg);
     }
 
     /// <summary>
@@ -383,5 +461,50 @@ public class MarshLandController : GenericController
     void HideSpeech()
     {
         SpeechBubble.SetActive(false);
+    }
+
+    /// <summary>
+    /// Controls the size/appearance of the wave masks
+    /// </summary>
+    IEnumerator ControlWaves_()
+    {
+        while (true)
+        {
+            // make a bit bigger
+            for (var i = 0; i < MAX_WAVE_MOVEMENT; i++)
+            {
+                foreach (var mask in Masks)
+                    mask.localScale += new Vector3(0f, WAVE_MOVEMENT_SPEED * Time.deltaTime, 0f);
+                yield return new WaitForSeconds(WAVE_MOVEMENT_DELAY);
+            }
+
+            // make a bit smaller
+            for (var i = 0; i < MAX_WAVE_MOVEMENT; i++)
+            {
+                foreach (var mask in Masks)
+                    mask.localScale -= new Vector3(0f, WAVE_MOVEMENT_SPEED * Time.deltaTime, 0f);
+                yield return new WaitForSeconds(WAVE_MOVEMENT_DELAY);
+            }
+        };
+    }
+
+    /// <summary>
+    /// Assigns bonus points to the winner
+    /// </summary>
+    private void AssignBonusPoints_()
+    {
+        // sort the players by points scored
+        var ordered = _players.OrderByDescending(p => p.GetPoints()).ToList();
+        int[] winnerPoints = new int[] { 140, 50, 10 };
+
+        // add winning score points 
+        for (int i = 0; i < ordered.Count(); i++)
+        {
+            if (ordered[i].GetPoints() > 0)
+            {
+                ordered[i].AddPoints(winnerPoints[i]);
+                ordered[i].SetBonusPoints(winnerPoints[i]);
+            }
+        }
     }
 }

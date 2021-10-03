@@ -18,7 +18,7 @@ public class CameraZoomFollow : MonoBehaviour
 
     private void Update()
     {
-        if (!enabled) return;
+        if (!_enabled) return;
 
         // if no players, nothing to do here
         if (_players.Count == 0) return;

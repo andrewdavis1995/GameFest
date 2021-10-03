@@ -39,8 +39,6 @@ public class RocketResultScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        Debug.Log(_mhathiaTriggerX + " is trihhrt");
         // do nothing if complete - wait for others
         if (!_complete && _started && !_mhathiaReached)
         {

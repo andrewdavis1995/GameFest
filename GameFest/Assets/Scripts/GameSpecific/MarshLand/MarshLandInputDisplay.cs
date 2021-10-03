@@ -10,10 +10,12 @@ public class MarshLandInputDisplay : MonoBehaviour
 
     public Sprite[] ControllerImages;
     public Sprite[] KeyboardImages;
+    public Sprite MashImage;
     public Text TxtName;
 
     Color _normalColour;
     bool _inWater;
+    Sprite _currentImage;
 
     /// <summary>
     /// Sets the colour of the display
@@ -51,6 +53,8 @@ public class MarshLandInputDisplay : MonoBehaviour
     /// </summary>
     IEnumerator FallInWater_()
     {
+        ActionInput.sprite = MashImage;
+
         while(_inWater)
         {
             ColourPanel.color = _normalColour;
@@ -75,6 +79,8 @@ public class MarshLandInputDisplay : MonoBehaviour
         else
             // null if not enough images
             ActionInput.sprite = null;
+
+        _currentImage = ActionInput.sprite;
     }
 
     /// <summary>
