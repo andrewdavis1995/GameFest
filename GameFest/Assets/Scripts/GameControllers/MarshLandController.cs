@@ -396,7 +396,13 @@ public class MarshLandController : GenericController
     /// </summary>
     IEnumerator Complete_()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(3f);
+
+        ResultsScreen.Setup();
+
+        GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
+        ResultsScreen.SetPlayers(genericPlayers);
+        yield return new WaitForSeconds(4 + genericPlayers.Length);
 
         // fade out
         EndFader.StartFade(0, 1, ReturnToCentral_);
@@ -432,7 +438,7 @@ public class MarshLandController : GenericController
         {
             yield return new WaitForSeconds(1.5f);
             var handler = PlayerManagerScript.Instance.GetPlayers()[_resultsPlayerIndex].GetComponent<MarshLandInputHandler>();
-            Speak(handler.GetPoints() + " points for " + handler.PlayerName());
+            Speak(handler.GetPoints() + " points for " + handler.GetPlayerName());
             // wait a second, then make the player walk on
             yield return new WaitForSeconds(1f);
             handler.WalkOn(PlayerOrderComplete);

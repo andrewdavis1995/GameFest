@@ -27,7 +27,6 @@ public class MarshLandInputHandler : GenericInputHandler
     bool _walkingOn = false;
     bool _walkingOnComplete = false;
     Action _walkOnCallBack;
-    string _playerName;
     List<MarshLandInputAction> _actions = new List<MarshLandInputAction>();
 
     // called once per frame
@@ -44,15 +43,6 @@ public class MarshLandInputHandler : GenericInputHandler
                 StartCoroutine(GetServed_());
             }
         }
-    }
-
-    /// <summary>
-    /// Returns the name of the player linked to this handler
-    /// </summary>
-    /// <returns>The player's name</returns>
-    public string PlayerName()
-    {
-        return _playerName;
     }
 
     /// <summary>
@@ -90,7 +80,6 @@ public class MarshLandInputHandler : GenericInputHandler
     public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
     {
         _playerIndex = playerIndex;
-        _playerName = playerName;
 
         // create the player display
         _player = Instantiate(prefab, position, Quaternion.identity);
