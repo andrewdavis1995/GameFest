@@ -67,24 +67,6 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.NameEntry:
                 _display.AddToPlayerName();
                 break;
-            case PlayerStateEnum.ChoosingGames:
-                PlayerManagerScript.Instance.GameSelected();
-                break;
-        }
-    }
-
-
-    /// <summary>
-    /// When the cross is triggered - select letter
-    /// </summary>
-    public override void OnSquare()
-    {
-        switch (_state.GetState())
-        {
-            // randomise
-            case PlayerStateEnum.ChoosingGames:
-                PlayerManagerScript.Instance.RandomiseGames();
-                break;
         }
     }
 
@@ -100,22 +82,10 @@ public class LobbyInputHandler : GenericInputHandler
                 _state.SetState(PlayerStateEnum.NameEntry);
                 _display.ShowCharacterSelectionPanel(false);
                 break;
-            case PlayerStateEnum.ChoosingGames:
-                _state.SetState(PlayerStateEnum.CharacterSelection);
-                _display.ShowCharacterSelectionPanel(true);
-                PlayerManagerScript.Instance.SetGameSelectionState(false);
-                break;
             case PlayerStateEnum.Ready:
                 if (!PlayerManagerScript.Instance.LobbyComplete)
                 {
-                    if (IsHost())
-                    {
-                        _state.SetState(PlayerStateEnum.ChoosingGames);
-                    }
-                    else
-                    {
-                        _state.SetState(PlayerStateEnum.CharacterSelection);
-                    }
+                    _state.SetState(PlayerStateEnum.CharacterSelection);
                     _display.ShowReadyPanel(false);
                 }
                 break;
@@ -139,9 +109,6 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.CharacterSelection:
                 CharacterSelected_();
                 break;
-            case PlayerStateEnum.ChoosingGames:
-                GameSelectionComplete_();
-                break;
             case PlayerStateEnum.Ready:
                 StartGame_();
                 break;
@@ -157,26 +124,7 @@ public class LobbyInputHandler : GenericInputHandler
     {
         switch (_state.GetState())
         {
-            case PlayerStateEnum.ChoosingGames:
-                PlayerManagerScript.Instance.GameDeleted();
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Check enough games were selected
-    /// </summary>
-    private void GameSelectionComplete_()
-    {
-        if (PlayerManagerScript.Instance.SelectedGames.Count > 0)
-        {
-            _state.SetState(PlayerStateEnum.Ready);
-            _display.ShowReadyPanel(true);
-        }
-        else
-        {
-            // Not enough games selected
-            StartCoroutine(_display.ShowError("Please select at least 1 game"));
+            // TODO: edit profile
         }
     }
 
@@ -235,10 +183,6 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.CharacterSelection:
                 UpdateCharacters_(-1);
                 break;
-            // game selection, move left
-            case PlayerStateEnum.ChoosingGames:
-                PlayerManagerScript.Instance.MoveGameSelection(-1);
-                break;
         }
     }
 
@@ -257,10 +201,6 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.CharacterSelection:
                 UpdateCharacters_(1);
                 break;
-            // game selection, move right
-            case PlayerStateEnum.ChoosingGames:
-                PlayerManagerScript.Instance.MoveGameSelection(1);
-                break;
         }
     }
 
@@ -271,10 +211,7 @@ public class LobbyInputHandler : GenericInputHandler
     {
         switch (_state.GetState())
         {
-            // game selection, move up
-            case PlayerStateEnum.ChoosingGames:
-                PlayerManagerScript.Instance.MoveGameSelection(GAMES_PER_ROW);
-                break;
+            // TODO: Move profile selection
         }
     }
 
@@ -285,10 +222,7 @@ public class LobbyInputHandler : GenericInputHandler
     {
         switch (_state.GetState())
         {
-            // game selection, move down
-            case PlayerStateEnum.ChoosingGames:
-                PlayerManagerScript.Instance.MoveGameSelection(-GAMES_PER_ROW);
-                break;
+            // TODO: Move profile selection
         }
     }
 
@@ -403,16 +337,8 @@ public class LobbyInputHandler : GenericInputHandler
         // tell the player object what the name is
         _detailsCompleteCallback(_display.GetPlayerName(), GetCharacterIndex());
 
-        if (IsHost())
-        {
-            _state.SetState(PlayerStateEnum.ChoosingGames);
-            PlayerManagerScript.Instance.SetGameSelectionState(true);
-        }
-        else
-        {
-            _state.SetState(PlayerStateEnum.Ready);
-            _display.ShowReadyPanel(true);
-        }
+        _state.SetState(PlayerStateEnum.Ready);
+        _display.ShowReadyPanel(true);
     }
 
     #region Fetch index of the left/right elements to display

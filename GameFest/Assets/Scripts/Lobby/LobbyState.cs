@@ -1,6 +1,6 @@
 ﻿namespace Assets.Scripts
 {
-    public enum PlayerStateEnum { NameEntry, CharacterSelection, ChoosingGames, Ready }
+    public enum PlayerStateEnum { ProfileSelection, NameEntry, CharacterSelection, Ready }
 
     /// <summary>
     /// Stores the current state of a player - i.e. which action they are taking part in
@@ -46,7 +46,6 @@
             switch(_state)
             {
                 case PlayerStateEnum.CharacterSelection: msg = "Selecting character"; break;
-                case PlayerStateEnum.ChoosingGames: msg = "Choosing games"; break;
                 case PlayerStateEnum.NameEntry: msg = "Entering name"; break;
                 case PlayerStateEnum.Ready: msg = "Ready!"; break;
             }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Assets;
 using UnityEngine;
 
-public enum Scene { Lobby, GameCentral, PunchlineBling, ShopDrop, MarshLand, Landslide, XTinguish, BeachBowles }
+public enum Scene { Lobby, GameCentral, PunchlineBling, ShopDrop, MarshLand, Landslide, XTinguish, BeachBowles, QuickPlayLobby }
 
 public class GameCentralController : MonoBehaviour
 {
@@ -106,17 +106,17 @@ public class GameCentralController : MonoBehaviour
     /// </summary>
     private void ContinueWithProcess_()
     {
-        if (_gameIndex < PlayerManagerScript.Instance.SelectedGames.Count)
-        {
-            // fade out, then load the game
-            _sceneToLoad = PlayerManagerScript.Instance.SelectedGames[_gameIndex++];
+        //if (_gameIndex < PlayerManagerScript.Instance.SelectedGames.Count)
+        //{
+        //    // fade out, then load the game
+        //    _sceneToLoad = PlayerManagerScript.Instance.SelectedGames[_gameIndex++];
 
-            StartCoroutine(DelayedLoad_());
-        }
-        else
-        {
-            // TODO: end game
-        }
+        //    StartCoroutine(DelayedLoad_());
+        //}
+        //else
+        //{
+        //    // TODO: end game
+        //}
     }
 
     /// <summary>

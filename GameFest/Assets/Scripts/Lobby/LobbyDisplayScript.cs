@@ -12,7 +12,7 @@ using UnityEngine.UI;
 public class LobbyDisplayScript : MonoBehaviour
 {
     // controls
-    public Transform NoPlayerPanel;
+    public Transform SelectingProfilePanel;
     public Transform PlayerStartedPanel;
     public Transform PnlCharacter;
     public Transform PnlLetters;
@@ -20,6 +20,8 @@ public class LobbyDisplayScript : MonoBehaviour
     public Transform PnlShadow;
     public Text TxtCurrentAction;
     public Image ImgController;
+    public GameObject NotJoinedDisplay;
+    public GameObject ProfileSelection;
 
     // Texts to display the letters
     public Text LetterTextLeft;
@@ -51,16 +53,19 @@ public class LobbyDisplayScript : MonoBehaviour
         _device = device;
         _playerIndex = index;
 
-        // change the backgroud colour
-        GetComponent<Image>().color = colour;
-        PnlReady.GetComponent<Image>().color = colour;
+        // change the background colour
+        PnlReady.GetComponent<Image>().color = new Color(colour.r*0.8f, colour.g * 0.8f, colour.b * 0.8f, 0.8f);
 
         // set the image to show which device the player is using
         SetControllerIcon_();
 
         // show the input selections
-        NoPlayerPanel.gameObject.SetActive(false);
-        PlayerStartedPanel.gameObject.SetActive(true);
+        SelectingProfilePanel.gameObject.SetActive(true);
+        NotJoinedDisplay.gameObject.SetActive(false);
+        //PlayerStartedPanel.gameObject.SetActive(true);         TODO: Move to after profile selected, or to show preview of player when on profile
+        ProfileSelection.SetActive(true);
+
+        // TODO: Load and display profiles
     }
 
     /// <summary>
@@ -111,7 +116,6 @@ public class LobbyDisplayScript : MonoBehaviour
         switch (playerStateEnum)
         {
             case PlayerStateEnum.CharacterSelection: msg = "Selecting character"; break;
-            case PlayerStateEnum.ChoosingGames: msg = "Choosing Games"; break;
             case PlayerStateEnum.NameEntry: msg = "Entering name"; break;
             case PlayerStateEnum.Ready: msg = "Ready"; break;
         }
@@ -144,8 +148,6 @@ public class LobbyDisplayScript : MonoBehaviour
     {
         PnlReady.gameObject.SetActive(state);
         PnlShadow.gameObject.SetActive(state);
-        if (_playerIndex == 0)
-            PlayerManagerScript.Instance.SetGameSelectionState(!state);
     }
 
     /// <summary>
@@ -198,8 +200,9 @@ public class LobbyDisplayScript : MonoBehaviour
     /// </summary>
     public void ResetDisplay()
     {
-        NoPlayerPanel.gameObject.SetActive(true);
-        PlayerStartedPanel.gameObject.SetActive(true);
+        SelectingProfilePanel.gameObject.SetActive(false);
+        PlayerStartedPanel.gameObject.SetActive(false);
+        NotJoinedDisplay.SetActive(true);
 
         _playerIndex = 0;
         NameDisplay.text = "";
