@@ -22,6 +22,8 @@ public class LobbyDisplayScript : MonoBehaviour
     public Image ImgController;
     public GameObject NotJoinedDisplay;
     public GameObject ProfileSelection;
+    public GameObject DetailsPane;
+    public ProfileSelectScript[] ProfileSelectionControls;
 
     // Texts to display the letters
     public Text LetterTextLeft;
@@ -53,8 +55,11 @@ public class LobbyDisplayScript : MonoBehaviour
         _device = device;
         _playerIndex = index;
 
+        var darkerCol = new Color(colour.r * 0.8f, colour.g * 0.8f, colour.b * 0.8f);
+
         // change the background colour
-        PnlReady.GetComponent<Image>().color = new Color(colour.r*0.8f, colour.g * 0.8f, colour.b * 0.8f, 0.8f);
+        PnlReady.GetComponent<Image>().color = new Color(darkerCol.r, darkerCol.g, darkerCol.b, 0.8f);
+        DetailsPane.GetComponent<Image>().color = colour;
 
         // set the image to show which device the player is using
         SetControllerIcon_();
@@ -62,10 +67,20 @@ public class LobbyDisplayScript : MonoBehaviour
         // show the input selections
         SelectingProfilePanel.gameObject.SetActive(true);
         NotJoinedDisplay.gameObject.SetActive(false);
-        //PlayerStartedPanel.gameObject.SetActive(true);         TODO: Move to after profile selected, or to show preview of player when on profile
         ProfileSelection.SetActive(true);
+        DetailsPane.SetActive(true);
 
-        // TODO: Load and display profiles
+         // display profiles
+         var profiles = PlayerManagerScript.Instance.GetProfileList();
+        for (int i = 0; i < ProfileSelectionControls.Length && i < profiles.Count; i++)
+        {
+            ProfileSelectionControls[i].Initialise(profiles[i], colour, new Color(0, 0, 0, 0.7f));
+        }
+        for (int i = profiles.Count; i < ProfileSelectionControls.Length; i++)
+        {
+            ProfileSelectionControls[i].gameObject.SetActive(false);
+        }
+        ProfileSelectionControls[0].Selected();
     }
 
     /// <summary>

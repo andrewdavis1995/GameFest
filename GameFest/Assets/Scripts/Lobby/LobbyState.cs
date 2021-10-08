@@ -15,7 +15,7 @@
         /// </summary>
         public LobbyState()
         {
-            _state = PlayerStateEnum.NameEntry;
+            _state = PlayerStateEnum.ProfileSelection;
         }
 
         /// <summary>

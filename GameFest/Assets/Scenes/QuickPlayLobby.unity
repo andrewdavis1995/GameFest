@@ -1148,7 +1148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: caf99ba07ad30684781e3a501c5bdfc8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NoPlayerPanel: {fileID: 0}
+  SelectingProfilePanel: {fileID: 0}
   PlayerStartedPanel: {fileID: 0}
   PnlCharacter: {fileID: 0}
   PnlLetters: {fileID: 0}
@@ -1156,6 +1156,10 @@ MonoBehaviour:
   PnlShadow: {fileID: 0}
   TxtCurrentAction: {fileID: 0}
   ImgController: {fileID: 0}
+  NotJoinedDisplay: {fileID: 0}
+  ProfileSelection: {fileID: 0}
+  DetailsPane: {fileID: 0}
+  ProfileSelectionControls: []
   LetterTextLeft: {fileID: 0}
   LetterTextMiddle: {fileID: 0}
   LetterTextRight: {fileID: 0}
@@ -1255,7 +1259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: caf99ba07ad30684781e3a501c5bdfc8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NoPlayerPanel: {fileID: 0}
+  SelectingProfilePanel: {fileID: 0}
   PlayerStartedPanel: {fileID: 0}
   PnlCharacter: {fileID: 0}
   PnlLetters: {fileID: 0}
@@ -1263,6 +1267,10 @@ MonoBehaviour:
   PnlShadow: {fileID: 0}
   TxtCurrentAction: {fileID: 0}
   ImgController: {fileID: 0}
+  NotJoinedDisplay: {fileID: 0}
+  ProfileSelection: {fileID: 0}
+  DetailsPane: {fileID: 0}
+  ProfileSelectionControls: []
   LetterTextLeft: {fileID: 0}
   LetterTextMiddle: {fileID: 0}
   LetterTextRight: {fileID: 0}
@@ -2285,14 +2293,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.1509434, g: 0.15008901, b: 0.15008901, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 7cd18cc9f3e0b7845b5480adb288aad8, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

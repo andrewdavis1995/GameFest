@@ -20,7 +20,10 @@ public class LobbyInputHandler : GenericInputHandler
     LobbyDisplayScript _display = null;
     Action<string, int> _detailsCompleteCallback;
 
+    int _selectedProfileIndex = 0;
+
     bool _done = false;
+    bool _newProfile = false;
 
     const int GAMES_PER_ROW = 3;
 
@@ -49,11 +52,11 @@ public class LobbyInputHandler : GenericInputHandler
 
         // if up, move up
         if (movement.y < -0.99f)
-            MoveUp_();
+            MoveDown_();
 
         // if up, move down
         if (movement.y > 0.99f)
-            MoveDown_();
+            MoveUp_();
     }
 
     /// <summary>
@@ -63,6 +66,29 @@ public class LobbyInputHandler : GenericInputHandler
     {
         switch (_state.GetState())
         {
+            // profile select, load profile
+            case PlayerStateEnum.ProfileSelection:
+                var profile = PlayerManagerScript.Instance.GetProfileList()[_selectedProfileIndex];
+                if(profile == null)
+                {
+                    _state.SetState(PlayerStateEnum.NameEntry);
+                    _display.PlayerStartedPanel.gameObject.SetActive(true);
+                    _display.SelectingProfilePanel.gameObject.SetActive(false);
+                    _newProfile = true;
+                }
+                else
+                {
+                    // update details
+                    _display.NameDisplay.text = profile.GetProfileName();
+                    SetCharacterIndex(profile.GetCharacterIndex());
+                    _display.ShowCharacterSelectionPanel(true);
+
+                    _display.PlayerStartedPanel.gameObject.SetActive(true);
+                    _display.SelectingProfilePanel.gameObject.SetActive(false);
+
+                    CharacterSelected_();
+                }
+                break;
             // name entry, move the letter to the left
             case PlayerStateEnum.NameEntry:
                 _display.AddToPlayerName();
@@ -211,7 +237,16 @@ public class LobbyInputHandler : GenericInputHandler
     {
         switch (_state.GetState())
         {
-            // TODO: Move profile selection
+            case PlayerStateEnum.ProfileSelection:
+            {
+                _display.ProfileSelectionControls[_selectedProfileIndex].Deselected();
+
+                if (_selectedProfileIndex > 0)
+                    _selectedProfileIndex--;
+
+                _display.ProfileSelectionControls[_selectedProfileIndex].Selected();
+                break;
+            }
         }
     }
 
@@ -222,7 +257,16 @@ public class LobbyInputHandler : GenericInputHandler
     {
         switch (_state.GetState())
         {
-            // TODO: Move profile selection
+            case PlayerStateEnum.ProfileSelection:
+            {
+                _display.ProfileSelectionControls[_selectedProfileIndex].Deselected();
+
+                if (_selectedProfileIndex < _display.ProfileSelectionControls.Count()-1 && _selectedProfileIndex < PlayerManagerScript.Instance.GetProfileList().Count()-1)
+                    _selectedProfileIndex++;
+
+                _display.ProfileSelectionControls[_selectedProfileIndex].Selected();
+                break;
+            }
         }
     }
 
@@ -339,6 +383,14 @@ public class LobbyInputHandler : GenericInputHandler
 
         _state.SetState(PlayerStateEnum.Ready);
         _display.ShowReadyPanel(true);
+
+        // save new profile
+        if (_newProfile)
+        {
+            var profile = new PlayerProfile();
+            profile.UpdateDetails(_display.NameDisplay.text, GetCharacterIndex());
+            PlayerManagerScript.Instance.AddProfile(profile);
+        }
     }
 
     #region Fetch index of the left/right elements to display

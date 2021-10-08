@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class ProfileSelectScript : MonoBehaviour
 {
-    // private PlayerProfile _profile;
+    private PlayerProfile _profile;
     private Color _selectedColour;
     private Color _deselectedColour;
 
@@ -17,13 +17,21 @@ public class ProfileSelectScript : MonoBehaviour
     /// <param name="profile">The profile linked to this control</param>
     /// <param name="colour">The colour to set when selected</param>
     /// <param name="deselectedColour">The colour to set when not selected</param>
-    public void Initialise(/*PlayerProfile profile,*/ Color colour, Color deselectedColour)
+    public void Initialise(PlayerProfile profile, Color colour, Color deselectedColour)
     {
-        //_profile = profile;
+        _profile = profile;
         _selectedColour = colour;
         _deselectedColour = deselectedColour;
 
-        TxtProfileName.text = "PLAYER"; // profile.ProfileName;
+        if (profile != null)
+        {
+            TxtProfileName.text = profile.GetProfileName();
+        }
+        else
+        {
+            TxtProfileName.text = "New Profile";
+        }
+        Deselected();
     }
 
     /// <summary>

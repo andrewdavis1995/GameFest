@@ -35,6 +35,8 @@ public class PlayerManagerScript : MonoBehaviour
 
     public GameObject ModeSelection;
 
+    ProfileHandler _profileHandler = new ProfileHandler();
+
     /// <summary>
     /// Called when object is created
     /// </summary>
@@ -54,6 +56,27 @@ public class PlayerManagerScript : MonoBehaviour
         }
 
         EndFader.StartFade(1, 0, null);
+
+        // load values
+        _profileHandler.Initialise();
+    }
+
+    /// <summary>
+    /// Gets a list of all stored profiles
+    /// </summary>
+    /// <returns>Profile list</returns>
+    public List<PlayerProfile> GetProfileList()
+    {
+        return _profileHandler.GetProfileList();
+    }
+
+    /// <summary>
+    /// Adds a new profile to the list
+    /// </summary>
+    /// <param name="profile">The profile to add</param>
+    public void AddProfile(PlayerProfile profile)
+    {
+        _profileHandler.AddProfile(profile);
     }
 
     /// <summary>
