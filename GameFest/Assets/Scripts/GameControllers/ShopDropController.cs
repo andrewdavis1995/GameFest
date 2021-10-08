@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Controls the flow of the "Shop Drop" mini game
@@ -81,6 +82,7 @@ public class ShopDropController : GenericController
         _overallLimit.Initialise(GAME_TIMEOUT, OnTimeLimitTick, OnTimeUp);
 
         // fade in
+        EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
         EndFader.StartFade(1, 0, FadeInComplete);
     }
 
@@ -304,7 +306,7 @@ public class ShopDropController : GenericController
     void ReturnToCentral_()
     {
         // when no more players, move to the central page
-        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        PlayerManagerScript.Instance.CentralScene();
     }
 
     /// <summary>

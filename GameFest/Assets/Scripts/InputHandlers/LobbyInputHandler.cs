@@ -21,12 +21,13 @@ public class LobbyInputHandler : GenericInputHandler
     Action<string, int> _detailsCompleteCallback;
 
     // profile selection
-    uint _selectedProfileIndex  = 0;
-    uint _selectedProfileTop    = 0;
-    uint _selectedProfileBottom = 3;
+    int _selectedProfileIndex = 0;
+    int _selectedProfileTop = 0;
+    int _selectedProfileBottom = 3;
 
     bool _done = false;
     bool _newProfile = false;
+    Guid _newProfileGuid;
 
     const int GAMES_PER_ROW = 3;
 
@@ -67,23 +68,27 @@ public class LobbyInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCross()
     {
+        bool statusPanel = true;
+
         switch (_state.GetState())
         {
             // profile select, load profile
             case PlayerStateEnum.ProfileSelection:
                 var profile = PlayerManagerScript.Instance.GetProfileList()[_selectedProfileIndex];
-                if(profile == null)
+                if (profile == null)
                 {
                     _state.SetState(PlayerStateEnum.NameEntry);
                     _display.PlayerStartedPanel.gameObject.SetActive(true);
                     _display.SelectingProfilePanel.gameObject.SetActive(false);
+                    _newProfileGuid = new Guid();
                     _newProfile = true;
                 }
                 else
                 {
+                    _newProfile = false;
+                    statusPanel = false;
+
                     // update details
-                    _display.NameDisplay.text = profile.GetProfileName();
-                    SetCharacterIndex(profile.GetCharacterIndex());
                     _display.ShowCharacterSelectionPanel(true);
 
                     _display.PlayerStartedPanel.gameObject.SetActive(true);
@@ -97,6 +102,7 @@ public class LobbyInputHandler : GenericInputHandler
                 _display.AddToPlayerName();
                 break;
         }
+        _display.UpdateState(_state.GetState(), statusPanel);
     }
 
     /// <summary>
@@ -104,8 +110,17 @@ public class LobbyInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCircle()
     {
+        bool statusPanel = true;
         switch (_state.GetState())
         {
+            // name entry, move the letter to the right
+            case PlayerStateEnum.NameEntry:
+                _state.SetState(PlayerStateEnum.ProfileSelection);
+                _display.ShowCharacterSelectionPanel(false);
+                _display.PlayerStartedPanel.gameObject.SetActive(false);
+                _display.SelectingProfilePanel.gameObject.SetActive(true);
+                statusPanel = false;
+                break;
             // name entry, move the letter to the right
             case PlayerStateEnum.CharacterSelection:
                 _state.SetState(PlayerStateEnum.NameEntry);
@@ -114,13 +129,38 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.Ready:
                 if (!PlayerManagerScript.Instance.LobbyComplete)
                 {
-                    _state.SetState(PlayerStateEnum.CharacterSelection);
-                    _display.ShowReadyPanel(false);
+                    // if mode select, only host can go back
+                    if (!PlayerManagerScript.Instance.ModeSelection.activeInHierarchy)
+                    {
+                        if (_newProfile)
+                        {
+                            _state.SetState(PlayerStateEnum.CharacterSelection);
+                            _display.ShowReadyPanel(false);
+
+                            // TODO: Delete saved profile
+                            PlayerManagerScript.Instance.RemoveProfile(_newProfileGuid);
+                        }
+                        else
+                        {
+                            _state.SetState(PlayerStateEnum.ProfileSelection);
+                            _display.ShowReadyPanel(false);
+                            statusPanel = false;
+                        }
+                    }
+                    else
+                    {
+                        // host can go back
+                        if (IsHost())
+                        {
+                            PlayerManagerScript.Instance.NotComplete();
+                            _done = false;
+                        }
+                    }
                 }
                 break;
         }
 
-        _display.UpdateState(_state.GetState());
+        _display.UpdateState(_state.GetState(), statusPanel);
     }
 
     /// <summary>
@@ -128,6 +168,7 @@ public class LobbyInputHandler : GenericInputHandler
     /// </summary>
     public override void OnOptions()
     {
+        bool statusPanel = true;
         switch (_state.GetState())
         {
             // name entry, move the letter to the right
@@ -139,22 +180,23 @@ public class LobbyInputHandler : GenericInputHandler
                 CharacterSelected_();
                 break;
             case PlayerStateEnum.Ready:
-                StartGame_();
+            {
+                var allPlayers = FindObjectsOfType<LobbyInputHandler>();
+
+                // show next page
+                if (PlayerManagerScript.Instance.ModeSelection.activeInHierarchy)
+                    PlayerManagerScript.Instance.Complete(allPlayers);
+                else
+                    StartGame_();
+            }
+            break;
+            case PlayerStateEnum.ProfileSelection:
+                statusPanel = false;
                 break;
         }
 
-        _display.UpdateState(_state.GetState());
-    }
-
-    /// <summary>
-    /// When the triangle key is pressed
-    /// </summary>
-    public override void OnTriangle()
-    {
-        switch (_state.GetState())
-        {
-            // TODO: edit profile
-        }
+        // update UI
+        _display.UpdateState(_state.GetState(), statusPanel);
     }
 
     /// <summary>
@@ -212,6 +254,15 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.CharacterSelection:
                 UpdateCharacters_(-1);
                 break;
+            case PlayerStateEnum.Ready:
+            {
+                // update mode
+                if (PlayerManagerScript.Instance.ModeSelection.activeInHierarchy && IsHost())
+                {
+                    PlayerManagerScript.Instance.UpdateMode(GameMode.QuickPlayMode);
+                }
+                break;
+            }
         }
     }
 
@@ -230,6 +281,15 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.CharacterSelection:
                 UpdateCharacters_(1);
                 break;
+            case PlayerStateEnum.Ready:
+            {
+                // update mode
+                if (PlayerManagerScript.Instance.ModeSelection.activeInHierarchy && IsHost())
+                {
+                    PlayerManagerScript.Instance.UpdateMode(GameMode.HeroMode);
+                }
+                break;
+            }
         }
     }
 
@@ -242,23 +302,63 @@ public class LobbyInputHandler : GenericInputHandler
         {
             case PlayerStateEnum.ProfileSelection:
             {
+                // deselect item
                 _display.ProfileSelectionControls[_selectedProfileIndex - _selectedProfileTop].Deselected();
 
+                // move up until reached the top
                 if (_selectedProfileIndex > 0)
                 {
-                    _selectedProfileIndex--;      
-                    
-                    if(_selectedProfileIndex < _selectedProfileTop)
+                    _selectedProfileIndex--;
+
+                    // scroll up if we've reached the top
+                    if (_selectedProfileIndex < _selectedProfileTop)
                     {
                         _selectedProfileBottom--;
                         _selectedProfileTop--;
                         _display.UpdateProfiles(_selectedProfileTop);
                     }
-                }                
-                
-                _display.ProfileSelectionControls[_selectedProfileIndex - _selectedProfileTop].Selected();
+                }
+
+                DisplayCurrentProfile_();
                 break;
             }
+        }
+    }
+
+    /// <summary>
+    /// Displays the details of the currently selected profile
+    /// </summary>
+    private void DisplayCurrentProfile_()
+    {
+        // highlight the profile
+        _display.ProfileSelectionControls[_selectedProfileIndex - _selectedProfileTop].Selected();
+
+        var profile = PlayerManagerScript.Instance.GetProfileList()[_selectedProfileIndex];
+
+        // if it is a profile
+        if (profile != null)
+        {
+            // show details
+            _display.NameDisplay.text = profile.GetProfileName();
+            SetCharacterIndex(profile.GetCharacterIndex());
+            UpdateCharacters_(0);
+
+            // details to show
+            _display.ShowCharacterSelectionPanel(true);
+            _display.PlayerStartedPanel.gameObject.SetActive(true);
+            _display.SelectingProfilePanel.gameObject.SetActive(false);
+        }
+        else
+        {
+            // show details
+            _display.NameDisplay.text = "";
+            SetCharacterIndex(0);
+            UpdateCharacters_(0);
+
+            // no details to show
+            _display.ShowCharacterSelectionPanel(false);
+            _display.PlayerStartedPanel.gameObject.SetActive(false);
+            _display.SelectingProfilePanel.gameObject.SetActive(true);
         }
     }
 
@@ -273,19 +373,20 @@ public class LobbyInputHandler : GenericInputHandler
             {
                 _display.ProfileSelectionControls[_selectedProfileIndex - _selectedProfileTop].Deselected();
 
-                if ((_selectedProfileIndex < (_display.ProfileSelectionControls.Count() -1)) && (_selectedProfileIndex < PlayerManagerScript.Instance.GetProfileList().Count()-1))
+                if (_selectedProfileIndex < PlayerManagerScript.Instance.GetProfileList().Count() - 1)
                 {
                     _selectedProfileIndex++;
-                    
-                    if(_selectedProfileIndex > _selectedProfileBottom)
+
+                    // scroll down if we've reached the bottom
+                    if (_selectedProfileIndex > _selectedProfileBottom)
                     {
                         _selectedProfileBottom++;
                         _selectedProfileTop++;
                         _display.UpdateProfiles(_selectedProfileTop);
                     }
-                }                
-                
-                _display.ProfileSelectionControls[_selectedProfileIndex - _selectedProfileTop].Selected();
+                }
+
+                DisplayCurrentProfile_();
                 break;
             }
         }
@@ -303,7 +404,7 @@ public class LobbyInputHandler : GenericInputHandler
         if (PlayerManagerScript.Instance.LobbyComplete) return;
 
         // find all players
-        var allPlayers = GameObject.FindObjectsOfType<LobbyInputHandler>();
+        var allPlayers = FindObjectsOfType<LobbyInputHandler>();
 
         // check if all players are ready
         var allReady = allPlayers.All(p => p.Ready());
@@ -311,10 +412,7 @@ public class LobbyInputHandler : GenericInputHandler
         // if all ready...
         if (allReady && !_done)
         {
-            // move to the game central scene
-            PlayerManagerScript.Instance.Complete(allPlayers);
-
-            _done = true;
+            PlayerManagerScript.Instance.ModeSelection.SetActive(true);
         }
         else
         {
@@ -409,6 +507,7 @@ public class LobbyInputHandler : GenericInputHandler
         if (_newProfile)
         {
             var profile = new PlayerProfile();
+            _newProfileGuid = profile.GetGuid();
             profile.UpdateDetails(_display.NameDisplay.text, GetCharacterIndex());
             PlayerManagerScript.Instance.AddProfile(profile);
         }

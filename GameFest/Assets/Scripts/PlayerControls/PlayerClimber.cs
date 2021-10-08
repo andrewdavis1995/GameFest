@@ -25,7 +25,7 @@ public class PlayerClimber : MonoBehaviour
 
     // Unity config
     [SerializeField]
-    float MOVE_SPEED = 8.2f;
+    float MOVE_SPEED = 16f;
     [SerializeField]
     float JUMP_FORCE = 200;
     public TextMesh PlayerNameText;
@@ -76,7 +76,7 @@ public class PlayerClimber : MonoBehaviour
         Vector2 checkPos = transform.position - new Vector3(0, _colliderSize.y / 2);
 
         // check both x and y directions
-        SlopeCheckHorizontal_(checkPos);
+        //SlopeCheckHorizontal_(checkPos);
         SlopeCheckVertical_(checkPos);
     }
 
@@ -133,6 +133,7 @@ public class PlayerClimber : MonoBehaviour
         // if the front or back hits, we are on a slope
         if ((slopeHitFront && !slopeHitFront.collider.isTrigger)|| (slopeHitBack && !slopeHitBack.collider.isTrigger))
         {
+            Debug.Log("Hit this");
             _onSlope = true;
             _onGround = true;
         }
@@ -220,15 +221,22 @@ public class PlayerClimber : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(checkPos, Vector2.down, _slopeCheckDistance, WhatIsGround);
 
         // if there was a collision
-        if (hit && _onGround)
+        if (hit)
         {
             // get the angle of the collision
             _slopeNormalPerp = Vector2.Perpendicular(hit.normal).normalized;
             _slopeDownAngle = Vector2.Angle(hit.normal, Vector2.up);
 
             // the player is on a slope
+            Debug.Log(hit.collider.gameObject.name);
             _onSlope = true;
             _onGround = true;
+        }
+        else if (!hit)
+        {
+            _slopeNormalPerp = Vector2.zero;
+            _onSlope = false;
+            _onGround = false;
         }
 
         // if the player is not moving, and is on the ground, set the material to one with high friction, to avoid sliding
@@ -274,6 +282,10 @@ public class PlayerClimber : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+        Debug.Log("On Ground: " + _onGround);
+        Debug.Log("On Slope: " + _onSlope);
+
         // if not active, we can't do anything
         if (!_active) return;
 
@@ -304,29 +316,29 @@ public class PlayerClimber : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// When the player collides with an object
-    /// </summary>
-    /// <param name="collision">The object that the player collided with</param>
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        // if the object is ground, the player is now on the ground
-        if (collision.gameObject.tag == "Ground" && collision.relativeVelocity.y > 0) _onGround = true;
-    }
+    ///// <summary>
+    ///// When the player collides with an object
+    ///// </summary>
+    ///// <param name="collision">The object that the player collided with</param>
+    //private void OnCollisionEnter2D(Collision2D collision)
+    //{
+    //    // if the object is ground, the player is now on the ground
+    //    if (collision.gameObject.tag == "Ground" && collision.relativeVelocity.y > 0) _onGround = true;
+    //}
 
-    /// <summary>
-    /// When the player stops colliding with an object
-    /// </summary>
-    /// <param name="collision">The object that the player stopped colliding with</param>
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        // if the object was ground, the player is no longer on the ground
-        if (collision.gameObject.tag == "Ground")
-        {
-            _onGround = false;
-            _rigidbody.sharedMaterial = null;
-        }
-    }
+    ///// <summary>
+    ///// When the player stops colliding with an object
+    ///// </summary>
+    ///// <param name="collision">The object that the player stopped colliding with</param>
+    //private void OnCollisionExit2D(Collision2D collision)
+    //{
+    //    // if the object was ground, the player is no longer on the ground
+    //    if (collision.gameObject.tag == "Ground")
+    //    {
+    //        _onGround = false;
+    //        _rigidbody.sharedMaterial = null;
+    //    }
+    //}
 
     /// <summary>
     /// When the player hits a trigger
@@ -444,13 +456,8 @@ public class PlayerClimber : MonoBehaviour
 
             if (!_inWater)
             {
-                // if on the ground, but not a slope, walk normally
-                if (_onGround && !_onSlope)
-                {
-                    _newVelocity.Set(moveSpeed, 0);
-                }
                 // if on a slope, do some maths to work out the force to add
-                else if (_onGround && _onSlope)
+                if (_onGround)
                 {
                     _newVelocity.Set(-moveSpeed * _slopeNormalPerp.x, -moveSpeed * _slopeNormalPerp.y);
                 }

@@ -69,6 +69,7 @@ public class PunchlineBlingController : GenericController
         Instance = this;
 
         // fade in
+        EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
         EndFader.StartFade(1, 0, FadeInComplete);
 
         // load all jokes - must be done in Start, not constructor (as Resources must be loaded after script starts)
@@ -703,7 +704,7 @@ public class PunchlineBlingController : GenericController
     void ReturnToCentral_()
     {
         // when no more players, move to the central page
-        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        PlayerManagerScript.Instance.CentralScene();
     }
 
     /// <summary>

@@ -17,7 +17,7 @@ public class LobbyDisplayScript : MonoBehaviour
     public Transform PnlCharacter;
     public Transform PnlLetters;
     public Transform PnlReady;
-    public Transform PnlShadow;
+    public Transform PnlStatus;
     public Text TxtCurrentAction;
     public Image ImgController;
     public GameObject NotJoinedDisplay;
@@ -44,6 +44,8 @@ public class LobbyDisplayScript : MonoBehaviour
     int _playerIndex;
     bool _errorMessageShowing = false;
 
+    Color _colour;
+
     /// <summary>
     /// Called when the player joins the game - updates the lobby display
     /// </summary>
@@ -54,6 +56,7 @@ public class LobbyDisplayScript : MonoBehaviour
     {
         _device = device;
         _playerIndex = index;
+        _colour = colour;
 
         var darkerCol = new Color(colour.r * 0.8f, colour.g * 0.8f, colour.b * 0.8f);
 
@@ -83,7 +86,7 @@ public class LobbyDisplayScript : MonoBehaviour
         var profiles = PlayerManagerScript.Instance.GetProfileList();
         for (int i = 0; i < ProfileSelectionControls.Length && i < profiles.Count; i++)
         {
-            ProfileSelectionControls[i].Initialise(profiles[i + offset], colour, new Color(0, 0, 0, 0.7f));
+            ProfileSelectionControls[i].Initialise(profiles[i + offset], _colour, new Color(0, 0, 0, 0.7f));
         }
         for (int i = profiles.Count; i < ProfileSelectionControls.Length; i++)
         {
@@ -133,7 +136,8 @@ public class LobbyDisplayScript : MonoBehaviour
     /// Sets the message for what state the player is in
     /// </summary>
     /// <param name="playerStateEnum">The state the player is in</param>
-    internal void UpdateState(PlayerStateEnum playerStateEnum)
+    /// <param name="statusPanel">Whether to show the status panel</param>
+    internal void UpdateState(PlayerStateEnum playerStateEnum, bool statusPanel)
     {
         var msg = "";
         switch (playerStateEnum)
@@ -144,6 +148,7 @@ public class LobbyDisplayScript : MonoBehaviour
         }
 
         TxtCurrentAction.text = msg;
+        PnlStatus.gameObject.SetActive(statusPanel);
     }
 
     /// <summary>
@@ -170,7 +175,6 @@ public class LobbyDisplayScript : MonoBehaviour
     internal void ShowReadyPanel(bool state)
     {
         PnlReady.gameObject.SetActive(state);
-        PnlShadow.gameObject.SetActive(state);
     }
 
     /// <summary>

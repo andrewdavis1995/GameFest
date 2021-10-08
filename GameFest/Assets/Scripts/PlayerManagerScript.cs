@@ -6,36 +6,31 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+enum GameMode { QuickPlayMode, HeroMode }
+
 /// <summary>
 /// Script to handle the management of the player inputs
 /// </summary>
 public class PlayerManagerScript : MonoBehaviour
 {
-    public LobbyDisplayScript[] PlayerDisplays;
-
-    public PlayerInputManager Manager;
-
     public static PlayerManagerScript Instance;
 
-    List<PlayerControls> _players = new List<PlayerControls>();
-
+    public LobbyDisplayScript[] PlayerDisplays;
+    public PlayerInputManager Manager;
     public RuntimeAnimatorController[] CharacterControllers;   // controllers to control players appearance and animations
-
     public TransitionFader EndFader;
+    public GameObject ModeSelection;
+    public GameObject[] PausePopups;
+    public GameObject[] ModeSelectionBorders;
+    public Sprite[] FaderImages;
+
+    List<PlayerControls> _players = new List<PlayerControls>();
+    ProfileHandler _profileHandler = new ProfileHandler();
 
     Scene _scene = Scene.Lobby;
-
-    public GameObject[] PausePopups;
-
     private short _gameMovementIndex = 0;
-
-    public Text TxtDescription;
-
     public bool LobbyComplete = false;
-
-    public GameObject ModeSelection;
-
-    ProfileHandler _profileHandler = new ProfileHandler();
+    GameMode _mode = GameMode.QuickPlayMode;
 
     /// <summary>
     /// Called when object is created
@@ -77,6 +72,15 @@ public class PlayerManagerScript : MonoBehaviour
     public void AddProfile(PlayerProfile profile)
     {
         _profileHandler.AddProfile(profile);
+    }
+
+    /// <summary>
+    /// Removes a new profile from the list
+    /// </summary>
+    /// <param name="profile">The profile to removes</param>
+    public void RemoveProfile(Guid guid)
+    {
+        _profileHandler.RemoveProfile(guid);
     }
 
     /// <summary>
@@ -124,6 +128,32 @@ public class PlayerManagerScript : MonoBehaviour
     }
 
     /// <summary>
+    /// Move to the "Home" page where scores etc are shown -- based on mode
+    /// </summary>
+    public void CentralScene()
+    {
+        NextScene(GetCentralScreen());
+    }
+
+    /// <summary>
+    /// Work out which scene to show
+    /// </summary>
+    public Scene GetCentralScreen()
+    {
+        Scene scene = Scene.QuickPlayLobby;
+
+        switch (_mode)
+        {
+            case GameMode.HeroMode:
+
+                scene = Scene.GameCentral;
+                break;
+        }
+
+        return scene;
+    }
+
+    /// <summary>
     /// Moves to the next scene as specified previously
     /// </summary>
     private void MoveToNextScene_()
@@ -152,9 +182,41 @@ public class PlayerManagerScript : MonoBehaviour
         // ...store the player list in the manager
         SetPlayers(allPlayers.Select(p => p.GetComponent<PlayerControls>()).ToList());
 
-        ModeSelection.SetActive(true);
-
         // move to the game central scene
-        //NextScene(Scene.GameCentral, true);
+        CentralScene();
+    }
+
+    /// <summary>
+    /// Lobby is no longer complete
+    /// </summary>
+    internal void NotComplete()
+    {
+        LobbyComplete = false;
+        ModeSelection.SetActive(false);
+    }
+
+    /// <summary>
+    /// Store and display the correct mode
+    /// </summary>
+    /// <param name="mode">The mode to set</param>
+    internal void UpdateMode(GameMode mode)
+    {
+        _mode = mode;
+
+        EndFader.GetComponentInChildren<Image>().sprite = FaderImages[(int)_mode];
+
+        ModeSelectionBorders[(int)GameMode.QuickPlayMode].SetActive(false);
+        ModeSelectionBorders[(int)GameMode.HeroMode].SetActive(false);
+
+        ModeSelectionBorders[(int)mode].SetActive(true);
+    }
+
+    /// <summary>
+    /// Gets the fader image on use, based on mode
+    /// </summary>
+    /// <returns></returns>
+    public Sprite GetFaderImage()
+    {
+        return FaderImages[(int)_mode];
     }
 }

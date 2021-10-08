@@ -154,6 +154,7 @@ public class BeachBowlesController : GenericController
         InitialisePlayerPreviews_();
 
         // fade in
+        EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
         EndFader.StartFade(1, 0, FadeInComplete);
         _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _playerLimit.Initialise(30, DisplayCountdown, PlayerTimeoutCallback);
@@ -1479,6 +1480,6 @@ public class BeachBowlesController : GenericController
     void ReturnToCentral_()
     {
         // when no more players, move to the central page
-        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        PlayerManagerScript.Instance.CentralScene();
     }
 }

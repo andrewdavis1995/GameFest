@@ -21,7 +21,7 @@ public class PlayerProfile : IEquatable<PlayerProfile>
     /// </summary>
     public PlayerProfile()
     {
-        _guid = new Guid();
+        _guid = Guid.NewGuid();
     }
 
     /// <summary>
@@ -32,9 +32,9 @@ public class PlayerProfile : IEquatable<PlayerProfile>
     /// <param name="charIndex">Index of the character index in use</param>
     public PlayerProfile(string[] details)
     {
-        _guid = new Guid(details[INDEX_GUID]);
+        try { _guid = Guid.Parse(details[INDEX_GUID]); } catch (Exception) { Debug.Log("Could not parse Guid"); }
         _playerName = details[INDEX_NAME];
-        try { _characterIndex = int.Parse(details[INDEX_CHARACTER]); } catch (Exception) { /* Debug.Log("Could not parse character index"); */ }
+        try { _characterIndex = int.Parse(details[INDEX_CHARACTER]); } catch (Exception) { Debug.Log("Could not parse character index"); }
     }
 
     /// <summary>
@@ -175,6 +175,26 @@ internal class ProfileHandler
     {
         // add the profile
         _profiles.Add(profile);
+
+        // save list
+        SaveProfileList();
+    }
+
+    /// <summary>
+    /// Removes a new profile from the list
+    /// </summary>
+    /// <param name="guid">The profile to remove</param>
+    public void RemoveProfile(Guid guid)
+    {
+        for(int i = 0; i < _profiles.Count; i++)
+        {
+            // find match, and delete it
+            if(_profiles[i] != null && _profiles[i].GetGuid() == guid)
+            {
+                _profiles.RemoveAt(i);
+                break;
+            }
+        }
 
         // save list
         SaveProfileList();

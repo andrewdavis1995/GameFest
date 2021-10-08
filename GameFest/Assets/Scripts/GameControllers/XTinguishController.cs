@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class XTinguishController : GenericController
 {
@@ -75,6 +76,7 @@ public class XTinguishController : GenericController
         PauseGameHandler.Instance.Initialise(genericPlayers);
 
         // fade in
+        Fader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
         Fader.StartFade(1, 0, FadeInComplete);
     }
 
@@ -404,6 +406,6 @@ public class XTinguishController : GenericController
     void ReturnToCentral_()
     {
         // when no more players, move to the central page
-        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        PlayerManagerScript.Instance.CentralScene();
     }
 }

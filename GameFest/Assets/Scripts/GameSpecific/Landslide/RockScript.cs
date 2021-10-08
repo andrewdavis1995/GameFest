@@ -184,6 +184,7 @@ public class RockScript : MonoBehaviour
                 goto case RockAction.KnockBack;
             case RockAction.KnockBack:
                 // knockback
+                player.GetComponent<PlayerClimber>().Disable(.5f);
                 player.GetComponent<Rigidbody2D>().AddForce(new Vector2(-1400 * System.Math.Max(_sizeFactor, MAX_ROCK_SIZE), 1000 * System.Math.Max(_sizeFactor, MAX_ROCK_SIZE)));
                 goto case RockAction.LosePowerUp;
             case RockAction.LosePowerUp:

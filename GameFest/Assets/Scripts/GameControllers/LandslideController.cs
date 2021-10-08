@@ -21,6 +21,7 @@ public class LandslideController : GenericController
     public Transform PlayerPrefab;
     public Vector2 StartPosition;
     public CameraFollow FollowScript;
+    public CameraZoomFollow FollowZoomScript;
     public CameraMovement CameraMovement;
     public Transform Sign;
     public TextMesh SignText;
@@ -49,6 +50,7 @@ public class LandslideController : GenericController
         var players = SpawnPlayers_();
 
         FollowScript.SetPlayers(players, FollowDirection.Right);
+        FollowZoomScript.SetPlayers(players, FollowDirection.Right);
 
         // initialise the timeout
         _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
@@ -250,8 +252,11 @@ public class LandslideController : GenericController
         // checks if all players are done
         if (_resultsPlayerIndex >= _players.Count)
         {
+            // assign bonuses
+            AssignBonusPoints_();
+
             // done
-            PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+            PlayerManagerScript.Instance.CentralScene();
         }
         else
         {
@@ -360,6 +365,26 @@ public class LandslideController : GenericController
             // add to the list of boosts
             var boosted = Instantiate(PowerUpPrefab, position, Quaternion.identity);
             _powerUpBoosts.Add(boosted);
+        }
+    }
+
+    /// <summary>
+    /// Assigns bonus points to the winner
+    /// </summary>
+    private void AssignBonusPoints_()
+    {
+        // sort the players by points scored
+        var ordered = _players.OrderByDescending(p => p.GetPoints()).ToList();
+        int[] winnerPoints = new int[] { 170, 75, 15 };
+
+        // add winning score points 
+        for (int i = 0; i < ordered.Count(); i++)
+        {
+            if (ordered[i].GetPoints() > 0)
+            {
+                ordered[i].AddPoints(winnerPoints[i]);
+                ordered[i].SetBonusPoints(winnerPoints[i]);
+            }
         }
     }
 }

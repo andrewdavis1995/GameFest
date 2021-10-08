@@ -27,7 +27,8 @@ public class RockSpawner : MonoBehaviour
         while (_active)
         {
             // wait a random amount of time, then spawn a rock
-            yield return new WaitForSeconds(Random.Range(MIN_PAUSE_TIME, MAX_PAUSE_TIME));
+            //yield return new WaitForSeconds(Random.Range(MIN_PAUSE_TIME, MAX_PAUSE_TIME));
+            yield return new WaitForSeconds(10f);
             SpawnRock_();
         }
     }

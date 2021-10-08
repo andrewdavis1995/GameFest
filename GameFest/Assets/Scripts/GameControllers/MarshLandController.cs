@@ -79,6 +79,7 @@ public class MarshLandController : GenericController
         _pointCountdown.Initialise(MAX_POINTS, OnPointsTick, null, 0.1f);
 
         // fade in
+        EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
         EndFader.StartFade(1, 0, FadeInComplete);
     }
 
@@ -413,8 +414,7 @@ public class MarshLandController : GenericController
     /// </summary>
     void ReturnToCentral_()
     {
-        // when no more players, move to the central page
-        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        StartCoroutine(ReturnToCentral());
     }
 
     /// <summary>
@@ -426,7 +426,7 @@ public class MarshLandController : GenericController
         yield return new WaitForSeconds(2);
 
         // Move to the central page
-        PlayerManagerScript.Instance.NextScene(Scene.GameCentral);
+        PlayerManagerScript.Instance.CentralScene();
     }
 
     /// <summary>
