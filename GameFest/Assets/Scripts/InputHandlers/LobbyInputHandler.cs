@@ -20,7 +20,10 @@ public class LobbyInputHandler : GenericInputHandler
     LobbyDisplayScript _display = null;
     Action<string, int> _detailsCompleteCallback;
 
-    int _selectedProfileIndex = 0;
+    // profile selection
+    uint _selectedProfileIndex  = 0;
+    uint _selectedProfileTop    = 0;
+    uint _selectedProfileBottom = 3;
 
     bool _done = false;
     bool _newProfile = false;
@@ -239,12 +242,21 @@ public class LobbyInputHandler : GenericInputHandler
         {
             case PlayerStateEnum.ProfileSelection:
             {
-                _display.ProfileSelectionControls[_selectedProfileIndex].Deselected();
+                _display.ProfileSelectionControls[_selectedProfileIndex - _selectedProfileTop].Deselected();
 
                 if (_selectedProfileIndex > 0)
-                    _selectedProfileIndex--;
-
-                _display.ProfileSelectionControls[_selectedProfileIndex].Selected();
+                {
+                    _selectedProfileIndex--;      
+                    
+                    if(_selectedProfileIndex < _selectedProfileTop)
+                    {
+                        _selectedProfileBottom--;
+                        _selectedProfileTop--;
+                        _display.UpdateProfiles(_selectedProfileTop);
+                    }
+                }                
+                
+                _display.ProfileSelectionControls[_selectedProfileIndex - _selectedProfileTop].Selected();
                 break;
             }
         }
@@ -259,12 +271,21 @@ public class LobbyInputHandler : GenericInputHandler
         {
             case PlayerStateEnum.ProfileSelection:
             {
-                _display.ProfileSelectionControls[_selectedProfileIndex].Deselected();
+                _display.ProfileSelectionControls[_selectedProfileIndex - _selectedProfileTop].Deselected();
 
-                if (_selectedProfileIndex < _display.ProfileSelectionControls.Count()-1 && _selectedProfileIndex < PlayerManagerScript.Instance.GetProfileList().Count()-1)
+                if ((_selectedProfileIndex < (_display.ProfileSelectionControls.Count() -1)) && (_selectedProfileIndex < PlayerManagerScript.Instance.GetProfileList().Count()-1))
+                {
                     _selectedProfileIndex++;
-
-                _display.ProfileSelectionControls[_selectedProfileIndex].Selected();
+                    
+                    if(_selectedProfileIndex > _selectedProfileBottom)
+                    {
+                        _selectedProfileBottom++;
+                        _selectedProfileTop++;
+                        _display.UpdateProfiles(_selectedProfileTop);
+                    }
+                }                
+                
+                _display.ProfileSelectionControls[_selectedProfileIndex - _selectedProfileTop].Selected();
                 break;
             }
         }
