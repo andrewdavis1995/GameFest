@@ -69,18 +69,26 @@ public class LobbyDisplayScript : MonoBehaviour
         NotJoinedDisplay.gameObject.SetActive(false);
         ProfileSelection.SetActive(true);
         DetailsPane.SetActive(true);
-
-         // display profiles
-         var profiles = PlayerManagerScript.Instance.GetProfileList();
+        
+        UpdateProfiles(0);
+        ProfileSelectionControls[0].Selected();
+    }
+    
+    /// <summary>
+    /// Displays the correct profile on the correct control
+    /// </summary>
+    public void UpdateProfiles(int offset)
+    {
+        // display profiles
+        var profiles = PlayerManagerScript.Instance.GetProfileList();
         for (int i = 0; i < ProfileSelectionControls.Length && i < profiles.Count; i++)
         {
-            ProfileSelectionControls[i].Initialise(profiles[i], colour, new Color(0, 0, 0, 0.7f));
+            ProfileSelectionControls[i].Initialise(profiles[i + offset], colour, new Color(0, 0, 0, 0.7f));
         }
         for (int i = profiles.Count; i < ProfileSelectionControls.Length; i++)
         {
             ProfileSelectionControls[i].gameObject.SetActive(false);
         }
-        ProfileSelectionControls[0].Selected();
     }
 
     /// <summary>
