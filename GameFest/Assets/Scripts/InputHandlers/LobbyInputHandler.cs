@@ -18,7 +18,7 @@ public class LobbyInputHandler : GenericInputHandler
 
     // link to display and PlayerInput
     LobbyDisplayScript _display = null;
-    Action<string, int> _detailsCompleteCallback;
+    Action<string, int, Guid> _detailsCompleteCallback;
 
     // profile selection
     int _selectedProfileIndex = 0;
@@ -85,16 +85,27 @@ public class LobbyInputHandler : GenericInputHandler
                 }
                 else
                 {
-                    _newProfile = false;
-                    statusPanel = false;
+                    _newProfileGuid = profile.GetGuid();
 
-                    // update details
-                    _display.ShowCharacterSelectionPanel(true);
+                    // check for other players using this profile
+                    if (!ProfileInUse())
+                    {
+                        _newProfile = false;
 
-                    _display.PlayerStartedPanel.gameObject.SetActive(true);
-                    _display.SelectingProfilePanel.gameObject.SetActive(false);
+                        // update details
+                        _display.ShowCharacterSelectionPanel(true);
 
-                    CharacterSelected_();
+                        _display.PlayerStartedPanel.gameObject.SetActive(true);
+                        _display.SelectingProfilePanel.gameObject.SetActive(false);
+
+                        CharacterSelected_();
+                    }
+                    else
+                    {
+                        // show message
+                        StartCoroutine(_display.ShowError("Profile is already in use"));
+                        statusPanel = false;
+                    }
                 }
                 break;
             // name entry, move the letter to the left
@@ -103,6 +114,26 @@ public class LobbyInputHandler : GenericInputHandler
                 break;
         }
         _display.UpdateState(_state.GetState(), statusPanel);
+    }
+
+    /// <summary>
+    /// Get the Guid of the selected profile
+    /// </summary>
+    /// <returns></returns>
+    public Guid GetGuid()
+    {
+        return _newProfileGuid;
+    }
+
+    /// <summary>
+    /// Check if the profile is already used elsewhere
+    /// </summary>
+    /// <returns>If the profile is in use</returns>
+    public bool ProfileInUse()
+    {
+        var others = FindObjectsOfType<LobbyInputHandler>();
+        var matched = others.Where(p => (p.Ready()) && (p.GetGuid() == _newProfileGuid) && p.GetPlayerIndex() != GetPlayerIndex());
+        return matched.Count() > 0;
     }
 
     /// <summary>
@@ -129,6 +160,10 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.Ready:
                 if (!PlayerManagerScript.Instance.LobbyComplete)
                 {
+                    var pl = PlayerManagerScript.Instance.GetPlayers().Where(p => p.GetGuid() == _newProfileGuid).FirstOrDefault();
+
+                    if (pl != null) pl.NoLongerReady();
+
                     // if mode select, only host can go back
                     if (!PlayerManagerScript.Instance.ModeSelection.activeInHierarchy)
                     {
@@ -221,7 +256,7 @@ public class LobbyInputHandler : GenericInputHandler
     /// <param name="display">The UI element to update</param>
     /// <param name="detailsCallback">The callback function to call when the details are confirmed</param>
     /// <param name="playerIndex">The index of the player</param>
-    public void SetDisplay(LobbyDisplayScript display, Action<string, int> detailsCallback, int playerIndex)
+    public void SetDisplay(LobbyDisplayScript display, Action<string, int, Guid> detailsCallback, int playerIndex)
     {
         _display = display;
         _detailsCompleteCallback = detailsCallback;
@@ -498,7 +533,7 @@ public class LobbyInputHandler : GenericInputHandler
     void CharacterSelected_()
     {
         // tell the player object what the name is
-        _detailsCompleteCallback(_display.GetPlayerName(), GetCharacterIndex());
+        _detailsCompleteCallback(_display.GetPlayerName(), GetCharacterIndex(), _newProfileGuid);
 
         _state.SetState(PlayerStateEnum.Ready);
         _display.ShowReadyPanel(true);

@@ -294,6 +294,7 @@ public class ShopDropController : GenericController
         GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
         ResultsScreen.SetPlayers(genericPlayers);
 
+        ScoreStoreHandler.StoreResults(Scene.ShopDrop, genericPlayers);
         yield return new WaitForSeconds(4 + _players.Count);
 
         // fade out
@@ -327,6 +328,7 @@ public class ShopDropController : GenericController
                 ordered[i].SetBonusPoints(winnerPoints[i]);
             }
         }
+        ordered.FirstOrDefault()?.Winner();
     }
 
     /// <summary>

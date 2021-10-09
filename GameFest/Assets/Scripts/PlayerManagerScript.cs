@@ -114,17 +114,10 @@ public class PlayerManagerScript : MonoBehaviour
     /// <summary>
     /// Move to the "Home" page where scores etc are shown
     /// </summary>
-    public void NextScene(Scene index, bool fade = false)
+    public void NextScene(Scene index)
     {
         _scene = index;
-
-        if (fade)
-        {
-            // fade out
-            EndFader.StartFade(0, 1, MoveToNextScene_);
-        }
-        else
-            MoveToNextScene_();
+        MoveToNextScene_();
     }
 
     /// <summary>
@@ -183,7 +176,7 @@ public class PlayerManagerScript : MonoBehaviour
         SetPlayers(allPlayers.Select(p => p.GetComponent<PlayerControls>()).ToList());
 
         // move to the game central scene
-        CentralScene();
+        EndFader.StartFade(0, 1, CentralScene);
     }
 
     /// <summary>
@@ -195,12 +188,14 @@ public class PlayerManagerScript : MonoBehaviour
         ModeSelection.SetActive(false);
     }
 
-    /// <summary>
+    /// <summary>r
     /// Store and display the correct mode
     /// </summary>
     /// <param name="mode">The mode to set</param>
     internal void UpdateMode(GameMode mode)
     {
+        if (LobbyComplete) return;
+
         _mode = mode;
 
         EndFader.GetComponentInChildren<Image>().sprite = FaderImages[(int)_mode];

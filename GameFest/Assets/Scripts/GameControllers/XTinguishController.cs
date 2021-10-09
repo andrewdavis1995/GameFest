@@ -357,6 +357,7 @@ public class XTinguishController : GenericController
                 ordered[i].SetBonusPoints(winnerPoints[i]);
             }
         }
+        ordered.FirstOrDefault()?.Winner();
     }
 
     /// <summary>
@@ -394,6 +395,8 @@ public class XTinguishController : GenericController
         ResultsScreen.Setup();
         GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
         ResultsScreen.SetPlayers(genericPlayers);
+
+        ScoreStoreHandler.StoreResults(Scene.XTinguish, genericPlayers);
         yield return new WaitForSeconds(4 + genericPlayers.Length);
 
         // fade out

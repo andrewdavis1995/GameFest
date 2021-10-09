@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
@@ -8,19 +9,22 @@ public abstract class GenericInputHandler : MonoBehaviour
     [SerializeField]
     private int _points = 0;
     private int _bonusPoints = 0;
+    private bool _winner;
 
     // status variables
     int _playerIndex;
     int _characterIndex;
     string _playerName;
+    Guid _profileID;
 
     bool _pausePopupActive = false;
 
-    public virtual Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
+    public virtual Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex, Guid profileID)
     {
         _playerIndex = playerIndex;
         _playerName = playerName;
         _characterIndex = characterIndex;
+        _profileID = profileID;
         return null;
     }
 
@@ -63,6 +67,15 @@ public abstract class GenericInputHandler : MonoBehaviour
     internal string GetPlayerName()
     {
         return _playerName;
+    }
+
+    /// <summary>
+    /// Returns the GUID of the profile
+    /// </summary>
+    /// <returns>The ID</returns>
+    internal Guid GetProfileID()
+    {
+        return _profileID;
     }
 
     /// <summary>
@@ -227,6 +240,27 @@ public abstract class GenericInputHandler : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// The player won
+    /// </summary>
+    internal void Winner()
+    {
+        _winner = true;
+    }
+
+    /// <summary>
+    /// Check if the player won
+    /// </summary>
+    /// <returns>Whether they won</returns>
+    internal bool IsWinner()
+    {
+        return _winner;
+    }
+
+    /// <summary>
+    /// Sets the index of the player
+    /// </summary>
+    /// <param name="playerIndex">The  index of the player</param>
     public void SetPlayerIndex(int playerIndex)
     {
         _playerIndex = playerIndex;

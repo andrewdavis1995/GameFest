@@ -41,6 +41,7 @@ public class MarshLandController : GenericController
     // static instance
     public static MarshLandController Instance;
     List<MarshLandInputHandler> _players = new List<MarshLandInputHandler>();
+    List<PlayerJumper> _playerJumpers = new List<PlayerJumper>();
 
     // race status
     List<int> _completedPlayers = new List<int>();
@@ -170,6 +171,7 @@ public class MarshLandController : GenericController
 
             // create the "visual" player at the start point
             var playerTransform = player.Spawn(PlayerPrefab, PlayerSpawnPositions[index]);
+            _playerJumpers.Add(playerTransform.GetComponentInChildren<PlayerJumper>());
             playerTransforms.Add(playerTransform);
 
             // create action list, based on how many marshmallows this player must jump
@@ -253,12 +255,10 @@ public class MarshLandController : GenericController
     private void SetEndPositions_()
     {
         Camera.main.transform.position = ResultScreenCameraPosition;
-
-        var allPlayers = FindObjectsOfType<PlayerJumper>();
         int index = 0;
 
         // loop through players
-        foreach (var player in allPlayers)
+        foreach (var player in _playerJumpers)
         {
             player.transform.parent = null;
             player.transform.position = PlayerEndPositionStart + new Vector2(2*(index++), 0);
@@ -403,6 +403,9 @@ public class MarshLandController : GenericController
 
         GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
         ResultsScreen.SetPlayers(genericPlayers);
+
+        ScoreStoreHandler.StoreResults(Scene.MarshLand, genericPlayers);
+
         yield return new WaitForSeconds(4 + genericPlayers.Length);
 
         // fade out
@@ -512,5 +515,6 @@ public class MarshLandController : GenericController
                 ordered[i].SetBonusPoints(winnerPoints[i]);
             }
         }
+        ordered.FirstOrDefault()?.Winner();
     }
 }

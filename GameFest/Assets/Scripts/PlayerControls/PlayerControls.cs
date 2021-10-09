@@ -20,6 +20,9 @@ public class PlayerControls : MonoBehaviour
     string _playerName = "";
     int _characterIndex = 0;
     private int _points = 0;
+    private int _wins = 0;
+    Guid _activeGuid;
+    bool _ready = false;
 
     /// <summary>
     /// Called when the object is created
@@ -62,6 +65,23 @@ public class PlayerControls : MonoBehaviour
     }
 
     /// <summary>
+    /// Add a win to the player
+    /// </summary>
+    public void AddWin()
+    {
+        _wins++;
+    }
+
+    /// <summary>
+    /// Gets the number of wins in this game
+    /// </summary>
+    /// <returns></returns>
+    public int GetWinCount()
+    {
+        return _wins;
+    }
+
+    /// <summary>
     /// Removes the current input handler and adds the specified type
     /// </summary>
     /// <param name="type">The type of handler to add</param>
@@ -78,6 +98,15 @@ public class PlayerControls : MonoBehaviour
     public string GetPlayerName()
     {
         return _playerName;
+    }
+
+    /// <summary>
+    /// Returns the character index in use
+    /// </summary>
+    /// <returns>The index of the selected character</returns>
+    public int GetCharacterIndex()
+    {
+        return _characterIndex;
     }
 
     /// <summary>
@@ -98,7 +127,7 @@ public class PlayerControls : MonoBehaviour
     /// <returns>The spawned item</returns>
     internal Transform Spawn(Transform playerPrefab, Vector3 position)
     {
-        return _activeHandler.Spawn(playerPrefab, position, _characterIndex, _playerName, PlayerInput.playerIndex);
+        return _activeHandler.Spawn(playerPrefab, position, _characterIndex, _playerName, PlayerInput.playerIndex, _activeGuid);
     }
 
     /// <summary>
@@ -112,7 +141,31 @@ public class PlayerControls : MonoBehaviour
         lobbyDisplay.PlayerStarted(_colour, _device, PlayerInput.playerIndex);
 
         // connects the input handler to the display
-        (_activeHandler as LobbyInputHandler).SetDisplay(lobbyDisplay, (x, y) => { _playerName = x; _characterIndex = y; }, PlayerInput.playerIndex);
+        (_activeHandler as LobbyInputHandler).SetDisplay(lobbyDisplay, (x, y, z) => { _playerName = x; _characterIndex = y; _activeGuid = z; _ready = true; }, PlayerInput.playerIndex);
+    }
+
+    /// <summary>
+    /// Player is no longer ready
+    /// </summary>
+    public void NoLongerReady()
+    {
+        _ready = false;
+    }
+
+    /// <summary>
+    /// Is the player ready
+    /// </summary>
+    public bool Ready()
+    {
+        return _ready;
+    }
+
+    /// <summary>
+    /// The ID of the selected player
+    /// </summary>
+    public Guid GetGuid()
+    {
+        return _activeGuid;
     }
 
     /// <summary>

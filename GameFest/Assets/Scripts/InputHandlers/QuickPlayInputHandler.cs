@@ -33,6 +33,7 @@ public class QuickPlayInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCross()
     {
+        if (!IsHost()) return;
         QuickPlayManager.Instance.LoadGame();
     }
 

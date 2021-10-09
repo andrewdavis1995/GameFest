@@ -33,6 +33,9 @@ public class GameCentralController : MonoBehaviour
 
     public GameObject[] Plinths;
 
+    List<Scene> _selectedGames = new List<Scene>();
+    List<Scene> _availableGames = new List<Scene>() { Scene.BeachBowles, Scene.MarshLand, Scene.PunchlineBling, Scene.ShopDrop, Scene.XTinguish };
+
     /// <summary>
     /// Called when item is created
     /// </summary>
@@ -102,21 +105,37 @@ public class GameCentralController : MonoBehaviour
     }
 
     /// <summary>
+    /// When the player presses X on a game
+    /// </summary>
+    internal void RandomiseGames()
+    {
+        while (_selectedGames.Count < 5 && _availableGames.Count > 0)
+        {
+            // pick a random game
+            int randomIndex = UnityEngine.Random.Range(0, _availableGames.Count);
+            _availableGames.RemoveAt(randomIndex);
+
+            // add to list
+            _selectedGames.Add(_availableGames[_gameIndex]);
+        }
+    }
+
+    /// <summary>
     /// Continues to display scores and player info
     /// </summary>
     private void ContinueWithProcess_()
     {
-        //if (_gameIndex < PlayerManagerScript.Instance.SelectedGames.Count)
-        //{
-        //    // fade out, then load the game
-        //    _sceneToLoad = PlayerManagerScript.Instance.SelectedGames[_gameIndex++];
+        if (_gameIndex < _selectedGames.Count)
+        {
+            // fade out, then load the game
+            _sceneToLoad = _selectedGames[_gameIndex++];
 
-        //    StartCoroutine(DelayedLoad_());
-        //}
-        //else
-        //{
-        //    // TODO: end game
-        //}
+            StartCoroutine(DelayedLoad_());
+        }
+        else
+        {
+            // TODO: end game
+        }
     }
 
     /// <summary>

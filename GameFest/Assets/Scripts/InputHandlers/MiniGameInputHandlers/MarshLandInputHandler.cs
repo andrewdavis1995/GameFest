@@ -20,7 +20,6 @@ public class MarshLandInputHandler : GenericInputHandler
 
     // status values
     bool _inWater = false;
-    int _playerIndex;
     bool _active = false;
     bool _leftStartPoint = false;
     int _recoveryPressesRemaining = 0;
@@ -76,10 +75,11 @@ public class MarshLandInputHandler : GenericInputHandler
     /// <param name="position">The location at which to spawn the item</param>
     /// <param name="characterIndex">The index of the selected character</param>
     /// <param name="playerIndex">The index of the player</param>
+    /// <param name="id">ID of the profile</param>
     /// <returns>The transform that was created</returns>
-    public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
+    public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex, Guid id)
     {
-        _playerIndex = playerIndex;
+        base.Spawn(prefab, position, characterIndex, playerName, playerIndex, id);
 
         // create the player display
         _player = Instantiate(prefab, position, Quaternion.identity);
@@ -164,7 +164,7 @@ public class MarshLandInputHandler : GenericInputHandler
         _jumpScript.SetAnimation("Celebrate");
 
         // check if there are any players remaining
-        MarshLandController.Instance.CheckComplete(_playerIndex);
+        MarshLandController.Instance.CheckComplete(GetPlayerIndex());
     }
 
     /// <summary>
@@ -193,11 +193,11 @@ public class MarshLandInputHandler : GenericInputHandler
     {
         // if there are any left, use this one
         if (_actions.Count > 0)
-            MarshLandController.Instance.SetAction(_playerIndex, _actions.First());
+            MarshLandController.Instance.SetAction(GetPlayerIndex(), _actions.First());
         else
         {
             // otherwise, done
-            MarshLandController.Instance.HideDisplay(_playerIndex);
+            MarshLandController.Instance.HideDisplay(GetPlayerIndex());
 
             // disable the player
             Active(false);
@@ -221,7 +221,7 @@ public class MarshLandInputHandler : GenericInputHandler
             // move to next platform
             _jumpScript.Jump();
 
-            MarshLandController.Instance.ClearAction(_playerIndex);
+            MarshLandController.Instance.ClearAction(GetPlayerIndex());
 
             // can now fall in
             _leftStartPoint = true;
@@ -246,7 +246,7 @@ public class MarshLandInputHandler : GenericInputHandler
 
         _jumpScript.RecoveryComplete(false);
 
-        MarshLandController.Instance.Fall(_playerIndex);
+        MarshLandController.Instance.Fall(GetPlayerIndex());
     }
 
     /// <summary>
@@ -319,7 +319,7 @@ public class MarshLandInputHandler : GenericInputHandler
 
         _jumpScript.SetAnimation("Jump");
 
-        MarshLandController.Instance.RecoverPlayer(_playerIndex);
+        MarshLandController.Instance.RecoverPlayer(GetPlayerIndex());
     }
 
     /// <summary>

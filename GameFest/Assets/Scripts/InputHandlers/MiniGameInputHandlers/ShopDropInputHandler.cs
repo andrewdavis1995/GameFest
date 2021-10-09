@@ -135,9 +135,10 @@ public class ShopDropInputHandler : GenericInputHandler
     /// <param name="position">The location at which to spawn the item</param>
     /// <param name="characterIndex">The index of the selected character</param>
     /// <param name="playerName">The index of the selected character</param>
-    public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex)
+    /// <param name="id">ID of the profile</param>
+    public override Transform Spawn(Transform prefab, Vector3 position, int characterIndex, string playerName, int playerIndex, Guid id)
     {
-        base.Spawn(prefab, position, characterIndex, playerName, playerIndex);
+        base.Spawn(prefab, position, characterIndex, playerName, playerIndex, id);
 
         // create the player display
         _playerTransform = Instantiate(prefab, position, Quaternion.identity);

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 /// <summary>
 /// Control for showing a game option
@@ -9,9 +10,11 @@ public class QPGameOption : MonoBehaviour
     public Scene Game;
     public Sprite BackgroundImage;
     public Sprite LogoImage;
-    public Texture Video;
+    public RenderTexture Video;
+    public VideoClip Video_Clip;
     public Image OptionBackground;
     public Text TxtName;
+    public GameObject CrossIcon;
 
     Color BACKGROUND_COLOUR_SELECTED = new Color(0.0862745098f, 0.270588235f, 0.443137255f);
 
@@ -22,6 +25,7 @@ public class QPGameOption : MonoBehaviour
     {
         TxtName.color = new Color(0, 0, 0);
         OptionBackground.color = new Color(0, 0, 0, 0);
+        CrossIcon.SetActive(false);
     }
 
     /// <summary>
@@ -31,5 +35,6 @@ public class QPGameOption : MonoBehaviour
     {
         TxtName.color = new Color(1, 1, 1);
         OptionBackground.color = BACKGROUND_COLOUR_SELECTED;
+        CrossIcon.SetActive(true);
     }
 }

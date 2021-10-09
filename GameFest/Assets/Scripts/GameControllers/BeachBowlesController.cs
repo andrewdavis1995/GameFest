@@ -896,6 +896,7 @@ public class BeachBowlesController : GenericController
             ordered[i].AddPoints(winnerPoints[i]);
             ordered[i].SetBonusPoints(winnerPoints[i]);
         }
+        ordered.FirstOrDefault()?.Winner();
 
         StartCoroutine(Complete_(ordered));
     }
@@ -1469,6 +1470,8 @@ public class BeachBowlesController : GenericController
         ResultsScreen.SetPlayers(genericPlayers);
 
         yield return new WaitForSeconds(4 + genericPlayers.Length);
+
+        ScoreStoreHandler.StoreResults(Scene.BeachBowles, genericPlayers);
 
         // fade out
         EndFader.StartFade(0, 1, ReturnToCentral_);

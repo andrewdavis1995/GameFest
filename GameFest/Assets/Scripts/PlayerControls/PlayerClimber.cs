@@ -133,7 +133,6 @@ public class PlayerClimber : MonoBehaviour
         // if the front or back hits, we are on a slope
         if ((slopeHitFront && !slopeHitFront.collider.isTrigger)|| (slopeHitBack && !slopeHitBack.collider.isTrigger))
         {
-            Debug.Log("Hit this");
             _onSlope = true;
             _onGround = true;
         }
@@ -228,7 +227,6 @@ public class PlayerClimber : MonoBehaviour
             _slopeDownAngle = Vector2.Angle(hit.normal, Vector2.up);
 
             // the player is on a slope
-            Debug.Log(hit.collider.gameObject.name);
             _onSlope = true;
             _onGround = true;
         }
@@ -282,10 +280,6 @@ public class PlayerClimber : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        Debug.Log("On Ground: " + _onGround);
-        Debug.Log("On Slope: " + _onSlope);
-
         // if not active, we can't do anything
         if (!_active) return;
 

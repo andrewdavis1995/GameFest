@@ -692,6 +692,10 @@ public class PunchlineBlingController : GenericController
         ResultsScreen.Setup();
         ResultsScreen.SetPlayers(_players);
 
+        ScoreStoreHandler.StoreResults(Scene.PunchlineBling, _players);
+        var ordered = _players.OrderByDescending(p => p.GetPoints()).ToList();
+        ordered.FirstOrDefault()?.Winner();
+
         yield return new WaitForSeconds(4 + _players.Length);
 
         // fade out
