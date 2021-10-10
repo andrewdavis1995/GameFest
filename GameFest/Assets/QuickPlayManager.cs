@@ -132,7 +132,15 @@ public class QuickPlayManager : MonoBehaviour
     /// </summary>
     public void LoadCurrentGame_()
     {
-        PlayerManagerScript.Instance.NextScene(Games[_gameIndex].Game);
+        if ((_gameIndex < Games.Length) && (Games[_gameIndex].Game != Scene.QuickPlayLobby))
+        {
+            PlayerManagerScript.Instance.NextScene(Games[_gameIndex].Game);
+        }
+        else
+        {
+            Debug.Log("Leaving");
+            Application.Quit();
+        }
     }
 
     /// <summary>
@@ -140,20 +148,23 @@ public class QuickPlayManager : MonoBehaviour
     /// </summary>
     void UpdateDisplay_()
     {
-        StopAllCoroutines();
-        _videoFading = false;
+        if (_gameIndex < Games.Length)
+        {
+            StopAllCoroutines();
+            _videoFading = false;
 
-        var scene = Games[_gameIndex].Game;
-        TxtDescription.text = GameDescriptionScript.GetDescription(scene);
+            var scene = Games[_gameIndex].Game;
+            TxtDescription.text = GameDescriptionScript.GetDescription(scene);
 
-        TvLogo.sprite = Games[_gameIndex].LogoImage;
-        TvBackground.sprite = Games[_gameIndex].BackgroundImage;
+            TvLogo.sprite = Games[_gameIndex].LogoImage;
+            TvBackground.sprite = Games[_gameIndex].BackgroundImage;
 
-        Video.clip = Games[_gameIndex].Video_Clip;
-        Video.targetTexture = Games[_gameIndex].Video;
-        VideoImage.texture = Games[_gameIndex].Video;
+            Video.clip = Games[_gameIndex].Video_Clip;
+            Video.targetTexture = Games[_gameIndex].Video;
+            VideoImage.texture = Games[_gameIndex].Video;
 
-        StartCoroutine(WaitBeforeVideo());
+            StartCoroutine(WaitBeforeVideo());
+        }
     }
 
     /// <summary>
