@@ -138,7 +138,6 @@ public class QuickPlayManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Leaving");
             Application.Quit();
         }
     }
@@ -148,6 +147,7 @@ public class QuickPlayManager : MonoBehaviour
     /// </summary>
     void UpdateDisplay_()
     {
+        // if we somehow have an invalid index, do nothing to avoid errors
         if (_gameIndex < Games.Length)
         {
             StopAllCoroutines();
@@ -156,9 +156,13 @@ public class QuickPlayManager : MonoBehaviour
             var scene = Games[_gameIndex].Game;
             TxtDescription.text = GameDescriptionScript.GetDescription(scene);
 
-            TvLogo.sprite = Games[_gameIndex].LogoImage;
-            TvBackground.sprite = Games[_gameIndex].BackgroundImage;
+            // setup images
+            if (Games[_gameIndex].LogoImage != null)
+                TvLogo.sprite = Games[_gameIndex].LogoImage;
+            if (Games[_gameIndex].BackgroundImage != null)
+                TvBackground.sprite = Games[_gameIndex].BackgroundImage;
 
+            // setup video player
             Video.clip = Games[_gameIndex].Video_Clip;
             Video.targetTexture = Games[_gameIndex].Video;
             VideoImage.texture = Games[_gameIndex].Video;
