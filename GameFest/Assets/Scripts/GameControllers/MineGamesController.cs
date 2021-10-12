@@ -43,9 +43,9 @@ public class MineGamesController : GenericController
     ButtonValues _coalZone;
 
     // points
-    int Correct_Points = 24;
-    int Wrong_Points = -9;
-    int Truth_Points = 6;
+    int Correct_Points = 720;
+    int Wrong_Points = 600;
+    int Truth_Points = 120;
 
     private void Start()
     {
@@ -54,9 +54,9 @@ public class MineGamesController : GenericController
         SpawnPlayers_();
 
         // more points for more players
-        Correct_Points *= _players.Count;
-        Wrong_Points *= _players.Count;
-        Truth_Points *= _players.Count;
+        Correct_Points /= _players.Count;
+        Wrong_Points /= _players.Count;
+        Truth_Points /= _players.Count;
 
         DisplayActivePlayer_();
 
