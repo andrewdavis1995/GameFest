@@ -15,13 +15,14 @@ public class MineGamesController : GenericController
 
     public static MineGamesController Instance;
 
-    public Transform PlayerPrefab;           // The prefab to create
-    public Vector3[] StartPositions;         // Where the players should spawn
-    public Vector2 PlatformPlayerPosition;   // Where the player should stand on the platform
-    public Vector2 ReturnPlayerPosition;     // Where the player should stand on the platform
-    public float RunOffX;                    // X Position to stop player at
-    public Sprite[] PlayerIcons;             // Icons of the player
-    public Collider2D RightWall;             // Right wall collider
+    public Transform PlayerPrefab;          // The prefab to create
+    public Vector3[] StartPositions;        // Where the players should spawn
+    public Vector2 PlatformPlayerPosition;  // Where the player should stand on the platform
+    public Vector2 ReturnPlayerPosition;    // Where the player should stand on the platform
+    public float RunOffX;                   // X Position to stop player at
+    public Sprite[] PlayerIcons;            // Icons of the player
+    public Collider2D RightWall;            // Right wall collider
+    public MineCart[] Carts;                // The coal/gold carts
 
     // UI
     public Text TxtActivePlayer;
@@ -76,6 +77,12 @@ public class MineGamesController : GenericController
     /// </summary>
     private void PlatformSetup()
     {
+        // move carts off
+        foreach(var cart in Carts)
+        {
+            cart.MoveOut();
+        }
+
         // run off the page
         _players[_activePlayerIndex].RunOff(RunOffX, RunOffCallback);
 
@@ -109,6 +116,8 @@ public class MineGamesController : GenericController
     /// </summary>
     void RunOnCallback()
     {
+        foreach (var cart in Carts)
+            cart.SetContents(MineItemDrop.None);
         TxtAction.text = "Placing gold";
         _selectionState = MineSelectionState.GoldDestination;
     }
@@ -142,6 +151,7 @@ public class MineGamesController : GenericController
         _goldZone = selection;
         TxtAction.text = "Placing coal";
         _selectionState = MineSelectionState.CoalDestination;
+        Carts[(int)selection].SetContents(MineItemDrop.Gold);
     }
 
     /// <summary>
@@ -155,6 +165,7 @@ public class MineGamesController : GenericController
             _coalZone = selection;
             TxtAction.text = "Making claim about gold";
             _selectionState = MineSelectionState.GoldClaim;
+            Carts[(int)selection].SetContents(MineItemDrop.Coal);
         }
     }
 
@@ -169,7 +180,23 @@ public class MineGamesController : GenericController
         ImgClaimZone.gameObject.SetActive(true);
         ImgClaimZone.sprite = ButtonImages[(int)selection];
 
+        StartCoroutine(MoveCartsOn());
+
         StartCoroutine(Runaround_());
+    }
+
+    /// <summary>
+    /// Moves the carts on, with a brief delay for each
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator MoveCartsOn()
+    {
+        // move carts on
+        foreach (var cart in Carts.Reverse())
+        {
+            cart.MoveIn();
+            yield return new WaitForSeconds(0.5f);
+        }
     }
 
     #endregion
@@ -200,6 +227,14 @@ public class MineGamesController : GenericController
             p.CanMove(false);
 
         TxtAction.text = "Viewing results";
+        yield return new WaitForSeconds(1f);
+
+        // tip carts to reveal contents
+        foreach(var cart in Carts)
+        {
+            cart.TipCart();
+        }
+
         // TODO: show who was right etc.
         yield return new WaitForSeconds(1.5f);
 
