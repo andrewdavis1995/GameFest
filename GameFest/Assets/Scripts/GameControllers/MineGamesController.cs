@@ -140,7 +140,7 @@ public class MineGamesController : GenericController
         {
             ScoreboardNames[index].gameObject.SetActive(false);
             ScoreboardScores[index].gameObject.SetActive(false);
-            ActiveZones[index].gameObject.setActive(false);
+            ActiveZones[index].gameObject.SetActive(false);
         }
     }    
 
@@ -177,9 +177,9 @@ public class MineGamesController : GenericController
     public void SetActiveIcon(int playerIndex, int imageIndex)
     {
         if(imageIndex > -1)
-            ActiveIcons[playerIndex].sprite = ButtonImages[imageIndex];
+            ActiveZones[playerIndex].sprite = ButtonImages[imageIndex];
         else
-            ActiveIcons[playerIndex].sprite = UnknownZoneSprite;
+            ActiveZones[playerIndex].sprite = UnknownZoneSprite;
     }
 
     /// <summary>
@@ -208,7 +208,7 @@ public class MineGamesController : GenericController
         TxtAction.text = "Placing gold";
         _selectionState = MineSelectionState.GoldDestination;
         
-        txtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nIn which cart would you like to place the GOLD?";
+        TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nIn which cart would you like to place the GOLD?";
     }
 
     #region Callbacks for when destinations are selected
@@ -241,7 +241,7 @@ public class MineGamesController : GenericController
         TxtAction.text = "Placing coal";
         _selectionState = MineSelectionState.CoalDestination;
         Carts[(int)selection].SetContents(MineItemDrop.Gold);
-        txtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nWhere would you like to place the COAL?";
+        TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nWhere would you like to place the COAL?";
     }
 
     /// <summary>
@@ -256,9 +256,8 @@ public class MineGamesController : GenericController
             TxtAction.text = "Making claim about gold";
             _selectionState = MineSelectionState.GoldClaim;
             Carts[(int)selection].SetContents(MineItemDrop.Coal);
-            
-            // TODO: Text formatter to wrap text at certain length
-            txtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nTell the other players where you put the gold.\nYou get " + Truth_Points + " for telling the truth,\nor " + Wrong_Points + " for each player who picks\nthe cart that contains coal";
+
+            TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nTell the other players where you put the gold.\nYou get " + Truth_Points + " for telling the truth,\nor " + Wrong_Points + " for each player who picks\nthe cart that contains coal";
         }
     }
 
@@ -319,7 +318,7 @@ public class MineGamesController : GenericController
             TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " timed out. The gold is in:";
             
         ImgCommentaryClaim.gameObject.SetActive(true);
-        ImgCommentaryClaim.sprite = ButtonImages[(int)selection];
+        ImgCommentaryClaim.sprite = ButtonImages[(int)_goldClaimZone];
         
         yield return new WaitForSeconds(2f);
         
@@ -419,7 +418,7 @@ public class MineGamesController : GenericController
                 }
             }
             
-            ScoreboardScores[p.GetPlayerIndex()].text = p.GetPoints();            
+            ScoreboardScores[p.GetPlayerIndex()].text = p.GetPoints().ToString();
         }
         
         // TODO: Show score popup
