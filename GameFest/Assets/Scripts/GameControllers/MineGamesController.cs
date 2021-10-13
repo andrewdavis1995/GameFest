@@ -28,6 +28,7 @@ public class MineGamesController : GenericController
     public Text TxtActivePlayer;            // The text that displays the active player name
     public Text TxtAction;                  // The text that displays what the active player is doing
     public Text TxtActivePlayerCountdown;   // The text that displays the countdown for selecting zones
+    public Text TxtRunaroundCountdown;      // The text that displays the countdown for running around
     public Image[] ColouredImages;          // The images that need to have their colour set to the players colour
     public Image ImgCharacterImage;         // The image that shows the 
     public Image ImgClaimZone;              // The image that displays which zone the player claimed items are in
@@ -274,13 +275,24 @@ public class MineGamesController : GenericController
         foreach (var p in _players)
             p.CanMove(p.GetPlayerIndex() != _activePlayerIndex);
 
-        yield return new WaitForSeconds(3f);
-        
-        TxtCommentary.text = "Stand under the cart where you think\n" + _players[_activePlayerIndex].GetPlayerName() + " has placed the gold";
-
         // delay for players to go to correct zone
-        yield return new WaitForSeconds(ROUND_TIME);
+        for(int i = ROUND_TIME; i > 0; i--)
+        {
+            // display the countdown
+            TxtRunaroundCountdown.text = i.ToString();
+            
+            // update message after 3 seconds
+            if(i == (ROUND_TIME - 3))
+            {
+                TxtCommentary.text = "Stand under the cart where you think\n" + _players[_activePlayerIndex].GetPlayerName() + " has placed the gold";
+            }
+            
+            yield return new WaitForSeconds(1);
+        }
+           
+        TxtRunaroundCountdown.text = "";
 
+        // display new messages
         TxtCommentary.text = "Time's up!";
         TxtAction.text = "Viewing results";
         ImgClaimZone.gameObject.SetActive(false);
