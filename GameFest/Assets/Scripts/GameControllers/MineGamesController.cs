@@ -11,7 +11,7 @@ public enum ButtonValues { Square, Triangle, Circle, Cross};
 public class MineGamesController : GenericController
 {
     const int NUM_ROUNDS = 2;
-    const int ROUND_TIME = 7;   // TODO: Make 15
+    const int ROUND_TIME = 15;
 
     public static MineGamesController Instance;
 
@@ -36,6 +36,8 @@ public class MineGamesController : GenericController
     public TextMesh[] ScoreboardScores;     // Player scores on scoreboard
     public SpriteRenderer[] ActiveZones;    // Which zone each player is in
     public Sprite UnknownZoneSprite;        // Sprite to use when player is not in a zone
+    public Text TxtCommentary;              // Text to show current actions/help
+    public Image ImgCommentaryClaim;        // The (bigger) image that displays which zone the player claimed items are in
 
     List<MineGamesInputHandler> _players = new List<MineGamesInputHandler>();
     int _activePlayerIndex = 0;
@@ -103,7 +105,9 @@ public class MineGamesController : GenericController
     /// Make a player start running to the platform
     /// </summary>
     private void PlatformSetup()
-    {
+    {    
+        TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " to the platform please!";
+        
         // move carts off
         foreach(var cart in Carts)
         {
@@ -147,6 +151,8 @@ public class MineGamesController : GenericController
             cart.SetContents(MineItemDrop.None);
         TxtAction.text = "Placing gold";
         _selectionState = MineSelectionState.GoldDestination;
+        
+        txtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nIn which zone would you like to place the GOLD?";
     }
 
     #region Callbacks for when destinations are selected
@@ -179,6 +185,7 @@ public class MineGamesController : GenericController
         TxtAction.text = "Placing coal";
         _selectionState = MineSelectionState.CoalDestination;
         Carts[(int)selection].SetContents(MineItemDrop.Gold);
+        txtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nWhere would you like to place the COAL?";
     }
 
     /// <summary>
@@ -193,6 +200,9 @@ public class MineGamesController : GenericController
             TxtAction.text = "Making claim about gold";
             _selectionState = MineSelectionState.GoldClaim;
             Carts[(int)selection].SetContents(MineItemDrop.Coal);
+            
+            // TODO: Text formatter to wrap text at certain length
+            txtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nTell the other players where you put the gold. You get " + Truth_Points + " for telling the truth, or " + Wrong_Points + " for each player who picks the cart that contains coal";
         }
     }
 
@@ -234,36 +244,52 @@ public class MineGamesController : GenericController
     private IEnumerator Runaround_()
     {
         TxtAction.text = "Claims the gold is in:";
+        TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " claims that the gold is in:";
+        ImgCommentaryClaim.gameObject.SetActive(true);
+        ImgCommentaryClaim.sprite = ButtonImages[(int)selection];
+        
+        yield return new WaitForSeconds(2f);
+        
+        TxtCommentary.text = "But are they telling the truth?";
+        ImgCommentaryClaim.gameObject.SetActive(false);
+
+        yield return new WaitForSeconds(2f);
+        
+        TxtCommentary.text = "GO!";
 
         // enable players except the one that needs to run off
         foreach (var p in _players)
             p.CanMove(p.GetPlayerIndex() != _activePlayerIndex);
 
-        // brief pause while "Go!" is displayed
-        Debug.Log("GO!!");  // TODO: Show in UI
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(3f);
+        
+        TxtCommentary.text = "Stand in the zone where you think " + _players[_activePlayerIndex].GetPlayerName() + " has placed the gold";
 
         // delay for players to go to correct zone
         yield return new WaitForSeconds(ROUND_TIME);
 
-        Debug.Log("STOP!");
+        TxtCommentary.text = "Time's up!";
+        TxtAction.text = "Viewing results";
         ImgClaimZone.gameObject.SetActive(false);
 
         // disable players
         foreach (var p in _players)
             p.CanMove(false);
 
-        TxtAction.text = "Viewing results";
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2f);
 
+        TxtCommentary.text = "Let's see who gets points, and who is stuck with coal...";
+        
+        yield return new WaitForSeconds(2f);
+        
         // tip carts to reveal contents
         foreach(var cart in Carts)
         {
             cart.TipCart();
         }
-
-        // TODO: show who was right etc.
-        yield return new WaitForSeconds(1.5f);
+        
+        // wait for carts to tip
+        yield return new WaitForSeconds(3f);
 
         StartCoroutine(RoundResults_());
     }
@@ -273,7 +299,7 @@ public class MineGamesController : GenericController
     /// </summary>
     private IEnumerator RoundResults_()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
 
         foreach(var p in _players)
         {
@@ -305,9 +331,13 @@ public class MineGamesController : GenericController
                 }
             }
             
-            ScoreboardScores[p.GetPlayerIndex()].text = p.GetPoints();
-            
+            ScoreboardScores[p.GetPlayerIndex()].text = p.GetPoints();            
         }
+        
+        // TODO: Show score popup
+        Debug.Log("Showing UI");
+        yield return new WaitForSeconds(5f);
+        // TODO: Hide UI
         
         // move to next player
         NextPlayer_();
