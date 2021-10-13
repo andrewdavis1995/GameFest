@@ -25,13 +25,17 @@ public class MineGamesController : GenericController
     public MineCart[] Carts;                // The coal/gold carts
 
     // UI
-    public Text TxtActivePlayer;
-    public Text TxtAction;
-    public Text TxtActivePlayerCountdown;
-    public Image[] ColouredImages;
-    public Image ImgCharacterImage;
-    public Image ImgClaimZone;
-    public Sprite[] ButtonImages;
+    public Text TxtActivePlayer;            // The text that displays the active player name
+    public Text TxtAction;                  // The text that displays what the active player is doing
+    public Text TxtActivePlayerCountdown;   // The text that displays the countdown for selecting zones
+    public Image[] ColouredImages;          // The images that need to have their colour set to the players colour
+    public Image ImgCharacterImage;         // The image that shows the 
+    public Image ImgClaimZone;              // The image that displays which zone the player claimed items are in
+    public Sprite[] ButtonImages;           // Icons for each button
+    public TextMesh[] ScoreboardNames;      // Player names on scoreboard
+    public TextMesh[] ScoreboardScores;     // Player scores on scoreboard
+    public SpriteRenderer[] ActiveZones;    // Which zone each player is in
+    public Sprite UnknownZoneSprite;        // Sprite to use when player is not in a zone
 
     List<MineGamesInputHandler> _players = new List<MineGamesInputHandler>();
     int _activePlayerIndex = 0;
@@ -53,6 +57,8 @@ public class MineGamesController : GenericController
         Instance = this;
 
         SpawnPlayers_();
+        
+        SetupScoreboard_();
 
         // more points for more players
         Correct_Points /= _players.Count;
@@ -71,6 +77,27 @@ public class MineGamesController : GenericController
     {
         PlatformSetup();
     }
+
+    /// <summary>
+    /// Initialises the scoreboard with player info
+    /// </summary>
+    private void SetupScoreboard_()
+    {
+        var index = 0;
+        for(; index < _players.Count; index++)
+        {
+            ScoreboardNames[index].text = _players[index].GetPlayerName();
+            ScoreboardScores[index].text = "0";
+        }
+        
+        // hide unused elements
+        for(; index < ScoreboardNames.Length; index++)
+        {
+            ScoreboardNames[index].gameObject.SetActive(false);
+            ScoreboardScores[index].gameObject.SetActive(false);
+            ActiveZones[index].gameObject.setActive(false);
+        }
+    }    
 
     /// <summary>
     /// Make a player start running to the platform
@@ -277,7 +304,11 @@ public class MineGamesController : GenericController
                     _players[_activePlayerIndex].AddPoints(Truth_Points);
                 }
             }
+            
+            ScoreboardScores[p.GetPlayerIndex()].text = p.GetPoints();
+            
         }
+        
         // move to next player
         NextPlayer_();
     }
