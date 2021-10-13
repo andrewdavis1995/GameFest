@@ -45,6 +45,8 @@ public class MineGamesController : GenericController
     int _previousPlayerIndex = -1;
     int _roundIndex = 0;
     MineSelectionState _selectionState = MineSelectionState.None;
+    TimeLimit _zoneSelectionLimit;
+    bool _timeoutOccurred = false;
 
     ButtonValues _goldZone;
     ButtonValues _goldClaimZone;
@@ -69,8 +71,48 @@ public class MineGamesController : GenericController
         Truth_Points /= _players.Count;
 
         DisplayActivePlayer_();
+        
+        //initialise timer
+        _zoneSelectionLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _zoneSelectionLimit.Initialise(30, ZoneSelectionCallback_, ZoneSelectionTimeoutCallback_);
 
         StartGame_();
+    }    
+    
+    /// <summary>
+    /// Callback for the zone selection timer - called once per second
+    /// </summary>
+    /// <param name="seconds">How many seconds are remaining</param>
+    void ZoneSelectionCallback_(int seconds)
+    {
+        TxtActivePlayerCountdown.text = seconds.ToString();
+    }
+    
+    /// <summary>
+    /// Callback for the zone selection timer - called once timer expires
+    /// </summary>
+    void ZoneSelectionTimeoutCallback_()
+    {
+        _timeoutOccurred = true;
+        var random = UnityEngine.Random.Range(0, 3);
+        
+        _goldZone = (ButtonValues)random;
+        _goldClaimZone = (ButtonValues)random;
+        _coalZone = (ButtonValues)(3-random);
+        
+        _selectionState = MineSelectionState.None;
+
+        // update display
+        ImgClaimZone.gameObject.SetActive(true);
+        ImgClaimZone.sprite = ButtonImages[(int)random];
+        
+        // add items to carts
+        Carts[random].SetContents(MineItemDrop.Gold);
+        Carts[3-random].SetContents(MineItemDrop.Coal);
+
+        // show carts and enable movement
+        StartCoroutine(MoveCartsOn());
+        StartCoroutine(Runaround_());
     }
 
     /// <summary>
@@ -225,14 +267,19 @@ public class MineGamesController : GenericController
     /// </summary>
     void GoldClaimSelected_(ButtonValues selection)
     {
+        // stop the time limit
+        _zoneSelectionLimit.Abort();
+    
+        // store the selection
         _goldClaimZone = selection;
         _selectionState = MineSelectionState.None;
 
+        // update display
         ImgClaimZone.gameObject.SetActive(true);
         ImgClaimZone.sprite = ButtonImages[(int)selection];
 
+        // show carts and enable movement
         StartCoroutine(MoveCartsOn());
-
         StartCoroutine(Runaround_());
     }
 
@@ -257,14 +304,30 @@ public class MineGamesController : GenericController
     /// </summary>
     private IEnumerator Runaround_()
     {
-        TxtAction.text = "Claims the gold is in:";
-        TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " claims that the gold is in:";
+        // allow the carts to move on
+        yield return new WaitForSeconds(1.2f);
+        
+        if(!_timeoutOccurred)
+            TxtAction.text = "Claims the gold is in:";
+        else
+            TxtAction.text = "Timed out";
+
+        // display instructional message
+        if(!_timeoutOccurred)
+            TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " claims that the gold is in:";
+        else
+            TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " timed out. The gold is in:";
+            
         ImgCommentaryClaim.gameObject.SetActive(true);
         ImgCommentaryClaim.sprite = ButtonImages[(int)selection];
         
         yield return new WaitForSeconds(2f);
         
-        TxtCommentary.text = "But are they telling the truth?";
+        if(!_timeoutOccurred)
+            TxtCommentary.text = "But are they telling the truth?";
+        else
+            TxtCommentary.text = "This should be easy!";
+            
         ImgCommentaryClaim.gameObject.SetActive(false);
 
         yield return new WaitForSeconds(2f);
@@ -350,7 +413,7 @@ public class MineGamesController : GenericController
             else
             {
                 // check if the player was truthful
-                if(_goldClaimZone == _goldZone)
+                if(_goldClaimZone == _goldZone && !_timeoutOccurred)
                 {
                     _players[_activePlayerIndex].AddPoints(Truth_Points);
                 }
@@ -374,6 +437,7 @@ public class MineGamesController : GenericController
     private void NextPlayer_()
     {
         var finished = false;
+        _timeoutOccurred = false;
 
         // store the previous player who was on the platform (so they can be returned to the ground floor)
         _previousPlayerIndex = _activePlayerIndex;
