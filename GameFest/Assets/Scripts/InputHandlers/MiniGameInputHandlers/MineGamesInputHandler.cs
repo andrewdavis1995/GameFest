@@ -114,6 +114,7 @@ public class MineGamesInputHandler : GenericInputHandler
         {
             case "AreaTrigger":
                 _activeZone = int.Parse(collision.gameObject.name);
+                MineGamesController.Instance.SetActiveIcon(GetPlayerIndex(), _activeZone);
                 break;
         }
     }
@@ -129,6 +130,7 @@ public class MineGamesInputHandler : GenericInputHandler
         {
             case "AreaTrigger":
                 _activeZone = -1;
+                MineGamesController.Instance.SetActiveIcon(GetPlayerIndex(), _activeZone);
                 break;
         }
     }
