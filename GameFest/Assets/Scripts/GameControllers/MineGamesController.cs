@@ -127,6 +127,16 @@ public class MineGamesController : GenericController
     }
 
     /// <summary>
+    /// Sets the display icon on the scoreboard for specified player
+    /// </summary>
+    /// <param name="playerIndex">The player that needs updated</param>
+    /// <param name="imageIndex">The index of the icon to use</param>
+    public void SetActiveIcon(int playerIndex, int imageIndex)
+    {
+        ActiveIcons[playerIndex].sprite = ButtonImages[imageIndex];
+    }
+
+    /// <summary>
     /// Callback for when the player reaches the edge of the screen position
     /// </summary>
     void ReturnCallback()
@@ -152,7 +162,7 @@ public class MineGamesController : GenericController
         TxtAction.text = "Placing gold";
         _selectionState = MineSelectionState.GoldDestination;
         
-        txtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nIn which zone would you like to place the GOLD?";
+        txtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nIn which cart would you like to place the GOLD?";
     }
 
     #region Callbacks for when destinations are selected
@@ -202,7 +212,7 @@ public class MineGamesController : GenericController
             Carts[(int)selection].SetContents(MineItemDrop.Coal);
             
             // TODO: Text formatter to wrap text at certain length
-            txtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nTell the other players where you put the gold. You get " + Truth_Points + " for telling the truth, or " + Wrong_Points + " for each player who picks the cart that contains coal";
+            txtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nTell the other players where you put the gold.\nYou get " + Truth_Points + " for telling the truth,\nor " + Wrong_Points + " for each player who picks\nthe cart that contains coal";
         }
     }
 
@@ -263,7 +273,7 @@ public class MineGamesController : GenericController
 
         yield return new WaitForSeconds(3f);
         
-        TxtCommentary.text = "Stand in the zone where you think " + _players[_activePlayerIndex].GetPlayerName() + " has placed the gold";
+        TxtCommentary.text = "Stand under the cart where you think\n" + _players[_activePlayerIndex].GetPlayerName() + " has placed the gold";
 
         // delay for players to go to correct zone
         yield return new WaitForSeconds(ROUND_TIME);
@@ -278,7 +288,7 @@ public class MineGamesController : GenericController
 
         yield return new WaitForSeconds(2f);
 
-        TxtCommentary.text = "Let's see who gets points, and who is stuck with coal...";
+        TxtCommentary.text = "Let's see who gets points,\nand who is stuck with coal...";
         
         yield return new WaitForSeconds(2f);
         
@@ -433,7 +443,6 @@ public class MineGamesController : GenericController
     private void EndGame_()
     {
         AssignBonusPoints_();
-
         PlayerManagerScript.Instance.CentralScene();
     }
 
