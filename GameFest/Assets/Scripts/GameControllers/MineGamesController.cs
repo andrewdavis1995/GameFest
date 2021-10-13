@@ -133,7 +133,10 @@ public class MineGamesController : GenericController
     /// <param name="imageIndex">The index of the icon to use</param>
     public void SetActiveIcon(int playerIndex, int imageIndex)
     {
-        ActiveIcons[playerIndex].sprite = ButtonImages[imageIndex];
+        if(imageIndex > -1)
+            ActiveIcons[playerIndex].sprite = ButtonImages[imageIndex];
+        else
+            ActiveIcons[playerIndex].sprite = UnknownZoneSprite;
     }
 
     /// <summary>
