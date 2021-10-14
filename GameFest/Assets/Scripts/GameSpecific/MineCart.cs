@@ -123,6 +123,10 @@ public class MineCart : MonoBehaviour
         // remove items
         foreach (var rock in _rocks)
             rock.Finished();
+
+        yield return new WaitForSeconds(1.4f);
+
+        _rocks.Clear();
     }
 
     /// <summary>
@@ -131,6 +135,8 @@ public class MineCart : MonoBehaviour
     /// <param name="images">The images to choose from</param>
     IEnumerator SpawnItems_(Sprite[] images)
     {
+        _rocks.Clear();
+
         for (int i = 0; i < SPAWN_ITEMS; i++)
         {
             var item = Instantiate(SpawnPrefab, transform.position + SpawnPointOffset, Quaternion.identity);

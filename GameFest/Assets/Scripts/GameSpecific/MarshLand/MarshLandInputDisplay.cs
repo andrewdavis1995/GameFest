@@ -11,6 +11,7 @@ public class MarshLandInputDisplay : MonoBehaviour
     public Sprite[] ControllerImages;
     public Sprite[] KeyboardImages;
     public Sprite MashImage;
+    public Sprite UnknownIconImage;
     public Text TxtName;
 
     Color _normalColour;
@@ -78,7 +79,7 @@ public class MarshLandInputDisplay : MonoBehaviour
             ActionInput.sprite = device is Gamepad ? ControllerImages[(int)action] : KeyboardImages[(int)action];
         else
             // null if not enough images
-            ActionInput.sprite = null;
+            ActionInput.sprite = UnknownIconImage;
 
         _currentImage = ActionInput.sprite;
     }

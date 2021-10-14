@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,6 +16,9 @@ public class MineGamesInputHandler : GenericInputHandler
 
     Action _walkOffCallback;
     Action _walkOnCallback;
+
+    List<string> _results = new List<string>();
+    int _roundPoints = 0;
 
     /// <summary>
     /// Creates the specified object for the player attached to this object
@@ -199,5 +203,43 @@ public class MineGamesInputHandler : GenericInputHandler
     public int ActiveZone()
     {
         return _activeZone;
+    }
+
+    /// <summary>
+    /// Add a result and description
+    /// </summary>
+    /// <param name="result">The result to add</param>
+    /// <param name="points">The points to add</param>
+    public void AddResultString(string result, int points)
+    {
+        _results.Add(result);
+        _roundPoints += points;
+    }
+
+    /// <summary>
+    /// Gets results and descriptions
+    /// </summary>
+    /// <returns>The list of results</returns>
+    public List<string> GetResultList()
+    {
+        return _results;
+    }
+
+    /// <summary>
+    /// Gets the points for the current round
+    /// </summary>
+    /// <returns>The list of results</returns>
+    public int GetRoundPoints()
+    {
+        return _roundPoints;
+    }
+
+    /// <summary>
+    /// Clears results
+    /// </summary>
+    public void ClearResults()
+    {
+        _roundPoints = 0;
+        _results.Clear();
     }
 }

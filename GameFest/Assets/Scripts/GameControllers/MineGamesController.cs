@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public enum MineSelectionState { None, GoldDestination, CoalDestination, GoldClaim };
-public enum ButtonValues { Square, Triangle, Circle, Cross};
+public enum ButtonValues { Square, Triangle, Circle, Cross };
 
 public class MineGamesController : GenericController
 {
@@ -15,30 +15,32 @@ public class MineGamesController : GenericController
 
     public static MineGamesController Instance;
 
-    public Transform PlayerPrefab;          // The prefab to create
-    public Vector3[] StartPositions;        // Where the players should spawn
-    public Vector2 PlatformPlayerPosition;  // Where the player should stand on the platform
-    public Vector2 ReturnPlayerPosition;    // Where the player should stand on the platform
-    public float RunOffX;                   // X Position to stop player at
-    public Sprite[] PlayerIcons;            // Icons of the player
-    public Collider2D RightWall;            // Right wall collider
-    public MineCart[] Carts;                // The coal/gold carts
+    public Transform PlayerPrefab;             // The prefab to create
+    public Vector3[] StartPositions;           // Where the players should spawn
+    public Vector2 PlatformPlayerPosition;     // Where the player should stand on the platform
+    public Vector2 ReturnPlayerPosition;       // Where the player should stand on the platform
+    public float RunOffX;                      // X Position to stop player at
+    public Sprite[] PlayerIcons;               // Icons of the player
+    public Collider2D RightWall;               // Right wall collider
+    public MineCart[] Carts;                   // The coal/gold carts
 
     // UI
-    public Text TxtActivePlayer;            // The text that displays the active player name
-    public Text TxtAction;                  // The text that displays what the active player is doing
-    public Text TxtActivePlayerCountdown;   // The text that displays the countdown for selecting zones
-    public Text TxtRunaroundCountdown;      // The text that displays the countdown for running around
-    public Image[] ColouredImages;          // The images that need to have their colour set to the players colour
-    public Image ImgCharacterImage;         // The image that shows the 
-    public Image ImgClaimZone;              // The image that displays which zone the player claimed items are in
-    public Sprite[] ButtonImages;           // Icons for each button
-    public TextMesh[] ScoreboardNames;      // Player names on scoreboard
-    public TextMesh[] ScoreboardScores;     // Player scores on scoreboard
-    public SpriteRenderer[] ActiveZones;    // Which zone each player is in
-    public Sprite UnknownZoneSprite;        // Sprite to use when player is not in a zone
-    public Text TxtCommentary;              // Text to show current actions/help
-    public Image ImgCommentaryClaim;        // The (bigger) image that displays which zone the player claimed items are in
+    public Text TxtActivePlayer;               // The text that displays the active player name
+    public Text TxtActivePlayerCountdown;      // The text that displays the countdown for selecting zones
+    public Text TxtRunaroundCountdown;         // The text that displays the countdown for running around
+    public Image[] ColouredImages;             // The images that need to have their colour set to the players colour
+    public Image ImgCharacterImage;            // The image that shows the 
+    public Image ImgClaimZone;                 // The image that displays which zone the player claimed items are in
+    public Sprite[] ButtonImages;              // Icons for each button
+    public TextMesh[] ScoreboardNames;         // Player names on scoreboard
+    public TextMesh[] ScoreboardScores;        // Player scores on scoreboard
+    public SpriteRenderer[] ActiveZones;       // Which zone each player is in
+    public Sprite UnknownZoneSprite;           // Sprite to use when player is not in a zone
+    public Text TxtCommentary;                 // Text to show current actions/help
+    public Text TxtErrorMessage;               // Text to show error message
+    public Image ImgCommentaryClaim;           // The (bigger) image that displays which zone the player claimed items are in
+    public GameObject ResultsPopup;            // Popup to show results
+    public MineResultScript[] ResultDisplays;  // Displays that show result of each round
 
     List<MineGamesInputHandler> _players = new List<MineGamesInputHandler>();
     int _activePlayerIndex = 0;
@@ -62,7 +64,7 @@ public class MineGamesController : GenericController
         Instance = this;
 
         SpawnPlayers_();
-        
+
         SetupScoreboard_();
 
         // more points for more players
@@ -71,14 +73,14 @@ public class MineGamesController : GenericController
         Truth_Points /= _players.Count;
 
         DisplayActivePlayer_();
-        
+
         //initialise timer
         _zoneSelectionLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _zoneSelectionLimit.Initialise(30, ZoneSelectionCallback_, ZoneSelectionTimeoutCallback_);
 
         StartGame_();
-    }    
-    
+    }
+
     /// <summary>
     /// Callback for the zone selection timer - called once per second
     /// </summary>
@@ -87,7 +89,7 @@ public class MineGamesController : GenericController
     {
         TxtActivePlayerCountdown.text = seconds.ToString();
     }
-    
+
     /// <summary>
     /// Callback for the zone selection timer - called once timer expires
     /// </summary>
@@ -95,20 +97,21 @@ public class MineGamesController : GenericController
     {
         _timeoutOccurred = true;
         var random = UnityEngine.Random.Range(0, 3);
-        
+
         _goldZone = (ButtonValues)random;
         _goldClaimZone = (ButtonValues)random;
-        _coalZone = (ButtonValues)(3-random);
-        
+        _coalZone = (ButtonValues)(3 - random);
+        TxtErrorMessage.text = "";
+
         _selectionState = MineSelectionState.None;
 
         // update display
         ImgClaimZone.gameObject.SetActive(true);
         ImgClaimZone.sprite = ButtonImages[(int)random];
-        
+
         // add items to carts
         Carts[random].SetContents(MineItemDrop.Gold);
-        Carts[3-random].SetContents(MineItemDrop.Coal);
+        Carts[3 - random].SetContents(MineItemDrop.Coal);
 
         // show carts and enable movement
         StartCoroutine(MoveCartsOn());
@@ -129,38 +132,36 @@ public class MineGamesController : GenericController
     private void SetupScoreboard_()
     {
         var index = 0;
-        for(; index < _players.Count; index++)
+        for (; index < _players.Count; index++)
         {
             ScoreboardNames[index].text = _players[index].GetPlayerName();
             ScoreboardScores[index].text = "0";
         }
-        
+
         // hide unused elements
-        for(; index < ScoreboardNames.Length; index++)
+        for (; index < ScoreboardNames.Length; index++)
         {
             ScoreboardNames[index].gameObject.SetActive(false);
             ScoreboardScores[index].gameObject.SetActive(false);
             ActiveZones[index].gameObject.SetActive(false);
         }
-    }    
+    }
 
     /// <summary>
     /// Make a player start running to the platform
     /// </summary>
     private void PlatformSetup()
-    {    
+    {
         TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " to the platform please!";
-        
+
         // move carts off
-        foreach(var cart in Carts)
+        foreach (var cart in Carts)
         {
             cart.MoveOut();
         }
 
         // run off the page
         _players[_activePlayerIndex].RunOff(RunOffX, RunOffCallback);
-
-        TxtAction.text = "Waiting...";
 
         // make previous player run back to ground floor
         if (_previousPlayerIndex >= 0)
@@ -176,7 +177,7 @@ public class MineGamesController : GenericController
     /// <param name="imageIndex">The index of the icon to use</param>
     public void SetActiveIcon(int playerIndex, int imageIndex)
     {
-        if(imageIndex > -1)
+        if (imageIndex > -1)
             ActiveZones[playerIndex].sprite = ButtonImages[imageIndex];
         else
             ActiveZones[playerIndex].sprite = UnknownZoneSprite;
@@ -205,9 +206,10 @@ public class MineGamesController : GenericController
     {
         foreach (var cart in Carts)
             cart.SetContents(MineItemDrop.None);
-        TxtAction.text = "Placing gold";
+
         _selectionState = MineSelectionState.GoldDestination;
-        
+        // start a timeout
+        _zoneSelectionLimit.StartTimer();
         TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nIn which cart would you like to place the GOLD?";
     }
 
@@ -238,7 +240,6 @@ public class MineGamesController : GenericController
     void GoldDestinationSelected_(ButtonValues selection)
     {
         _goldZone = selection;
-        TxtAction.text = "Placing coal";
         _selectionState = MineSelectionState.CoalDestination;
         Carts[(int)selection].SetContents(MineItemDrop.Gold);
         TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nWhere would you like to place the COAL?";
@@ -252,12 +253,16 @@ public class MineGamesController : GenericController
         // can't put coal and gold in the same zone
         if (_goldZone != selection)
         {
+            TxtErrorMessage.text = "";
             _coalZone = selection;
-            TxtAction.text = "Making claim about gold";
             _selectionState = MineSelectionState.GoldClaim;
             Carts[(int)selection].SetContents(MineItemDrop.Coal);
 
             TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + ":\nTell the other players where you put the gold.\nYou get " + Truth_Points + " for telling the truth,\nor " + Wrong_Points + " for each player who picks\nthe cart that contains coal";
+        }
+        else
+        {
+            TxtErrorMessage.text = "Gold and coal cannot go into same cart";
         }
     }
 
@@ -268,7 +273,7 @@ public class MineGamesController : GenericController
     {
         // stop the time limit
         _zoneSelectionLimit.Abort();
-    
+
         // store the selection
         _goldClaimZone = selection;
         _selectionState = MineSelectionState.None;
@@ -303,34 +308,31 @@ public class MineGamesController : GenericController
     /// </summary>
     private IEnumerator Runaround_()
     {
+        TxtActivePlayerCountdown.text = "";
+
         // allow the carts to move on
         yield return new WaitForSeconds(1.2f);
-        
-        if(!_timeoutOccurred)
-            TxtAction.text = "Claims the gold is in:";
-        else
-            TxtAction.text = "Timed out";
 
         // display instructional message
-        if(!_timeoutOccurred)
+        if (!_timeoutOccurred)
             TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " claims that the gold is in:";
         else
             TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " timed out. The gold is in:";
-            
+
         ImgCommentaryClaim.gameObject.SetActive(true);
         ImgCommentaryClaim.sprite = ButtonImages[(int)_goldClaimZone];
-        
+
         yield return new WaitForSeconds(2f);
-        
-        if(!_timeoutOccurred)
+
+        if (!_timeoutOccurred)
             TxtCommentary.text = "But are they telling the truth?";
         else
             TxtCommentary.text = "This should be easy!";
-            
+
         ImgCommentaryClaim.gameObject.SetActive(false);
 
         yield return new WaitForSeconds(2f);
-        
+
         TxtCommentary.text = "GO!";
 
         // enable players except the one that needs to run off
@@ -338,25 +340,25 @@ public class MineGamesController : GenericController
             p.CanMove(p.GetPlayerIndex() != _activePlayerIndex);
 
         // delay for players to go to correct zone
-        for(int i = ROUND_TIME; i > 0; i--)
+        for (int i = ROUND_TIME; i > 0; i--)
         {
             // display the countdown
             TxtRunaroundCountdown.text = i.ToString();
-            
+
             // update message after 3 seconds
-            if(i == (ROUND_TIME - 3))
+            if (i == (ROUND_TIME - 3))
             {
                 TxtCommentary.text = "Stand under the cart where you think\n" + _players[_activePlayerIndex].GetPlayerName() + " has placed the gold";
             }
-            
+
             yield return new WaitForSeconds(1);
         }
-           
+
         TxtRunaroundCountdown.text = "";
 
         // display new messages
         TxtCommentary.text = "Time's up!";
-        TxtAction.text = "Viewing results";
+
         ImgClaimZone.gameObject.SetActive(false);
 
         // disable players
@@ -366,15 +368,15 @@ public class MineGamesController : GenericController
         yield return new WaitForSeconds(2f);
 
         TxtCommentary.text = "Let's see who gets points,\nand who is stuck with coal...";
-        
+
         yield return new WaitForSeconds(2f);
-        
+
         // tip carts to reveal contents
-        foreach(var cart in Carts)
+        foreach (var cart in Carts)
         {
             cart.TipCart();
         }
-        
+
         // wait for carts to tip
         yield return new WaitForSeconds(3f);
 
@@ -386,9 +388,13 @@ public class MineGamesController : GenericController
     /// </summary>
     private IEnumerator RoundResults_()
     {
+        // clear existing results
+        foreach (var p in _players)
+            p.ClearResults();
+
         yield return new WaitForSeconds(1f);
 
-        foreach(var p in _players)
+        foreach (var p in _players)
         {
             if (p.GetPlayerIndex() != _activePlayerIndex)
             {
@@ -397,10 +403,15 @@ public class MineGamesController : GenericController
                 {
                     // player was correct
                     p.AddPoints(Correct_Points);
+                    p.AddResultString(Correct_Points + "@for picking the Gold cart", Correct_Points);
                 }
-                else
+                else if (p.ActiveZone() == (int)_coalZone)
                 {
-                    p.AddPoints(Wrong_Points);
+                    p.AddPoints(-1 * Wrong_Points);
+                    p.AddResultString(Wrong_Points + "@for picking the Coal cart", -1 * Wrong_Points);
+
+                    _players[_activePlayerIndex].AddPoints(Wrong_Points);
+                    _players[_activePlayerIndex].AddResultString(Wrong_Points + "@for fooling " + p.GetPlayerName(), Wrong_Points);
 
                     // don't allow the score to go under 0
                     if (p.GetPoints() < 0)
@@ -412,20 +423,33 @@ public class MineGamesController : GenericController
             else
             {
                 // check if the player was truthful
-                if(_goldClaimZone == _goldZone && !_timeoutOccurred)
+                if (_goldClaimZone == _goldZone && !_timeoutOccurred)
                 {
-                    _players[_activePlayerIndex].AddPoints(Truth_Points);
+                    p.AddPoints(Truth_Points);
+                    p.AddResultString(Truth_Points + "@Truth bonus", Truth_Points);
                 }
             }
-            
-            ScoreboardScores[p.GetPlayerIndex()].text = p.GetPoints().ToString();
         }
-        
-        // TODO: Show score popup
-        Debug.Log("Showing UI");
+
+        // display scores
+        foreach (var p in _players)
+            ScoreboardScores[p.GetPlayerIndex()].text = p.GetPoints().ToString();
+
+        ResultsPopup.SetActive(true);
+        for(int i = 0; i < _players.Count; i++)
+        {
+            ResultDisplays[i].gameObject.SetActive(true);
+            ResultDisplays[i].SetDisplay(_players[i]);
+        }
+
+        for(int i = _players.Count; i < ResultDisplays.Length; i++)
+        {
+            ResultDisplays[i].gameObject.SetActive(false);
+        }
+
         yield return new WaitForSeconds(5f);
-        // TODO: Hide UI
-        
+        ResultsPopup.SetActive(false);
+
         // move to next player
         NextPlayer_();
     }
@@ -474,7 +498,7 @@ public class MineGamesController : GenericController
         ImgCharacterImage.sprite = PlayerIcons[_players[_activePlayerIndex].GetCharacterIndex()];
 
         // set colour of images
-        foreach(var img in ColouredImages)
+        foreach (var img in ColouredImages)
         {
             img.color = ColourFetcher.GetColour(_activePlayerIndex);
         }
