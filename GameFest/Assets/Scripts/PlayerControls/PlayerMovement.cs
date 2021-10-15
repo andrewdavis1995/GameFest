@@ -30,6 +30,7 @@ public class PlayerMovement : MonoBehaviour
     Vector2 _movementInput;
     bool _onGround = false;
     bool _flipX = false;
+    bool _animationControl = true;
 
     // callback functions
     Action<Collider2D> _triggerEnterCallback;
@@ -91,13 +92,26 @@ public class PlayerMovement : MonoBehaviour
         transform.Translate(new Vector2(xMove, 0) * Speed * Time.deltaTime);
 
         // if we are on the ground, i.e. walking or idle, update the animation
-        if (_onGround)
+        if (_onGround && _animationControl)
             Animate(xMove == 0 ? "Idle" : "Walk");
 
         UpdateOrientation_(xMove);
     }
 
-    void Animate(string animation)
+    /// <summary>
+    /// Sets whether this script has control over the animator
+    /// </summary>
+    /// <param name="state"Whether this script can control the animator</param>
+    public void SetAnimationControl(bool state)
+    {
+        _animationControl = state;
+    }
+
+    /// <summary>
+    /// Sets the animation trigger of the player and shadow
+    /// </summary>
+    /// <param name="animation"></param>
+    public void Animate(string animation)
     {
         PlayerAnimator.SetAnimation(animation);
         ShadowAnimator?.SetAnimation(animation);

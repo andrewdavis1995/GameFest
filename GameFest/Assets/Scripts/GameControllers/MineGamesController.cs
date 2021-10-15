@@ -29,8 +29,7 @@ public class MineGamesController : GenericController
     public Text TxtActivePlayerCountdown;      // The text that displays the countdown for selecting zones
     public Text TxtRunaroundCountdown;         // The text that displays the countdown for running around
     public Image[] ColouredImages;             // The images that need to have their colour set to the players colour
-    public Image ImgCharacterImage;            // The image that shows the 
-    public Image ImgClaimZone;                 // The image that displays which zone the player claimed items are in
+    public Image ImgCharacterImage;            // The image that shows the character icon
     public Sprite[] ButtonImages;              // Icons for each button
     public TextMesh[] ScoreboardNames;         // Player names on scoreboard
     public TextMesh[] ScoreboardScores;        // Player scores on scoreboard
@@ -43,6 +42,7 @@ public class MineGamesController : GenericController
     public MineResultScript[] ResultDisplays;  // Displays that show result of each round
 
     List<MineGamesInputHandler> _players = new List<MineGamesInputHandler>();
+    List<PlayerMovement> _playerMovements = new List<PlayerMovement>();
     int _activePlayerIndex = 0;
     int _previousPlayerIndex = -1;
     int _roundIndex = 0;
@@ -104,10 +104,6 @@ public class MineGamesController : GenericController
         TxtErrorMessage.text = "";
 
         _selectionState = MineSelectionState.None;
-
-        // update display
-        ImgClaimZone.gameObject.SetActive(true);
-        ImgClaimZone.sprite = ButtonImages[(int)random];
 
         // add items to carts
         Carts[random].SetContents(MineItemDrop.Gold);
@@ -278,10 +274,6 @@ public class MineGamesController : GenericController
         _goldClaimZone = selection;
         _selectionState = MineSelectionState.None;
 
-        // update display
-        ImgClaimZone.gameObject.SetActive(true);
-        ImgClaimZone.sprite = ButtonImages[(int)selection];
-
         // show carts and enable movement
         StartCoroutine(MoveCartsOn());
         StartCoroutine(Runaround_());
@@ -359,8 +351,6 @@ public class MineGamesController : GenericController
         // display new messages
         TxtCommentary.text = "Time's up!";
 
-        ImgClaimZone.gameObject.SetActive(false);
-
         // disable players
         foreach (var p in _players)
             p.CanMove(false);
@@ -394,6 +384,8 @@ public class MineGamesController : GenericController
 
         yield return new WaitForSeconds(1f);
 
+        List<int> celebrations = new List<int>();
+
         foreach (var p in _players)
         {
             if (p.GetPlayerIndex() != _activePlayerIndex)
@@ -404,14 +396,16 @@ public class MineGamesController : GenericController
                     // player was correct
                     p.AddPoints(Correct_Points);
                     p.AddResultString(Correct_Points + "@for picking the Gold cart", Correct_Points);
+                    celebrations.Add(p.GetPlayerIndex());
                 }
                 else if (p.ActiveZone() == (int)_coalZone)
                 {
                     p.AddPoints(-1 * Wrong_Points);
-                    p.AddResultString(Wrong_Points + "@for picking the Coal cart", -1 * Wrong_Points);
+                    p.AddResultString(-1*Wrong_Points + "@for picking the Coal cart", -1 * Wrong_Points);
 
                     _players[_activePlayerIndex].AddPoints(Wrong_Points);
-                    _players[_activePlayerIndex].AddResultString(Wrong_Points + "@for fooling " + p.GetPlayerName(), Wrong_Points);
+                    _players[_activePlayerIndex].AddResultString(Wrong_Points + "@for fooling players", Wrong_Points);
+                    celebrations.Add(_activePlayerIndex);
 
                     // don't allow the score to go under 0
                     if (p.GetPoints() < 0)
@@ -431,6 +425,17 @@ public class MineGamesController : GenericController
             }
         }
 
+        // make players celebration
+        var grouped = celebrations.GroupBy(p => p);
+        foreach (var c in grouped)
+        {
+            _playerMovements[c.Key].SetAnimationControl(false);
+            _playerMovements[c.Key].Animate("Celebrate");
+        }
+
+        // wait a minute to show celebration
+        yield return new WaitForSeconds(2f);
+
         // display scores
         foreach (var p in _players)
             ScoreboardScores[p.GetPlayerIndex()].text = p.GetPoints().ToString();
@@ -448,6 +453,14 @@ public class MineGamesController : GenericController
         }
 
         yield return new WaitForSeconds(5f);
+
+        // stop celebrating
+        foreach (var c in grouped)
+        {
+            _playerMovements[c.Key].SetAnimationControl(true);
+            _playerMovements[c.Key].Animate("Idle");
+        }
+
         ResultsPopup.SetActive(false);
 
         // move to next player
@@ -562,7 +575,10 @@ public class MineGamesController : GenericController
             _players.Add(player.GetComponent<MineGamesInputHandler>());
 
             // create the "visual" player at the start point
-            player.Spawn(PlayerPrefab, StartPositions[index++]);
+            var created = player.Spawn(PlayerPrefab, StartPositions[index++]);
+            var movement = created.GetComponent<PlayerMovement>();
+            movement.Shadow.gameObject.SetActive(true);
+            _playerMovements.Add(movement);
         }
     }
 }
