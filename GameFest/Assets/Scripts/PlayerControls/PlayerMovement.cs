@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,10 +32,12 @@ public class PlayerMovement : MonoBehaviour
     bool _onGround = false;
     bool _flipX = false;
     bool _animationControl = true;
+    bool _disabled = false;
 
     // callback functions
     Action<Collider2D> _triggerEnterCallback;
     Action<Collider2D> _triggerExitCallback;
+    Action<Collision2D> _collisionCallback;
 
     public PlayerAnimation PlayerAnimator;
     public PlayerAnimation ShadowAnimator;
@@ -45,6 +48,15 @@ public class PlayerMovement : MonoBehaviour
         _renderer = GetComponent<SpriteRenderer>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _animators = GetComponentsInChildren<Animator>();
+    }
+
+    /// <summary>
+    /// Adds a callback for when the item collides with something
+    /// </summary>
+    /// <param name="collisionEnter">The callback action to carry out</param>
+    internal void AddMovementCallbacks(Action<Collision2D> collisionEnter)
+    {
+        _collisionCallback = collisionEnter;
     }
 
     /// <summary>
@@ -81,21 +93,45 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
+    /// Stop movement for a duration
+    /// </summary>
+    /// <param name="duration">How long to disable for</param>
+    /// <param name="playerIndex">Index of the player</param>
+    public IEnumerator Disable(float duration, int playerIndex)
+    {
+        _disabled = true;
+        _renderer.sprite = MineGamesController.Instance.DisabledImages[playerIndex];
+
+        // disable animations
+        foreach (var anim in _animators)
+            anim.enabled = false;
+
+        yield return new WaitForSeconds(duration);
+        _disabled = false;
+        // enable animations
+        foreach (var anim in _animators)
+            anim.enabled = true;
+    }
+
+    /// <summary>
     /// Called once a frame
     /// </summary>
     void Update()
     {
-        transform.eulerAngles = new Vector3(0, 0, 0);
+        if (!_disabled)
+        {
+            transform.eulerAngles = new Vector3(0, 0, 0);
 
-        // only move if the value of the input is big enough to be noticeable
-        var xMove = Math.Abs(_movementInput.x) > 0.25f ? _movementInput.x : 0;
-        transform.Translate(new Vector2(xMove, 0) * Speed * Time.deltaTime);
+            // only move if the value of the input is big enough to be noticeable
+            var xMove = Math.Abs(_movementInput.x) > 0.25f ? _movementInput.x : 0;
+            transform.Translate(new Vector2(xMove, 0) * Speed * Time.deltaTime);
 
-        // if we are on the ground, i.e. walking or idle, update the animation
-        if (_onGround && _animationControl)
-            Animate(xMove == 0 ? "Idle" : "Walk");
+            // if we are on the ground, i.e. walking or idle, update the animation
+            if (_onGround && _animationControl)
+                Animate(xMove == 0 ? "Idle" : "Walk");
 
-        UpdateOrientation_(xMove);
+            UpdateOrientation_(xMove);
+        }
     }
 
     /// <summary>
@@ -202,12 +238,16 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="collision">The collision event - including the object that the player collided with</param>
     void OnCollisionEnter2D(Collision2D collision)
     {
+
         // if colliding with the ground, and moving downwards
         if (collision.gameObject.tag == "Ground" && collision.relativeVelocity.y > 0)
         {
             // we are now on the ground
             _onGround = true;
         }
+
+        // invoke the callback if set
+        _collisionCallback?.Invoke(collision);
     }
 
     /// <summary>

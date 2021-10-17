@@ -22,7 +22,13 @@ public class MineGamesController : GenericController
     public float RunOffX;                      // X Position to stop player at
     public Sprite[] PlayerIcons;               // Icons of the player
     public Collider2D RightWall;               // Right wall collider
+    public float RockDropLeftBound;            // Furthest left that items can be dropped
+    public float RockDropRightBound;           // Furthest right that items can be dropped
     public MineCart[] Carts;                   // The coal/gold carts
+    public Transform[] Buckets;                // The buckets
+    public float RockDropY;                    // Height to drop rocks from
+    public Transform RockPrefab;               // Prefab of rocks to drop
+    public CameraShakeScript CameraShake;      // Camera shake
 
     // UI
     public Text TxtActivePlayer;               // The text that displays the active player name
@@ -40,6 +46,10 @@ public class MineGamesController : GenericController
     public Image ImgCommentaryClaim;           // The (bigger) image that displays which zone the player claimed items are in
     public GameObject ResultsPopup;            // Popup to show results
     public MineResultScript[] ResultDisplays;  // Displays that show result of each round
+    public Sprite[] DisabledImages;            // Sprites to use for disabled players
+
+    public ResultsPageScreen ResultsScreen;
+    public TransitionFader EndFader;
 
     List<MineGamesInputHandler> _players = new List<MineGamesInputHandler>();
     List<PlayerMovement> _playerMovements = new List<PlayerMovement>();
@@ -78,7 +88,18 @@ public class MineGamesController : GenericController
         _zoneSelectionLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _zoneSelectionLimit.Initialise(30, ZoneSelectionCallback_, ZoneSelectionTimeoutCallback_);
 
-        StartGame_();
+        // fade in
+        EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
+        EndFader.StartFade(1, 0, FadeInComplete);
+    }
+
+
+    /// <summary>
+    /// Called once fully faded in
+    /// </summary>
+    private void FadeInComplete()
+    {
+        PauseGameHandler.Instance.Pause(true, StartGame_);
     }
 
     /// <summary>
@@ -88,6 +109,15 @@ public class MineGamesController : GenericController
     void ZoneSelectionCallback_(int seconds)
     {
         TxtActivePlayerCountdown.text = seconds.ToString();
+    }
+
+    /// <summary>
+    /// Check the index of the active player
+    /// </summary>
+    /// <returns>Index of the active player</returns>
+    public int ActivePlayerIndex()
+    {
+        return _activePlayerIndex;
     }
 
     /// <summary>
@@ -148,6 +178,9 @@ public class MineGamesController : GenericController
     /// </summary>
     private void PlatformSetup()
     {
+        foreach (var cart in Carts)
+            cart.SetContents(MineItemDrop.None);
+
         TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " to the platform please!";
 
         // move carts off
@@ -155,6 +188,8 @@ public class MineGamesController : GenericController
         {
             cart.MoveOut();
         }
+
+        StartCoroutine(CameraShake_());
 
         // run off the page
         _players[_activePlayerIndex].RunOff(RunOffX, RunOffCallback);
@@ -164,6 +199,16 @@ public class MineGamesController : GenericController
         {
             _players[_previousPlayerIndex].RunOff(RunOffX, ReturnCallback);
         }
+    }
+
+    /// <summary>
+    /// Make the camera shake
+    /// </summary>
+    private IEnumerator CameraShake_()
+    {
+        CameraShake.Enable();
+        yield return new WaitForSeconds(3.5f);
+        CameraShake.Disable();
     }
 
     /// <summary>
@@ -202,6 +247,11 @@ public class MineGamesController : GenericController
     {
         foreach (var cart in Carts)
             cart.SetContents(MineItemDrop.None);
+
+        // enable players except the one that needs to run off
+        foreach (var p in _players)
+            if (p.GetPlayerIndex() != _activePlayerIndex)
+                p.CanMove(true);
 
         _selectionState = MineSelectionState.GoldDestination;
         // start a timeout
@@ -285,11 +335,37 @@ public class MineGamesController : GenericController
     /// <returns></returns>
     private IEnumerator MoveCartsOn()
     {
+        StartCoroutine(RockFall_());
+
+        StartCoroutine(CameraShake_());
+
         // move carts on
         foreach (var cart in Carts.Reverse())
         {
             cart.MoveIn();
             yield return new WaitForSeconds(0.5f);
+        }
+    }
+
+    /// <summary>
+    /// Make rocks fall from the roof
+    /// </summary>
+    private IEnumerator RockFall_()
+    {
+        // drop 40 rocks
+        for (var i = 0; i < 40; i++)
+        {
+            var xPosition = UnityEngine.Random.Range(RockDropLeftBound, RockDropRightBound);
+            var item = Instantiate(RockPrefab, new Vector3(xPosition, RockDropY, -18), Quaternion.identity);
+
+            // disable collisions with carts
+            foreach (var bucket in Buckets)
+            {
+                var colliders = bucket.GetComponentsInChildren<Collider2D>();
+                foreach (var collider in colliders)
+                    Physics2D.IgnoreCollision(item.GetComponent<Collider2D>(), collider);
+            }
+            yield return new WaitForSeconds(0.15f);
         }
     }
 
@@ -321,15 +397,9 @@ public class MineGamesController : GenericController
         else
             TxtCommentary.text = "This should be easy!";
 
-        ImgCommentaryClaim.gameObject.SetActive(false);
-
         yield return new WaitForSeconds(2f);
 
         TxtCommentary.text = "GO!";
-
-        // enable players except the one that needs to run off
-        foreach (var p in _players)
-            p.CanMove(p.GetPlayerIndex() != _activePlayerIndex);
 
         // delay for players to go to correct zone
         for (int i = ROUND_TIME; i > 0; i--)
@@ -347,6 +417,8 @@ public class MineGamesController : GenericController
         }
 
         TxtRunaroundCountdown.text = "";
+
+        ImgCommentaryClaim.gameObject.SetActive(false);
 
         // display new messages
         TxtCommentary.text = "Time's up!";
@@ -401,7 +473,7 @@ public class MineGamesController : GenericController
                 else if (p.ActiveZone() == (int)_coalZone)
                 {
                     p.AddPoints(-1 * Wrong_Points);
-                    p.AddResultString(-1*Wrong_Points + "@for picking the Coal cart", -1 * Wrong_Points);
+                    p.AddResultString(-1 * Wrong_Points + "@for picking the Coal cart", -1 * Wrong_Points);
 
                     _players[_activePlayerIndex].AddPoints(Wrong_Points);
                     _players[_activePlayerIndex].AddResultString(Wrong_Points + "@for fooling players", Wrong_Points);
@@ -441,13 +513,13 @@ public class MineGamesController : GenericController
             ScoreboardScores[p.GetPlayerIndex()].text = p.GetPoints().ToString();
 
         ResultsPopup.SetActive(true);
-        for(int i = 0; i < _players.Count; i++)
+        for (int i = 0; i < _players.Count; i++)
         {
             ResultDisplays[i].gameObject.SetActive(true);
             ResultDisplays[i].SetDisplay(_players[i]);
         }
 
-        for(int i = _players.Count; i < ResultDisplays.Length; i++)
+        for (int i = _players.Count; i < ResultDisplays.Length; i++)
         {
             ResultDisplays[i].gameObject.SetActive(false);
         }
@@ -497,7 +569,7 @@ public class MineGamesController : GenericController
         else
         {
             // no more rounds, so end the game
-            EndGame_();
+            StartCoroutine(Complete_());
         }
     }
 
@@ -553,11 +625,32 @@ public class MineGamesController : GenericController
     }
 
     /// <summary>
-    /// Ends the game and returns to the menu
+    /// Completes the game and return to object
     /// </summary>
-    private void EndGame_()
+    IEnumerator Complete_()
     {
         AssignBonusPoints_();
+
+        yield return new WaitForSeconds(3f);
+
+        ResultsScreen.Setup();
+
+        GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
+        ResultsScreen.SetPlayers(genericPlayers);
+
+        ScoreStoreHandler.StoreResults(Scene.MineGames, genericPlayers);
+
+        yield return new WaitForSeconds(4 + genericPlayers.Length);
+
+        // fade out
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Moves back to the central screen
+    /// </summary>
+    void ReturnToCentral_()
+    {
         PlayerManagerScript.Instance.CentralScene();
     }
 

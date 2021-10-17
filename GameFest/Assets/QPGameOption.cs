@@ -16,6 +16,9 @@ public class QPGameOption : MonoBehaviour
     public Text TxtName;
     public GameObject CrossIcon;
 
+    public int MinimumPlayers;
+    public bool RequiresDualshock;
+
     Color BACKGROUND_COLOUR_SELECTED = new Color(0.0862745098f, 0.270588235f, 0.443137255f);
 
     /// <summary>

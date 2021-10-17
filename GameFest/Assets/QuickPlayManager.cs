@@ -1,5 +1,10 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.DualShock;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
@@ -11,6 +16,7 @@ public class QuickPlayManager : MonoBehaviour
     public TransitionFader Fader;
     public Text TxtDescription;
     public QPGameOption[] Games;
+    public List<QPGameOption> GameList;
     public Image TvBackground;
     public Image TvLogo;
     public VideoPlayer Video;
@@ -32,11 +38,33 @@ public class QuickPlayManager : MonoBehaviour
     private void Start()
     {
         Instance = this;
+
+        GameList = Games.ToList();
+        HideUnusableGames__();
+
         Fader.StartFade(1, 0, null);
         SpawnPlayers_();
-        Games[_gameIndex].Selected();
+        GameList[_gameIndex].Selected();
         UpdateDisplay_();
         Video.loopPointReached += Video_loopPointReached;
+    }
+
+    /// <summary>
+    /// Hides any games which are not suitable for the number of players or the controllers in use
+    /// </summary>
+    private void HideUnusableGames__()
+    {
+        for (int i = 0; i < GameList.Count(); i++)
+        {
+            // if the game is not suitable for the players/controllers are not suitable, hide it
+            if ((GameList[i].MinimumPlayers > PlayerManagerScript.Instance.GetPlayerCount())
+                || GameList[i].RequiresDualshock && PlayerManagerScript.Instance.GetPlayers().Any(p => p.GetDevice() is DualShockGamepad))
+            {
+                GameList[i].gameObject.SetActive(false);
+                GameList.RemoveAt(i);
+                i--;
+            }
+        }
     }
 
     /// <summary>
@@ -47,7 +75,7 @@ public class QuickPlayManager : MonoBehaviour
         int index = 0;
 
         // don't show wins stats if there is only one player
-        var showWins = PlayerManagerScript.Instance.GetPlayers().Count > 1;
+        var showWins = PlayerManagerScript.Instance.GetPlayerCount() > 1;
 
         // loop through all players
         foreach (var player in PlayerManagerScript.Instance.GetPlayers())
@@ -82,16 +110,18 @@ public class QuickPlayManager : MonoBehaviour
     /// </summary>
     public void MoveGameUp()
     {
+        // TODO: skip if game is not active - or convert to a list first
+
         if (!_loading)
         {
             // check we are not at the top
             if (_gameIndex > 0)
             {
                 // update display
-                Games[_gameIndex].Deselected();
+                GameList[_gameIndex].Deselected();
                 _gameIndex--;
                 UpdateDisplay_();
-                Games[_gameIndex].Selected();
+                GameList[_gameIndex].Selected();
             }
         }
     }
@@ -104,13 +134,13 @@ public class QuickPlayManager : MonoBehaviour
         if (!_loading)
         {
             // check we are not at the bottom
-            if (_gameIndex < (Games.Length - 1))
+            if (_gameIndex < (GameList.Count() - 1))
             {
                 // update display
-                Games[_gameIndex].Deselected();
+                GameList[_gameIndex].Deselected();
                 _gameIndex++;
                 UpdateDisplay_();
-                Games[_gameIndex].Selected();
+                GameList[_gameIndex].Selected();
             }
         }
     }
@@ -132,9 +162,9 @@ public class QuickPlayManager : MonoBehaviour
     /// </summary>
     public void LoadCurrentGame_()
     {
-        if ((_gameIndex < Games.Length) && (Games[_gameIndex].Game != Scene.QuickPlayLobby))
+        if ((_gameIndex < GameList.Count()) && (GameList[_gameIndex].Game != Scene.QuickPlayLobby))
         {
-            PlayerManagerScript.Instance.NextScene(Games[_gameIndex].Game);
+            PlayerManagerScript.Instance.NextScene(GameList[_gameIndex].Game);
         }
         else
         {
@@ -148,24 +178,24 @@ public class QuickPlayManager : MonoBehaviour
     void UpdateDisplay_()
     {
         // if we somehow have an invalid index, do nothing to avoid errors
-        if (_gameIndex < Games.Length)
+        if (_gameIndex < GameList.Count())
         {
             StopAllCoroutines();
             _videoFading = false;
 
-            var scene = Games[_gameIndex].Game;
+            var scene = GameList[_gameIndex].Game;
             TxtDescription.text = GameDescriptionScript.GetDescription(scene);
 
             // setup images
-            if (Games[_gameIndex].LogoImage != null)
-                TvLogo.sprite = Games[_gameIndex].LogoImage;
-            if (Games[_gameIndex].BackgroundImage != null)
-                TvBackground.sprite = Games[_gameIndex].BackgroundImage;
+            if (GameList[_gameIndex].LogoImage != null)
+                TvLogo.sprite = GameList[_gameIndex].LogoImage;
+            if (GameList[_gameIndex].BackgroundImage != null)
+                TvBackground.sprite = GameList[_gameIndex].BackgroundImage;
 
             // setup video player
-            Video.clip = Games[_gameIndex].Video_Clip;
-            Video.targetTexture = Games[_gameIndex].Video;
-            VideoImage.texture = Games[_gameIndex].Video;
+            Video.clip = GameList[_gameIndex].Video_Clip;
+            Video.targetTexture = GameList[_gameIndex].Video;
+            VideoImage.texture = GameList[_gameIndex].Video;
 
             StartCoroutine(WaitBeforeVideo());
         }

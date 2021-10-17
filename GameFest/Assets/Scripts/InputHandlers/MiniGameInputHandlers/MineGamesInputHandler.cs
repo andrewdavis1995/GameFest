@@ -37,8 +37,9 @@ public class MineGamesInputHandler : GenericInputHandler
 
         // get the movement script attached to the visual player
         _movement = spawned.GetComponent<PlayerMovement>();
-        // assign callbacks for when the item interacts with triggers
+        // assign callbacks for when the item interacts with triggers and colliders
         _movement.AddTriggerCallbacks(TriggerEnter, TriggerExit);
+        _movement.AddMovementCallbacks(CollisionEnter);
 
         // get the collider for the player
         _collider = _movement.GetComponentInChildren<Collider2D>();
@@ -105,6 +106,19 @@ public class MineGamesInputHandler : GenericInputHandler
         _walkOffCallback = runOffCallback;
         _movement.Move(new Vector2(1, 0));
         Physics2D.IgnoreCollision(_collider, MineGamesController.Instance.RightWall, true);
+    }
+
+    /// <summary>
+    /// When the player collides with something
+    /// </summary>
+    /// <param name="collision">The object that triggered this event</param>
+    public void CollisionEnter(Collision2D collision)
+    {
+        // hit a rock
+        if(collision.gameObject.name == "Rock" && (GetPlayerIndex() != MineGamesController.Instance.ActivePlayerIndex()))
+        {
+            StartCoroutine(_movement.Disable(4, GetCharacterIndex()));
+        }
     }
 
     /// <summary>
@@ -241,5 +255,27 @@ public class MineGamesInputHandler : GenericInputHandler
     {
         _roundPoints = 0;
         _results.Clear();
+    }
+
+    /// <summary>
+    /// When the R1 event is triggered
+    /// </summary>
+    public override void OnR1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.NextPage();
+        }
+    }
+
+    /// <summary>
+    /// When the L1 event is triggered
+    /// </summary>
+    public override void OnL1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.PreviousPage();
+        }
     }
 }

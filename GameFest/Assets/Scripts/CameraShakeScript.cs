@@ -4,7 +4,7 @@ using UnityEngine;
 public class CameraShakeScript : MonoBehaviour
 {
     Vector3 originalPos;
-    public float shakeAmount = 0.00001f;
+    float shakeAmount = 0.03f;
     bool _enabled = false;
 
     /// <summary>
