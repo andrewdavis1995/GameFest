@@ -22,6 +22,7 @@ public class MarshLandInputHandler : GenericInputHandler
     bool _inWater = false;
     bool _active = false;
     bool _leftStartPoint = false;
+    bool _alreadyFellInHere = false;
     int _recoveryPressesRemaining = 0;
     bool _walkingOn = false;
     bool _walkingOnComplete = false;
@@ -47,7 +48,7 @@ public class MarshLandInputHandler : GenericInputHandler
     /// <summary>
     /// Gets the transform of the player output/display
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The player object</returns>
     public Transform GetPlayerTransform()
     {
         return _player;
@@ -225,6 +226,7 @@ public class MarshLandInputHandler : GenericInputHandler
 
             // can now fall in
             _leftStartPoint = true;
+            _alreadyFellInHere = false;
         }
     }
 
@@ -234,13 +236,14 @@ public class MarshLandInputHandler : GenericInputHandler
     void Fall_()
     {
         // can't fall off of start
-        if (!_leftStartPoint) return;
+        if (!_leftStartPoint || _alreadyFellInHere) return;
 
         _jumpScript.SetAnimation("Flail");
 
         // start the recovery processr
         _recoveryPressesRemaining = 20;
         _inWater = true;
+        _alreadyFellInHere = true;
 
         StartCoroutine(Splash_());
 
