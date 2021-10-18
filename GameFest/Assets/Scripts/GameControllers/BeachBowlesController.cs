@@ -1445,15 +1445,15 @@ public class BeachBowlesController : GenericController
     /// <param name="i">The index of the player (position on podium)</param>
     private void SetPodiumAnimation_(int i)
     {
-        if (i < 3)
+        // move all to idle - needed to allow transition to celebration
+        SetAnimator_(PodiumAnimators[i], "Idle");
+        SetAnimator_(PodiumShadowAnimators[i], "Idle");
+            
+        // make winner celebrate
+        if (i == 0)
         {
             SetAnimator_(PodiumAnimators[i], "Celebrate");
             SetAnimator_(PodiumShadowAnimators[i], "Celebrate");
-        }
-        else
-        {
-            SetAnimator_(PodiumAnimators[i], "Idle");
-            SetAnimator_(PodiumShadowAnimators[i], "Idle");
         }
     }
 
