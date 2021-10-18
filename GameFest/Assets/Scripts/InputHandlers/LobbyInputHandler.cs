@@ -447,7 +447,7 @@ public class LobbyInputHandler : GenericInputHandler
         // if all ready...
         if (allReady && !_done)
         {
-            PlayerManagerScript.Instance.ModeSelection.SetActive(true);
+            PlayerManagerScript.Instance.ShowModeSelection();
         }
         else
         {
