@@ -261,7 +261,7 @@ public class XTinguishController : GenericController
     public void CheckForComplete()
     {
         var allComplete = _players.All(p => p.IsComplete());
-        if (allComplete)
+        if (allComplete && !_ended)
         {
             // all players are complete, so end the game
             StartCoroutine(EndGame_());
