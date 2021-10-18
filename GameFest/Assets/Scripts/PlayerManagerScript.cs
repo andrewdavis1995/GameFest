@@ -181,7 +181,7 @@ public class PlayerManagerScript : MonoBehaviour
     /// <summary>
     /// Shows the mode selection menu
     /// </summary>
-    public ShowModeSelection()
+    public void ShowModeSelection()
     {
         ModeSelection.SetActive(true);
         Manager.DisableJoining();
