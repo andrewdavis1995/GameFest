@@ -278,48 +278,49 @@ public class XTinguishController : GenericController
     IEnumerator EndGame_()
     {
         // only do this once
-        if(_ended) return;
-    
-        // fire closes in more quickly
-        _fireMoveX *= 15f;
-        _fireMoveY *= 15f;
-
-        // stop the timer
-        _overallLimit.Abort();
-
-        _fastFireMove = true;
-
-        StartCoroutine(RocketsFly_());
-
-        yield return new WaitForSeconds(END_GAME_TIMEOUT);
-
-        _fastFireMove = false;
-
-        _ended = true;
-        AlarmOverlay.enabled = false;
-
-        if (_players.Any(p => !p.Died()))
+        if (!_ended)
         {
-            foreach (var v in FireCollidersX)
-                v.gameObject.SetActive(false);
-            foreach (var v in FireCollidersY)
-                v.gameObject.SetActive(false);
+            // fire closes in more quickly
+            _fireMoveX *= 15f;
+            _fireMoveY *= 15f;
 
-            SpawnEndRockets_();
+            // stop the timer
+            _overallLimit.Abort();
 
-            // sets the players
-            CameraFollowScript.SetPlayers(_endRockets.Select(r => r.transform).ToList(), FollowDirection.Right);
-            CameraZoomFollowScript.SetPlayers(_endRockets.Where(p => p.Rocket.gameObject.activeInHierarchy).Select(r => r.transform).ToList(), FollowDirection.Right);
+            _fastFireMove = true;
 
-            // move the rockets
-            foreach (var rocket in _endRockets)
+            StartCoroutine(RocketsFly_());
+
+            yield return new WaitForSeconds(END_GAME_TIMEOUT);
+
+            _fastFireMove = false;
+
+            _ended = true;
+            AlarmOverlay.enabled = false;
+
+            if (_players.Any(p => !p.Died()))
             {
-                rocket.StartMove();
+                foreach (var v in FireCollidersX)
+                    v.gameObject.SetActive(false);
+                foreach (var v in FireCollidersY)
+                    v.gameObject.SetActive(false);
+
+                SpawnEndRockets_();
+
+                // sets the players
+                CameraFollowScript.SetPlayers(_endRockets.Select(r => r.transform).ToList(), FollowDirection.Right);
+                CameraZoomFollowScript.SetPlayers(_endRockets.Where(p => p.Rocket.gameObject.activeInHierarchy).Select(r => r.transform).ToList(), FollowDirection.Right);
+
+                // move the rockets
+                foreach (var rocket in _endRockets)
+                {
+                    rocket.StartMove();
+                }
             }
-        }
-        else
-        {
-            StartCoroutine(Complete_());
+            else
+            {
+                StartCoroutine(Complete_());
+            }
         }
     }
 

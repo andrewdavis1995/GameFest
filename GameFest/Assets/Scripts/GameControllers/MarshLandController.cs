@@ -14,7 +14,7 @@ public class MarshLandController : GenericController
 
     // Unity configuration
     public Vector2[] PlayerSpawnPositions;
-    public Vector2 PlayerEndPositionStart;
+    public Vector3 PlayerEndPositionStart;
     public Transform PlayerPrefab;
     public CameraFollow CameraFollowScript;
     public CameraZoomFollow CameraFollowZoomScript;

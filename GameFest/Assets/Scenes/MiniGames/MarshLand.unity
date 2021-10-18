@@ -998,7 +998,7 @@ PrefabInstance:
     - target: {fileID: 4478136122760100958, guid: ab2e8572e3806e74dbb9a80da5ad73eb, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 21300000, guid: 4ee9b6a21266c3849ba03d0264df1491, type: 3}
     - target: {fileID: 4478136122760101281, guid: ab2e8572e3806e74dbb9a80da5ad73eb, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -0.000015258789
@@ -17317,7 +17317,7 @@ PrefabInstance:
     - target: {fileID: 4478136122760100958, guid: ab2e8572e3806e74dbb9a80da5ad73eb, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 21300000, guid: 4ee9b6a21266c3849ba03d0264df1491, type: 3}
     - target: {fileID: 4478136122760101281, guid: ab2e8572e3806e74dbb9a80da5ad73eb, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -0.000030517578
@@ -18925,7 +18925,7 @@ MonoBehaviour:
   - {x: -9.45, y: 4.46}
   - {x: -10.65, y: 3.88}
   - {x: -10.86, y: 3.25}
-  PlayerEndPositionStart: {x: 269, y: 0}
+  PlayerEndPositionStart: {x: 269, y: 0, z: 0}
   PlayerPrefab: {fileID: 8475240428089446547, guid: 644f91792e7baf441b8b675d0bf9f207, type: 3}
   CameraFollowScript: {fileID: 808354086}
   CameraFollowZoomScript: {fileID: 808354087}
@@ -25624,7 +25624,7 @@ PrefabInstance:
     - target: {fileID: 4478136122760100958, guid: ab2e8572e3806e74dbb9a80da5ad73eb, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 21300000, guid: 4ee9b6a21266c3849ba03d0264df1491, type: 3}
     - target: {fileID: 4478136122760101281, guid: ab2e8572e3806e74dbb9a80da5ad73eb, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -0.000015258789
@@ -26530,7 +26530,7 @@ PrefabInstance:
     - target: {fileID: 4478136122760100958, guid: ab2e8572e3806e74dbb9a80da5ad73eb, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 21300000, guid: 4ee9b6a21266c3849ba03d0264df1491, type: 3}
     - target: {fileID: 4478136122760101281, guid: ab2e8572e3806e74dbb9a80da5ad73eb, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: -0.000015258789
