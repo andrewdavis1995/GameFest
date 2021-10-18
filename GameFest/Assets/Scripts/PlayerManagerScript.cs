@@ -90,7 +90,6 @@ public class PlayerManagerScript : MonoBehaviour
     public void SetPlayers(List<PlayerControls> players)
     {
         _players = players;
-        Manager.DisableJoining();
     }
 
     /// <summary>
@@ -180,12 +179,21 @@ public class PlayerManagerScript : MonoBehaviour
     }
 
     /// <summary>
+    /// Shows the mode selection menu
+    /// </summary>
+    public ShowModeSelection()
+    {
+        ModeSelection.SetActive(true);
+        Manager.DisableJoining();
+    }
+
+    /// <summary>
     /// Lobby is no longer complete
     /// </summary>
     internal void NotComplete()
     {
         LobbyComplete = false;
-        ModeSelection.SetActive(false);
+        Manager.EnableJoining();
     }
 
     /// <summary>r
