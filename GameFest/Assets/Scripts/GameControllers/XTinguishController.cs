@@ -242,16 +242,20 @@ public class XTinguishController : GenericController
     /// </summary>
     private void Update()
     {
-        // make the left and right edges wider
-        foreach (var fire in FireCollidersX)
+        // don't move virus until started
+        if (_active)
         {
-            fire.transform.localScale += new Vector3(_fireMoveX, 0);
-        }
+            // make the left and right edges wider
+            foreach (var fire in FireCollidersX)
+            {
+                fire.transform.localScale += new Vector3(_fireMoveX, 0);
+            }
 
-        // make the top and bottom edges taller
-        foreach (var fire in FireCollidersY)
-        {
-            fire.transform.localScale += new Vector3(0, _fireMoveY);
+            // make the top and bottom edges taller
+            foreach (var fire in FireCollidersY)
+            {
+                fire.transform.localScale += new Vector3(0, _fireMoveY);
+            }
         }
     }
 
