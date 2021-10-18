@@ -168,6 +168,7 @@ public class QuickPlayManager : MonoBehaviour
         }
         else
         {
+            // TODO add enum ("Alternative Action") to GameList items. Switch on action here. Exit, view stats, settings etc
             Application.Quit();
         }
     }
@@ -192,12 +193,16 @@ public class QuickPlayManager : MonoBehaviour
             if (GameList[_gameIndex].BackgroundImage != null)
                 TvBackground.sprite = GameList[_gameIndex].BackgroundImage;
 
-            // setup video player
-            Video.clip = GameList[_gameIndex].Video_Clip;
-            Video.targetTexture = GameList[_gameIndex].Video;
-            VideoImage.texture = GameList[_gameIndex].Video;
+            // only show video if there is something to show
+            if(GameList[_gameIndex].Video_Clip != null && GameList[_gameIndex].Video != null)
+            {
+                // setup video player
+                Video.clip = GameList[_gameIndex].Video_Clip;
+                Video.targetTexture = GameList[_gameIndex].Video;
+                VideoImage.texture = GameList[_gameIndex].Video;
 
-            StartCoroutine(WaitBeforeVideo());
+                StartCoroutine(WaitBeforeVideo());
+            }
         }
     }
 
