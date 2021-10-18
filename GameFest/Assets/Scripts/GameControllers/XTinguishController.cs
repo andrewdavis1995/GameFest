@@ -273,6 +273,9 @@ public class XTinguishController : GenericController
     /// </summary>
     IEnumerator EndGame_()
     {
+        // only do this once
+        if(_ended) return;
+    
         // fire closes in more quickly
         _fireMoveX *= 15f;
         _fireMoveY *= 15f;
