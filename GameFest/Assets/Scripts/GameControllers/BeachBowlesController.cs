@@ -887,14 +887,15 @@ public class BeachBowlesController : GenericController
         }
 
         // sort the players by points scored
-        var ordered = _players.OrderByDescending(p => p.GetPoints()).ToList();
+        var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
         int[] winnerPoints = new int[] { 200, 80, 20 };
 
         // add winning score points 
         for (int i = 0; i < ordered.Count(); i++)
         {
             ordered[i].AddPoints(winnerPoints[i]);
-            ordered[i].SetBonusPoints(winnerPoints[i]);
+            if (ordered[i].GetPoints() > 0)
+                ordered[i].SetBonusPoints(winnerPoints[i]);
         }
         ordered.FirstOrDefault()?.Winner();
 
@@ -1421,7 +1422,7 @@ public class BeachBowlesController : GenericController
     {
         var fOffset = 0f;
 
-        switch(characterIndex)
+        switch (characterIndex)
         {
             case 1:
                 fOffset = 0.2f;
@@ -1448,7 +1449,7 @@ public class BeachBowlesController : GenericController
         // move all to idle - needed to allow transition to celebration
         SetAnimator_(PodiumAnimators[i], "Idle");
         SetAnimator_(PodiumShadowAnimators[i], "Idle");
-            
+
         // make winner celebrate
         if (i == 0)
         {

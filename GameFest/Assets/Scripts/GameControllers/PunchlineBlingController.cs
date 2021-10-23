@@ -693,7 +693,7 @@ public class PunchlineBlingController : GenericController
         ResultsScreen.SetPlayers(_players);
 
         ScoreStoreHandler.StoreResults(Scene.PunchlineBling, _players);
-        var ordered = _players.OrderByDescending(p => p.GetPoints()).ToList();
+        var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
         ordered.FirstOrDefault()?.Winner();
 
         yield return new WaitForSeconds(4 + _players.Length);

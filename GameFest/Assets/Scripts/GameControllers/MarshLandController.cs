@@ -504,7 +504,7 @@ public class MarshLandController : GenericController
     private void AssignBonusPoints_()
     {
         // sort the players by points scored
-        var ordered = _players.OrderByDescending(p => p.GetPoints()).ToList();
+        var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
         int[] winnerPoints = new int[] { 140, 50, 10 };
 
         // add winning score points 

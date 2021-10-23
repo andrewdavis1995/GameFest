@@ -532,9 +532,6 @@ public class LobbyInputHandler : GenericInputHandler
     /// </summary>
     void CharacterSelected_()
     {
-        // tell the player object what the name is
-        _detailsCompleteCallback(_display.GetPlayerName(), GetCharacterIndex(), _newProfileGuid);
-
         _state.SetState(PlayerStateEnum.Ready);
         _display.ShowReadyPanel(true);
 
@@ -542,10 +539,14 @@ public class LobbyInputHandler : GenericInputHandler
         if (_newProfile)
         {
             var profile = new PlayerProfile();
+
             _newProfileGuid = profile.GetGuid();
             profile.UpdateDetails(_display.NameDisplay.text, GetCharacterIndex());
             PlayerManagerScript.Instance.AddProfile(profile);
         }
+
+        // tell the player object what the name is
+        _detailsCompleteCallback(_display.GetPlayerName(), GetCharacterIndex(), _newProfileGuid);
     }
 
     #region Fetch index of the left/right elements to display
