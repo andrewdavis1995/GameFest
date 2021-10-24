@@ -103,6 +103,15 @@ public class XTinguishController : GenericController
     }
 
     /// <summary>
+    /// Is the game active?
+    /// </summary>
+    /// <returns>If the game is active</returns>
+    public bool IsActive()
+    {
+        return _active;
+    }
+
+    /// <summary>
     /// Gets the distribution of the items to spawn - how likely each is to be spawned
     /// </summary>
     /// <returns>A list of enum values and their % likelihood to be spawned</returns>
@@ -214,8 +223,8 @@ public class XTinguishController : GenericController
         }
 
         // update spawn time config
-        _minBatteryWait = 3f / _players.Count;
-        _minBatteryWait = 8 - _players.Count;
+        _minBatteryWait = 2f / _players.Count;
+        _minBatteryWait = 7 - _players.Count;
 
         return playerTransforms;
     }
@@ -281,8 +290,8 @@ public class XTinguishController : GenericController
         if (!_ended)
         {
             // fire closes in more quickly
-            _fireMoveX *= 15f;
-            _fireMoveY *= 15f;
+            _fireMoveX *= 10f;
+            _fireMoveY *= 10f;
 
             // stop the timer
             _overallLimit.Abort();

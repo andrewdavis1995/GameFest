@@ -27761,8 +27761,8 @@ MonoBehaviour:
   SpawnPositions:
   - {x: -14, y: -6, z: -10.3}
   - {x: 14, y: -6, z: -10.2}
-  - {x: -7.5, y: 6.5, z: -10.1}
-  - {x: 7.5, y: 6.5, z: -10}
+  - {x: -7.5, y: -2, z: -10.1}
+  - {x: 7.5, y: -2, z: -10}
   TransportPositions:
   - {x: -13, y: 3.31, z: 18}
   - {x: -4.41, y: 3.31, z: 18}
@@ -28107,7 +28107,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7940296541675983536, guid: 53e1c3f49cb6d36468bb10f4c02b9ec2, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7940296541675983551, guid: 53e1c3f49cb6d36468bb10f4c02b9ec2, type: 3}
       propertyPath: m_RootOrder

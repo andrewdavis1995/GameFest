@@ -75,7 +75,12 @@ public class MineGamesController : GenericController
 
         SpawnPlayers_();
 
+        // sets text of the scoreboard
         SetupScoreboard_();
+
+        // initialise pause handler
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers);
 
         // more points for more players
         Correct_Points /= _players.Count;
@@ -365,6 +370,8 @@ public class MineGamesController : GenericController
                 foreach (var collider in colliders)
                     Physics2D.IgnoreCollision(item.GetComponent<Collider2D>(), collider);
             }
+
+            Physics2D.IgnoreCollision(item.GetComponent<Collider2D>(), _playerMovements[_activePlayerIndex].GetComponent<Collider2D>());
             yield return new WaitForSeconds(0.15f);
         }
     }

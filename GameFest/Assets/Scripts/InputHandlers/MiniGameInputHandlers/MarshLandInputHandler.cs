@@ -316,13 +316,13 @@ public class MarshLandInputHandler : GenericInputHandler
         _inWater = false;
         _jumpScript.Recover();
 
+        MarshLandController.Instance.RecoverPlayer(GetPlayerIndex());
+
         // allow time to get above marshmallow
         yield return new WaitForSeconds(0.5f);
         _jumpScript.RecoveryComplete(true);
 
         _jumpScript.SetAnimation("Jump");
-
-        MarshLandController.Instance.RecoverPlayer(GetPlayerIndex());
     }
 
     /// <summary>

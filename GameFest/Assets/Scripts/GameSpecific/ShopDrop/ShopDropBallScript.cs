@@ -40,7 +40,8 @@ public class ShopDropBallScript : MonoBehaviour
 
         // wait a second, then destroy the object
         yield return new WaitForSeconds(1);
-        PlayerManagerScript.Instance.GetPlayers()[playerIndex].GetComponent<ShopDropInputHandler>().FoodCollected(this);
+        var multiplicationFactor = PlayerManagerScript.Instance.GetPlayerCount() / 4f;
+        PlayerManagerScript.Instance.GetPlayers()[playerIndex].GetComponent<ShopDropInputHandler>().FoodCollected(this, multiplicationFactor);
         Detonate();
     }
 

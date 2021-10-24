@@ -48,6 +48,7 @@ public class ZeroGravityMovement : MonoBehaviour
     float _lastYInput = 0;
     int _playerIndex;
     Vector3 _emissionsOffset;
+    bool _inDamageZone = false;
 
     // status
     float _health = 100f;
@@ -105,8 +106,8 @@ public class ZeroGravityMovement : MonoBehaviour
     // Called once per frame
     private void Update()
     {
-        // only update the player if they are not finished
-        if (!_isComplete)
+        // only update the player if they are not finished, and the game is active
+        if (!_isComplete && XTinguishController.Instance.IsActive() && !PauseGameHandler.Instance.IsPaused())
         {
             // move player
             _xMovement += 0.15f * _lastXInput;
@@ -277,43 +278,89 @@ public class ZeroGravityMovement : MonoBehaviour
     }
 
     /// <summary>
+    /// Decreases health
+    /// </summary>
+    void DoDamage_()
+    {
+        // decrease health
+        _health -= 15;
+        var healthImage = (int)(_health / (100f / _spacemanImages.Count()));
+        if (healthImage < 0) healthImage = 0;
+        _spaceman.sprite = _spacemanImages[healthImage];
+
+        // calculate size and position
+        var width = _health / 100f;
+        var left = -1 * (((100 - _health) / 100) / 2);
+
+        // displays the current health
+        _healthBarFill.size = new Vector2(width, 1);
+        _healthBarFill.transform.localPosition = new Vector3(left, 0, 0);
+
+        // set color
+        var r = _health <= 50 ? 1f : ((100 - _health) / 50);
+        var g = _health >= 50 ? 1f : (_health / 50f);
+        _healthBarFill.color = new Color(r, g, 0);
+
+        // make the player flash red to show they were hit
+        StartCoroutine(FlashRed_());
+
+        // if the player has no more health left, make them die
+        if (_health <= 0)
+        {
+            Die_(true);
+        }
+    }
+
+    /// <summary>
     /// When the player collides with another object
     /// </summary>
-    /// <param name="collision"></param>
+    /// <param name="collision">The item that was collided with</param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
         // was the object the fire/outside obstacle
         if (collision.gameObject.tag == "KickBack")
         {
-            // decrease health
-            _health -= 15;
-            var healthImage = (int)(_health / (100f / _spacemanImages.Count()));
-            if (healthImage < 0) healthImage = 0;
-            _spaceman.sprite = _spacemanImages[healthImage];
+            Debug.Log("Starting delay");
+            DoDamage_();
 
-            // calculate size and position
-            var width = _health / 100f;
-            var left = -1 * (((100 - _health) / 100) / 2);
-
-            // displays the current health
-            _healthBarFill.size = new Vector2(width, 1);
-            _healthBarFill.transform.localPosition = new Vector3(left, 0, 0);
-
-            // set color
-            var r = _health <= 50 ? 1f : ((100 - _health) / 50);
-            var g = _health >= 50 ? 1f : (_health / 50f);
-            _healthBarFill.color = new Color(r, g, 0);
-
-            // make the player flash red to show they were hit
-            StartCoroutine(FlashRed_());
+            // start the check for if the player does not leave the damage zone
+            _inDamageZone = true;
+            StartCoroutine(LastingDamage_());
 
             // bounce back a bit
-            _rigidBody.AddForce(collision.relativeVelocity * -2);
+            _rigidBody.AddForce(collision.relativeVelocity * -2.4f);
+        }
+    }
 
-            // if the player has no more health left, make them die
-            if (_health <= 0)
+    /// <summary>
+    /// When the player stops colliding with another object
+    /// </summary>
+    /// <param name="collision">The item that was previously collided with</param>
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        // was the object the fire/outside obstacle
+        if (collision.gameObject.tag == "KickBack")
+        {
+            Debug.Log("Stopping delay");
+            _inDamageZone = false;
+            StopCoroutine(LastingDamage_());
+        }
+    }
+
+    /// <summary>
+    /// While player is in contact with virus, keep the damage going
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator LastingDamage_()
+    {
+        while(_inDamageZone)
+        {
+            Debug.Log("Waiting for delay");
+
+            yield return new WaitForSeconds(3);
+            if(_inDamageZone)
             {
-                Die_(true);
+                DoDamage_();
             }
         }
     }

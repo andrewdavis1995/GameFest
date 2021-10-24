@@ -16,7 +16,7 @@ struct PlayerScores
 
 enum ScoreIndexes
 {
-    SCORE_0, SCORE_1, SCORE_2, SCORE_3, SCORE_7, SCORE_14, SCORE_15, SCORE_20, SCORE_35, SCORE_40, SCORE_70, SCORE_100, SCORE_200, SCORE_250, SCORE_500, SCORE_CENTRE, SCORE_OUT
+    SCORE_0, SCORE_1, SCORE_2, SCORE_3, SCORE_7, SCORE_14, SCORE_15, SCORE_20, SCORE_35, SCORE_40, SCORE_70, SCORE_100, SCORE_200, SCORE_250, SCORE_500, SCORE_CENTRE, SCORE_OUT, SCORE_30
 }
 
 /// <summary>
@@ -557,6 +557,7 @@ public class BeachBowlesController : GenericController
             case 14: index = ScoreIndexes.SCORE_14; break;
             case 15: index = ScoreIndexes.SCORE_15; break;
             case 20: index = ScoreIndexes.SCORE_20; break;
+            case 30: index = ScoreIndexes.SCORE_30; break;
             case 35: index = ScoreIndexes.SCORE_35; break;
             case 40: index = ScoreIndexes.SCORE_40; break;
             case 70: index = ScoreIndexes.SCORE_70; break;

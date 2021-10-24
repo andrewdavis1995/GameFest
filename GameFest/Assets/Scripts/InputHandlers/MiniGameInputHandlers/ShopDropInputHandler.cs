@@ -59,13 +59,14 @@ public class ShopDropInputHandler : GenericInputHandler
     /// When food lands in one of the players slots
     /// </summary>
     /// <param name="ball">The ball that landed</param>
-    internal void FoodCollected(ShopDropBallScript ball)
+    /// <param name="ball">The value to multiply the points by</param>
+    internal void FoodCollected(ShopDropBallScript ball, float increaseFactor)
     {
         // add to the list
         _foodCollected.Add(ball);
 
         // add points to player
-        AddPoints(ball.Points);
+        AddPoints((int)(ball.Points * increaseFactor));
 
         // put in trolley
         ball.MoveToTrolley(_trolley);
