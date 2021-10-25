@@ -26,7 +26,8 @@ public class ShopDropBallScript : MonoBehaviour
         // if collided with a bomb explosion, destroy it
         else if(collision.gameObject.name.ToLower().Contains("bomb"))
         {
-            PlayerManagerScript.Instance.GetPlayers()[_playerIndex].GetComponent<ShopDropInputHandler>().FoodLost(this);
+            var multiplicationFactor = 1 + (PlayerManagerScript.Instance.GetPlayerCount() / 4f);
+            PlayerManagerScript.Instance.GetPlayers()[_playerIndex].GetComponent<ShopDropInputHandler>().FoodLost(this, multiplicationFactor);
             Destroy(gameObject);
         }
     }
@@ -40,7 +41,7 @@ public class ShopDropBallScript : MonoBehaviour
 
         // wait a second, then destroy the object
         yield return new WaitForSeconds(1);
-        var multiplicationFactor = PlayerManagerScript.Instance.GetPlayerCount() / 4f;
+        var multiplicationFactor = 1 + (PlayerManagerScript.Instance.GetPlayerCount() / 4f);
         PlayerManagerScript.Instance.GetPlayers()[playerIndex].GetComponent<ShopDropInputHandler>().FoodCollected(this, multiplicationFactor);
         Detonate();
     }

@@ -192,6 +192,7 @@ public class PlayerManagerScript : MonoBehaviour
     /// </summary>
     internal void NotComplete()
     {
+        ModeSelection.SetActive(false);
         LobbyComplete = false;
         Manager.EnableJoining();
     }

@@ -201,8 +201,8 @@ public class ShopDropController : GenericController
     /// <summary>
     /// Displays the receipt and all points information
     /// </summary>
-    /// <returns></returns>
-    IEnumerator DisplayPlayerResult_()
+    /// <param name="increaseFactor">How much to increase the score by</param>
+    IEnumerator DisplayPlayerResult_(float increaseFactor)
     {
         // show the receipt
         Receipt.gameObject.SetActive(true);
@@ -211,13 +211,13 @@ public class ShopDropController : GenericController
         // get the food that the player has collected
         var data = PlayerManagerScript.Instance.GetPlayers()[_playerResultIndex].GetComponent<ShopDropInputHandler>().GetFood();
         // group it by food
-        var grouped = data.GroupBy(g => g.Food).OrderBy(g => g.Sum(i => i.Points)).Reverse();
+        var grouped = data.GroupBy(g => g.Food).OrderBy(g => g.Sum(i => (int)(i.Points * increaseFactor))).Reverse();
 
         var index = 0;
         // loop through the grouped data
         foreach (var value in grouped)
         {
-            var points = value.Sum(v => v.Points);
+            var points = value.Sum(v => (int)(v.Points * increaseFactor));
             // only show items which made a difference
             if (points > 0)
             {
@@ -238,7 +238,7 @@ public class ShopDropController : GenericController
         ClearRemainingReceiptLines_(index);
 
         // display the total points for this player
-        DisplayTotal_(data);
+        DisplayTotal_(data, increaseFactor);
         yield return new WaitForSeconds(2);
 
         // carry on
@@ -249,10 +249,11 @@ public class ShopDropController : GenericController
     /// Displays the total points from a user
     /// </summary>
     /// <param name="data">The data for this player</param>
-    private void DisplayTotal_(List<ShopDropBallScript> data)
+    /// <param name="increaseFactor">How much to multiply the score by</param>
+    private void DisplayTotal_(List<ShopDropBallScript> data, float increaseFactor)
     {
         // get the total number of points
-        var totalPoints = data.Sum(d => d.Points);
+        var totalPoints = data.Sum(d => (int)(d.Points * increaseFactor));
 
         // show total
         Receipt.TotalText.text = totalPoints.ToString();
@@ -349,7 +350,8 @@ public class ShopDropController : GenericController
     /// </summary>
     void ResultCallback()
     {
-        StartCoroutine(DisplayPlayerResult_());
+        var multiplicationFactor = 1 + (PlayerManagerScript.Instance.GetPlayerCount() / 4f);
+        StartCoroutine(DisplayPlayerResult_(multiplicationFactor));
     }
 
     /// <summary>

@@ -320,7 +320,6 @@ public class ZeroGravityMovement : MonoBehaviour
         // was the object the fire/outside obstacle
         if (collision.gameObject.tag == "KickBack")
         {
-            Debug.Log("Starting delay");
             DoDamage_();
 
             // start the check for if the player does not leave the damage zone
@@ -341,7 +340,6 @@ public class ZeroGravityMovement : MonoBehaviour
         // was the object the fire/outside obstacle
         if (collision.gameObject.tag == "KickBack")
         {
-            Debug.Log("Stopping delay");
             _inDamageZone = false;
             StopCoroutine(LastingDamage_());
         }
@@ -355,8 +353,6 @@ public class ZeroGravityMovement : MonoBehaviour
     {
         while(_inDamageZone)
         {
-            Debug.Log("Waiting for delay");
-
             yield return new WaitForSeconds(3);
             if(_inDamageZone)
             {

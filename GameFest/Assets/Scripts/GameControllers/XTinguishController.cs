@@ -100,6 +100,9 @@ public class XTinguishController : GenericController
 
         // start the timer
         _overallLimit.StartTimer();
+
+        _minBatteryWait = 2 + 4 - PlayerManagerScript.Instance.GetPlayerCount();
+        _maxBatteryWait = 9 - PlayerManagerScript.Instance.GetPlayerCount();
     }
 
     /// <summary>
@@ -289,6 +292,8 @@ public class XTinguishController : GenericController
         // only do this once
         if (!_ended)
         {
+            _ended = true;
+
             // fire closes in more quickly
             _fireMoveX *= 10f;
             _fireMoveY *= 10f;
@@ -304,7 +309,6 @@ public class XTinguishController : GenericController
 
             _fastFireMove = false;
 
-            _ended = true;
             AlarmOverlay.enabled = false;
 
             if (_players.Any(p => !p.Died()))

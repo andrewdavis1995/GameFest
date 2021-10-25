@@ -49,17 +49,18 @@ public class ShopDropInputHandler : GenericInputHandler
     /// Ball lost after hit by bomb
     /// </summary>
     /// <param name="ball">The item to remove</param>
-    internal void FoodLost(ShopDropBallScript ball)
+    /// <param name="increaseFactor">The value to multiply the points by</param>
+    internal void FoodLost(ShopDropBallScript ball, float increaseFactor)
     {
         _foodCollected.Remove(ball);
-        AddPoints(-ball.Points);
+        AddPoints((int)(-ball.Points * increaseFactor));
     }
 
     /// <summary>
     /// When food lands in one of the players slots
     /// </summary>
     /// <param name="ball">The ball that landed</param>
-    /// <param name="ball">The value to multiply the points by</param>
+    /// <param name="increaseFactor">The value to multiply the points by</param>
     internal void FoodCollected(ShopDropBallScript ball, float increaseFactor)
     {
         // add to the list

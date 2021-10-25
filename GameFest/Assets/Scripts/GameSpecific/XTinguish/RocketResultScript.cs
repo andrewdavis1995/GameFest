@@ -66,6 +66,7 @@ public class RocketResultScript : MonoBehaviour
         }
         else if(_mhathiaReached && !_complete && _started)
         {
+            _moveSpeed = 6f;
             // shrink
             transform.localScale -= new Vector3(0.05f* Time.deltaTime, 0.05f * Time.deltaTime, 0);
             var yOffset = 0f;

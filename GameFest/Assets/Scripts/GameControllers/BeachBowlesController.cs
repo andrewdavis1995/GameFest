@@ -366,12 +366,15 @@ public class BeachBowlesController : GenericController
     /// </summary>
     void StartGame()
     {
-        Podium.SetActive(false);
+        for (int i = 0; i < 4; i++)
+            SetPodiumAnimation_(i);
+
         ResetPositions_();
         StartCoroutine(DelayedUiShow_());
         PlayerCamera.enabled = true;
         GameplayCamera.enabled = false;
         _showingCharacter = true;
+        Podium.SetActive(false);
     }
 
     /// <summary>
@@ -1238,7 +1241,7 @@ public class BeachBowlesController : GenericController
     public void CameraPreview(int index)
     {
         // only valid if the current player is active, and there is not a preview in progress
-        if (index == _activePlayerIndex && !_cameraPreview && !_coursePreview && !PauseGameHandler.Instance.IsPaused() && (_selectingDirection || _selectingDistance))
+        if (index == _activePlayerIndex && !_showingCharacter && !_cameraPreview && !_coursePreview && !PauseGameHandler.Instance.IsPaused() && (_selectingDirection || _selectingDistance))
         {
             StartCoroutine(CameraPreview_());
         }
@@ -1385,7 +1388,6 @@ public class BeachBowlesController : GenericController
             PodiumAnimators[i].runtimeAnimatorController = PlayerAnimatorControllers[ordered[i].GetCharacterIndex()];
             PodiumShadowAnimators[i].runtimeAnimatorController = PlayerAnimatorControllers[ordered[i].GetCharacterIndex()];
             AdjustHeight_(i, ordered[i].GetCharacterIndex());
-
             SetPodiumAnimation_(i);
         }
 
@@ -1411,7 +1413,9 @@ public class BeachBowlesController : GenericController
     {
         var offset = GetHeightOffset_(characterIndex);
         PodiumAnimators[podiumIndex].transform.localScale -= new Vector3(offset, offset, 0);
-        PodiumAnimators[podiumIndex].transform.localPosition += new Vector3(0, offset * 4, 0);
+        PodiumAnimators[podiumIndex].transform.localPosition -= new Vector3(0, offset * 4, 0);
+        PodiumShadowAnimators[podiumIndex].transform.localScale -= new Vector3(offset, offset, 0);
+        PodiumShadowAnimators[podiumIndex].transform.localPosition -= new Vector3(0, offset * 4, 0);
     }
 
     /// <summary>
@@ -1447,15 +1451,17 @@ public class BeachBowlesController : GenericController
     /// <param name="i">The index of the player (position on podium)</param>
     private void SetPodiumAnimation_(int i)
     {
-        // move all to idle - needed to allow transition to celebration
-        SetAnimator_(PodiumAnimators[i], "Idle");
-        SetAnimator_(PodiumShadowAnimators[i], "Idle");
-
         // make winner celebrate
         if (i == 0)
         {
             SetAnimator_(PodiumAnimators[i], "Celebrate");
             SetAnimator_(PodiumShadowAnimators[i], "Celebrate");
+        }
+        else
+        {
+            // move all to idle - needed to allow transition to celebration
+            SetAnimator_(PodiumAnimators[i], "Idle");
+            SetAnimator_(PodiumShadowAnimators[i], "Idle");
         }
     }
 

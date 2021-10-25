@@ -219,7 +219,7 @@ public class LobbyInputHandler : GenericInputHandler
                 var allPlayers = FindObjectsOfType<LobbyInputHandler>();
 
                 // show next page
-                if (PlayerManagerScript.Instance.ModeSelection.activeInHierarchy)
+                if (PlayerManagerScript.Instance.ModeSelection.activeInHierarchy && IsHost())
                     PlayerManagerScript.Instance.Complete(allPlayers);
                 else
                     StartGame_();

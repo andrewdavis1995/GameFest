@@ -51,14 +51,15 @@ public class CameraMovement : MonoBehaviour
 
     void Update()
     {
+        if (_callbackCalled && _callback != null) return;
+
         // update the position and zoom where appropriate
         MoveX_();
         MoveY_();
         Zoom_();
 
         // if there is no movement ongoing, and the callback has yet to be called, perform the callback action
-        if (!_callbackCalled
-            && _xMovement == MovementDirectionX.None
+        if (_xMovement == MovementDirectionX.None
             && _yMovement == MovementDirectionY.None
             && _zoomDirection == ZoomDirection.None)
             PerformCallback_();
@@ -76,14 +77,20 @@ public class CameraMovement : MonoBehaviour
                 transform.localPosition -= new Vector3(_xSpeed * Time.deltaTime * SpeedAdjustment, 0, 0);
                 // stop when target reached
                 if (transform.localPosition.x < _targetPosition.x)
+                {
+                    transform.localPosition = new Vector3(_targetPosition.x, transform.localPosition.y, transform.localPosition.z);
                     _xMovement = MovementDirectionX.None;
+                }
                 break;
             // move right
             case MovementDirectionX.Right:
                 transform.localPosition += new Vector3(_xSpeed * Time.deltaTime * SpeedAdjustment, 0, 0);
                 // stop when target reached
                 if (transform.localPosition.x > _targetPosition.x)
+                {
+                    transform.localPosition = new Vector3(_targetPosition.x, transform.localPosition.y, transform.localPosition.z);
                     _xMovement = MovementDirectionX.None;
+                }
                 break;
         }
     }
@@ -100,14 +107,20 @@ public class CameraMovement : MonoBehaviour
                 transform.localPosition += new Vector3(0, _ySpeed * Time.deltaTime * SpeedAdjustment, 0);
                 // stop when target reached
                 if (transform.localPosition.y > _targetPosition.y)
+                {
                     _yMovement = MovementDirectionY.None;
+                    transform.localPosition = new Vector3(transform.localPosition.x, _targetPosition.y, transform.localPosition.z);
+                }
                 break;
             // move down
             case MovementDirectionY.Down:
                 transform.localPosition -= new Vector3(0, _ySpeed * Time.deltaTime * SpeedAdjustment, 0);
                 // stop when target reached
                 if (transform.localPosition.y < _targetPosition.y)
+                {
                     _yMovement = MovementDirectionY.None;
+                    transform.localPosition = new Vector3(transform.localPosition.x, _targetPosition.y, transform.localPosition.z);
+                }
                 break;
         }
     }
@@ -124,14 +137,20 @@ public class CameraMovement : MonoBehaviour
                 TheCamera.orthographicSize -= _zoomSpeed * Time.deltaTime * SpeedAdjustment;
                 // stop when target reached
                 if (TheCamera.orthographicSize < _targetZoom)
+                {
                     _zoomDirection = ZoomDirection.None;
+                    TheCamera.orthographicSize = _targetZoom;
+                }
                 break;
             // zoom out
             case ZoomDirection.Out:
                 TheCamera.orthographicSize += _zoomSpeed * Time.deltaTime * SpeedAdjustment;
                 // stop when target reached
                 if (TheCamera.orthographicSize > _targetZoom)
+                {
                     _zoomDirection = ZoomDirection.None;
+                    TheCamera.orthographicSize = _targetZoom;
+                }
                 break;
         }
     }
@@ -165,8 +184,6 @@ public class CameraMovement : MonoBehaviour
         _ySpeed = yDifference / max;
         _zoomSpeed = zDifference / max;
 
-        // set values
-        _callbackCalled = false;
         _targetPosition = targetPosition;
         _targetZoom = targetZoom;
 
@@ -175,7 +192,11 @@ public class CameraMovement : MonoBehaviour
             _xMovement = _targetPosition.x > transform.localPosition.x ? MovementDirectionX.Right : MovementDirectionX.Left;
         if (_targetPosition.y != transform.localPosition.y)
             _yMovement = _targetPosition.y > transform.localPosition.y ? MovementDirectionY.Up : MovementDirectionY.Down;
-        _zoomDirection = _targetZoom < TheCamera.orthographicSize ? ZoomDirection.In : ZoomDirection.Out;
+        if (_targetZoom != TheCamera.orthographicSize)
+            _zoomDirection = _targetZoom < TheCamera.orthographicSize ? ZoomDirection.In : ZoomDirection.Out;
+
+        // set values
+        _callbackCalled = false;
     }
 
     /// <summary>
