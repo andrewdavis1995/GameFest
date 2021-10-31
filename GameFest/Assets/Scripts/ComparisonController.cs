@@ -1,0 +1,317 @@
+using UnityEngine.UI;
+using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
+using System;
+
+/// <summary>
+/// Class for displaying player stats
+/// </summary>
+public class ComparisonController : MonoBehaviour
+{
+    bool _playerComparison = false;
+
+    public HighScoreElement[] HighScores;
+
+    public GameObject ComparisonWindow;
+    public GameObject PlayerWindow;
+
+    public PlayerStatsDisplayScript[] PlayerDisplays;
+    List<PlayerStatsDisplayScript> _playerDisplaysInUse = new List<PlayerStatsDisplayScript>();
+
+    // individual
+    public PieChart WinPercentage;
+    public Text TxtMaxScore;
+    public Text TxtAverageScore;
+    public GameObject NoDataLabelAtAll;
+    public GameObject NoDataLabelPlayer;
+    public GameObject HighScoreObject;
+
+    // comparison
+    public ComparisonGraphScript WinBreakdown;
+
+
+    public Sprite[] GameBackgrounds;
+    public Sprite[] GameLogos;
+
+    public Image BackgroundImage;
+    public Image LogoImage;
+
+    Scene[] _availableScenes = { Scene.PunchlineBling, Scene.ShopDrop, Scene.XTinguish, Scene.MarshLand, Scene.BeachBowles, Scene.MineGames };
+
+    int _gameIndex = 0;
+    int _playerIndex = 0;
+    List<StatContent> _stats = new List<StatContent>();
+
+    public static ComparisonController Instance;
+
+    /// <summary>
+    /// Called once at startup
+    /// </summary>
+    private void Start()
+    {
+        Instance = this;
+        _stats = ScoreStoreHandler.LoadScores();
+        SpawnPlayers_();
+        ShowActiveGame_();
+    }
+
+    /// <summary>
+    /// Spawn players in menu
+    /// </summary>
+    private void SpawnPlayers_()
+    {
+        int index = 0;
+
+        // loop through all players
+        foreach (var player in PlayerManagerScript.Instance.GetPlayers())
+        {
+            // switch to use an input handler suitable for this scene
+            player.SetActiveScript(typeof(StatsInputHandler));
+
+            // needed to set up player index
+            player.Spawn(null, Vector3.zero);
+
+            PlayerDisplays[index].SetData(player);
+            _playerDisplaysInUse.Add(PlayerDisplays[index]);
+
+            index++;
+        }
+
+        // hide unused controls
+        for (; index < 4; index++)
+            PlayerDisplays[index].gameObject.SetActive(false);
+
+        // player comparison only allowed if there are multiple players
+        //if (PlayerManagerScript.Instance.GetPlayerCount() > 1)
+            _playerDisplaysInUse.Add(PlayerDisplays.Last());
+        //else
+        //    PlayerDisplays.Last().gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// Move to the next game to the right
+    /// </summary>
+    public void GameRight()
+    {
+        _gameIndex++;
+
+        // loop around
+        if (_gameIndex >= _availableScenes.Length)
+        {
+            _gameIndex = 0;
+        }
+
+        ShowActiveGame_();
+    }
+
+    /// <summary>
+    /// Move to the next game to the left
+    /// </summary>
+    public void GameLeft()
+    {
+        _gameIndex--;
+
+        // loop around
+        if (_gameIndex < 0)
+        {
+            _gameIndex = _availableScenes.Length - 1;
+        }
+
+        ShowActiveGame_();
+    }
+
+    /// <summary>
+    /// Move down to the next player
+    /// </summary>
+    public void PlayerDown()
+    {
+        // don't go beyond bottom
+        if (_playerIndex < _playerDisplaysInUse.Count - 1)
+        {
+            ResetPlayerDisplays_();
+
+            _playerIndex++;
+
+            _playerComparison = _playerIndex == _playerDisplaysInUse.Count - 1;
+
+            // update UI display
+            ShowPlayer_();
+        }
+    }
+
+    /// <summary>
+    /// Move up to the next player
+    /// </summary>
+    public void PlayerUp()
+    {
+        // don't go beyond bottom
+        if (_playerIndex > 0)
+        {
+            ResetPlayerDisplays_();
+
+            _playerIndex--;
+
+            _playerComparison = false;
+
+            // update UI display
+            ShowPlayer_();
+        }
+    }
+
+    /// <summary>
+    /// Updates the current player status
+    /// </summary>
+    void ShowPlayer_()
+    {
+        _playerDisplaysInUse[_playerIndex].Selected();
+        ShowActiveGame_();
+    }
+
+    /// <summary>
+    /// Clears all player displays (deselect)
+    /// </summary>
+    void ResetPlayerDisplays_()
+    {
+        foreach (var display in _playerDisplaysInUse)
+        {
+            display.Deselected();
+        }
+    }
+
+    /// <summary>
+    /// Returns to the menu
+    /// </summary>
+    public void ReturnToMenu()
+    {
+        PlayerManagerScript.Instance.CentralScene();
+    }
+
+    /// <summary>
+    /// Loads the data fo the current game
+    /// </summary>
+    void ShowActiveGame_()
+    {
+        // update game images
+        BackgroundImage.sprite = GameBackgrounds[_gameIndex];
+        LogoImage.sprite = GameLogos[_gameIndex];
+
+        // get stats for this game
+        var stats = _stats.Where(t => t.GetScene() == _availableScenes[_gameIndex]).ToList();
+
+        HighScoreObject.SetActive(stats.Count > 0);
+        NoDataLabelAtAll.SetActive(stats.Count == 0);
+        NoDataLabelPlayer.SetActive(false);
+        ShowHighscores_(stats.OrderByDescending(s => s.GetScore()).ToList());
+
+        if (!_playerComparison)
+        {
+            ComparisonWindow.SetActive(false);
+
+            if (stats.Count > 0)
+            {
+                var playerContent = stats.Any(t => t.GetPlayerId() == PlayerDisplays[_playerIndex].PlayerID());
+                NoDataLabelPlayer.SetActive(!playerContent);
+
+                if (playerContent)
+                {
+                    PlayerWindow.SetActive(true);
+
+                    // group stats by session
+                    var statsGrouped = stats.GroupBy(s => s.GetDateTime());
+
+                    var playerSessions = statsGrouped.Where(g => g.Any(p => p.GetPlayerId() == PlayerDisplays[_playerIndex].PlayerID()));
+                    DisplayWinRate_(playerSessions.ToList());
+
+                    DisplayScoreData_(stats);
+                }
+                else
+                {
+                    PlayerWindow.SetActive(false);
+                }
+            }
+            else
+            {
+                PlayerWindow.SetActive(false);
+            }
+        }
+        else
+        {
+            // TODO: Comparison data
+            ComparisonWindow.SetActive(true);
+            PlayerWindow.SetActive(false);
+
+            // TODO: TEMP
+            WinBreakdown.SetValues(new float[] { 5, 10, 2, 1 }, "");
+        }
+
+        // update charts
+        //PieChart1.SetValues(new float[] { 5, 10, 2, 1 });
+        //BarChart1.SetValues(new float[] { 15, 10, 20, 21 });
+        //SideBySideChart.SetValues(new float[] { 67, 33, 11, 78 });
+        //SideBySideChart2.SetValues(new float[] { 25, 27, 18, 22 });
+    }
+
+    /// <summary>
+    /// Displays score info
+    /// </summary>
+    /// <param name="stats">Score information</param>
+    private void DisplayScoreData_(List<StatContent> stats)
+    {
+        var playerScores = stats.Where(p => p.GetPlayerId() == PlayerDisplays[_playerIndex].PlayerID());
+
+        // calculate maximum and average score
+        var topScore = playerScores.Max(p => p.GetScore());
+        var avScore = (int)(playerScores.Average(p => p.GetScore()));
+
+        TxtMaxScore.text = topScore.ToString();
+        TxtAverageScore.text = avScore.ToString();
+    }
+
+    /// <summary>
+    /// Displays the win rate that the player has
+    /// </summary>
+    /// <param name="playerSessions"></param>
+    private void DisplayWinRate_(List<IGrouping<DateTime, StatContent>> playerSessions)
+    {
+        var multiplePlayers = playerSessions.Where(p => p.Count() > 1).ToList();
+
+        var numberOfGames = multiplePlayers.Count;
+        var wins = 0;
+
+        foreach (var game in multiplePlayers)
+        {
+            var playerScore = game.Where(p => p.GetPlayerId() == PlayerDisplays[_playerIndex].PlayerID()).FirstOrDefault()?.GetScore();
+            if (game.Max(m => m.GetScore()) == playerScore)
+                wins++;
+        }
+
+        // display win %
+        var winPercent = (float)wins / numberOfGames;
+        WinPercentage.SetValues(new float[] { winPercent }, (int)(winPercent * 100) + "%");
+    }
+
+    /// <summary>
+    /// Displays high score data
+    /// </summary>
+    /// <param name="stats">The data to show</param>
+    private void ShowHighscores_(List<StatContent> stats)
+    {
+        var ph = new ProfileHandler();
+        ph.Initialise();
+
+        var index = 0;
+        for (; (index < stats.Count && index < HighScores.Length); index++)
+        {
+            HighScores[index].gameObject.SetActive(true);
+            var profile = ph.GetProfile(stats[index].GetPlayerId());
+            if (profile != null)
+                HighScores[index].SetPlayerData(profile.GetProfileName(), stats[index].GetScore(), profile.GetCharacterIndex());
+        }
+
+        for (; index < HighScores.Length; index++)
+        {
+            HighScores[index].gameObject.SetActive(false);
+        }
+    }
+}
