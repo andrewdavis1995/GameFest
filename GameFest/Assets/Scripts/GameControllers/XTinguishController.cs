@@ -44,6 +44,7 @@ public class XTinguishController : GenericController
     bool _fastFireMove = false;
     bool _ended = false;
     float _rocketSpeed = 0.1f;
+    bool _completed = false;
 
     // static instance
     public static XTinguishController Instance;
@@ -412,16 +413,20 @@ public class XTinguishController : GenericController
         AssignBonusPoints_();
 
         yield return new WaitForSeconds(1);
+        if (!_completed)
+        {
+            _completed = true;
 
-        ResultsScreen.Setup();
-        GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
-        ResultsScreen.SetPlayers(genericPlayers);
+            ResultsScreen.Setup();
+            GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
+            ResultsScreen.SetPlayers(genericPlayers);
 
-        ScoreStoreHandler.StoreResults(Scene.XTinguish, genericPlayers);
-        yield return new WaitForSeconds(4 + genericPlayers.Length);
+            ScoreStoreHandler.StoreResults(Scene.XTinguish, genericPlayers);
+            yield return new WaitForSeconds(4 + genericPlayers.Length);
 
-        // fade out
-        Fader.StartFade(0, 1, ReturnToCentral_);
+            // fade out
+            Fader.StartFade(0, 1, ReturnToCentral_);
+        }
     }
 
     /// <summary>

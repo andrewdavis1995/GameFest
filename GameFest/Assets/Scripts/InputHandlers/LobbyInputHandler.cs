@@ -144,6 +144,9 @@ public class LobbyInputHandler : GenericInputHandler
         bool statusPanel = true;
         switch (_state.GetState())
         {
+            case PlayerStateEnum.ProfileSelection:
+                statusPanel = false;
+                break;
             // name entry, move the letter to the right
             case PlayerStateEnum.NameEntry:
                 _state.SetState(PlayerStateEnum.ProfileSelection);

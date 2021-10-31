@@ -168,8 +168,15 @@ public class QuickPlayManager : MonoBehaviour
         }
         else
         {
-            // TODO add enum ("Alternative Action") to GameList items. Switch on action here. Exit, view stats, settings etc
-            Application.Quit();
+            switch(GameList[_gameIndex].AdditionalOption)
+            {
+                case AdditionalMenuOption.Exit:
+                    Application.Quit();
+                    break;
+                case AdditionalMenuOption.Statistics:
+                    PlayerManagerScript.Instance.NextScene(Scene.Statistics);
+                    break;
+            }
         }
     }
 

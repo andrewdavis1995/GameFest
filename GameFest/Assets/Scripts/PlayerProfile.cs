@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -178,6 +179,16 @@ internal class ProfileHandler
 
         // save list
         SaveProfileList();
+    }
+
+    /// <summary>
+    /// Gets a profile, based on the ID
+    /// </summary>
+    /// <param name="guid">The ID of the player to find</param>
+    /// <returns>The profile that matches the Guid</returns>
+    public PlayerProfile GetProfile(Guid guid)
+    {
+        return _profiles.Where(p => p != null && p.GetGuid() == guid).FirstOrDefault();
     }
 
     /// <summary>

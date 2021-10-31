@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
+public enum AdditionalMenuOption { None, Exit, Statistics }
+
 /// <summary>
 /// Control for showing a game option
 /// </summary>
@@ -15,6 +17,7 @@ public class QPGameOption : MonoBehaviour
     public Image OptionBackground;
     public Text TxtName;
     public GameObject CrossIcon;
+    public AdditionalMenuOption AdditionalOption;
 
     public int MinimumPlayers;
     public bool RequiresDualshock;
