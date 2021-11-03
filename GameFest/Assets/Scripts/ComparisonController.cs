@@ -200,6 +200,9 @@ public class ComparisonController : MonoBehaviour
         // get stats for this game
         var stats = _stats.Where(t => t.GetScene() == _availableScenes[_gameIndex]).ToList();
 
+        // group stats by session
+        var statsGrouped = stats.GroupBy(s => s.GetDateTime()).ToList();
+
         // update displays
         HighScoreObject.SetActive(stats.Count > 0);
         NoDataLabelAtAll.SetActive(stats.Count == 0);
@@ -214,7 +217,7 @@ public class ComparisonController : MonoBehaviour
             // check there are stats to show
             if (stats.Count > 0)
             {
-                var playerContent = stats.Any(t => t.GetPlayerId() == PlayerDisplays[_playerIndex].PlayerID());
+                var playerContent = stats.Any(t => t.GetPlayerId() == _playerDisplaysInUse[_playerIndex].PlayerID());
                 NoDataLabelPlayer.SetActive(!playerContent);
 
                 // check that there is data to to display
@@ -222,10 +225,7 @@ public class ComparisonController : MonoBehaviour
                 {
                     PlayerWindow.SetActive(true);
 
-                    // group stats by session
-                    var statsGrouped = stats.GroupBy(s => s.GetDateTime());
-
-                    var playerSessions = statsGrouped.Where(g => g.Any(p => p.GetPlayerId() == PlayerDisplays[_playerIndex].PlayerID()));
+                    var playerSessions = statsGrouped.Where(g => g.Any(p => p.GetPlayerId() == _playerDisplaysInUse[_playerIndex].PlayerID()));
                     DisplayWinRate_(playerSessions.ToList());
                     DisplayScoreData_(stats);
                     DisplayPreviousMatches_(playerSessions.ToList());
@@ -242,6 +242,10 @@ public class ComparisonController : MonoBehaviour
         }
         else
         {
+            var matchesForPlayers = GetMatchesForPlayers_(statsGrouped);
+            
+            Debug.Log(matchesForPlayers.Count + " matches found for these players");
+        
             // TODO: Comparison data
             ComparisonWindow.SetActive(true);
             PlayerWindow.SetActive(false);
@@ -251,10 +255,47 @@ public class ComparisonController : MonoBehaviour
             WinBreakdown.SetValues(new float[] { 5, 10, 2, 1 }, "");
         }
     }
+    
+    /// <summary>
+    /// Works out which matches include all the players
+    /// </summary>
+    private List<IGrouping<DateTime, StatContent>> GetMatchesForPlayers_(List<IGrouping<DateTime, StatContent>> allMatches)
+    {
+        var matches = new List<IGrouping<DateTime, StatContent>>();
+    
+        foreach(var match in allMatches)
+        {
+            bool correctPlayerCount = (match.Count == _playerDisplaysInUse.Count - 1);
+            
+            // check that the correct number of players 
+            if(correctPlayerCount)
+            {
+                var allPlayersMatch = true;
+                foreach(var player in match)
+                {
+                    // check each player was involved in the previous game
+                    if(!_playerDisplaysInUse.Any(d => d.PlayerID() == player)
+                    {
+                        allPlayersMatch = false;
+                        break;
+                    }
+                }
+            
+                // add if the correct players are involved
+                if(allPlayersMatch)
+                {
+                    matches.Add(match);
+                }
+            }
+        }
+    
+        return matches;
+    }
 
     /// <summary>
-    /// <param name="stats">Score information</param>
+    /// Displays scores from previous matches
     /// </summary>
+    /// <param name="stats">Score information</param>
     private void DisplayPreviousMatches_(List<IGrouping<DateTime, StatContent>> stats)
     {
         var ph = new ProfileHandler();
@@ -269,7 +310,7 @@ public class ComparisonController : MonoBehaviour
         for(; index < PreviousResults.Count() && index < sorted.Count(); index++)
         {
             // find active player
-            var activePlayerId = PlayerDisplays[_playerIndex].PlayerID();
+            var activePlayerId = _playerDisplaysInUse[_playerIndex].PlayerID();
             var player = sorted[index].Where(s => s.GetPlayerId() == activePlayerId).FirstOrDefault();
 
             // get other players who played
@@ -307,7 +348,7 @@ public class ComparisonController : MonoBehaviour
     /// <param name="stats">Score information</param>
     private void DisplayScoreData_(List<StatContent> stats)
     {
-        var playerScores = stats.Where(p => p.GetPlayerId() == PlayerDisplays[_playerIndex].PlayerID());
+        var playerScores = stats.Where(p => p.GetPlayerId() == _playerDisplaysInUse[_playerIndex].PlayerID());
 
         // calculate maximum and average score
         var topScore = playerScores.Max(p => p.GetScore());
@@ -330,7 +371,7 @@ public class ComparisonController : MonoBehaviour
 
         foreach (var game in multiplePlayers)
         {
-            var playerScore = game.Where(p => p.GetPlayerId() == PlayerDisplays[_playerIndex].PlayerID()).FirstOrDefault()?.GetScore();
+            var playerScore = game.Where(p => p.GetPlayerId() == _playerDisplaysInUse[_playerIndex].PlayerID()).FirstOrDefault()?.GetScore();
             if ((playerScore > 0) && (game.Max(m => m.GetScore()) == playerScore))
                 wins++;
         }
