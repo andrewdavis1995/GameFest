@@ -3355,6 +3355,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: 0.013000488
       objectReference: {fileID: 0}
+    - target: {fileID: 6465941367695260942, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6669176017419536634, guid: 09369709cb3182842a8f8ee1b7f551fb, type: 3}
       propertyPath: SelectingProfilePanel
       value: 

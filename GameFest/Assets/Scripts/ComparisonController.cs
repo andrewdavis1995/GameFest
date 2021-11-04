@@ -24,12 +24,18 @@ public class ComparisonController : MonoBehaviour
     public Text TxtMaxScore;
     public Text TxtAverageScore;
     public GameObject NoDataLabelAtAll;
-    public GameObject NoDataLabelPlayer;
+    public Text NoDataLabelPlayer;
     public GameObject HighScoreObject;
     public PreviousResultPlayerScript[] PreviousResults;
 
     // comparison
     public ComparisonGraphScript WinBreakdown;
+    public PreviousResultCompareScript[] PreviousResultsCompare;
+    public ComparisonGraphScriptBase BarChart;
+    public Text[] TxtWins;
+    public Image[] TxtWinImages;
+    public Text[] TxtAverages;
+    public Image[] TxtAveragesImages;
 
 
     public Sprite[] GameBackgrounds;
@@ -206,19 +212,21 @@ public class ComparisonController : MonoBehaviour
         // update displays
         HighScoreObject.SetActive(stats.Count > 0);
         NoDataLabelAtAll.SetActive(stats.Count == 0);
-        NoDataLabelPlayer.SetActive(false);
+        NoDataLabelPlayer.gameObject.SetActive(false);
         ShowHighscores_(stats.OrderByDescending(s => s.GetScore()).ToList());
 
         // check which mode we are on
         if (!_playerComparison)
         {
+            NoDataLabelPlayer.text = "No data for this player";
+
             ComparisonWindow.SetActive(false);
 
             // check there are stats to show
             if (stats.Count > 0)
             {
                 var playerContent = stats.Any(t => t.GetPlayerId() == _playerDisplaysInUse[_playerIndex].PlayerID());
-                NoDataLabelPlayer.SetActive(!playerContent);
+                NoDataLabelPlayer.gameObject.SetActive(!playerContent);
 
                 // check that there is data to to display
                 if (playerContent)
@@ -242,20 +250,103 @@ public class ComparisonController : MonoBehaviour
         }
         else
         {
+            NoDataLabelPlayer.text = "No games found for these players";
+
             var matchesForPlayers = GetMatchesForPlayers_(statsGrouped);
-            
-            Debug.Log(matchesForPlayers.Count + " matches found for these players");
-        
-            // TODO: Comparison data
-            ComparisonWindow.SetActive(true);
+
+            NoDataLabelPlayer.gameObject.SetActive(matchesForPlayers.Count == 0);
+            ComparisonWindow.SetActive(matchesForPlayers.Count != 0);
             PlayerWindow.SetActive(false);
 
-            // TODO: TEMP
-            // update charts
-            WinBreakdown.SetValues(new float[] { 5, 10, 2, 1 }, "");
+            if (matchesForPlayers.Count > 0)
+            {
+                // update charts
+                CreateComparisonData_(matchesForPlayers);
+                var ordered = matchesForPlayers.OrderBy(d => d.OrderByDescending(o => o.GetDateTime())).ToList();
+
+
+                // show previous scores
+                var scoreIndex = 0;
+                for (; scoreIndex < ordered.Count() && scoreIndex < PreviousResultsCompare.Count(); scoreIndex++)
+                {
+                    PreviousResultsCompare[scoreIndex].gameObject.SetActive(true);
+                    PreviousResultsCompare[scoreIndex].Initialise(ordered[scoreIndex].ToList(), ordered[scoreIndex].Key.ToString("dd/MM"));
+                }
+
+                // hide unused controls
+                for (; scoreIndex < PreviousResultsCompare.Count(); scoreIndex++)
+                {
+                    PreviousResultsCompare[scoreIndex].gameObject.SetActive(false);
+                }
+            }
         }
     }
-    
+
+    /// <summary>
+    /// Updates the chart to show the % of wins each player has against each other
+    /// </summary>
+    /// <param name="matchesForPlayers">Matches that contain both these players</param>
+    void CreateComparisonData_(List<IGrouping<DateTime, StatContent>> matchesForPlayers)
+    {
+        var winList = new List<float>();
+        var averageList = new List<float>();
+
+        // loop through players (ignore comparison label)
+        for (int i = 0; i < _playerDisplaysInUse.Count - 1; i++)
+        {
+            var player = _playerDisplaysInUse[i];
+
+            var wins = 0f;
+            var totalScore = 0f;
+
+            // loop through matches
+            foreach (var match in matchesForPlayers)
+            {
+                var pl = match.Where(s => s.GetPlayerId() == player.PlayerID()).FirstOrDefault();
+
+                // work out the scores
+                var plScore = pl?.GetScore();
+                var maxScore = match.Max(s => s.GetScore());
+
+                totalScore += (int)plScore;
+
+                // check if they had the winning score
+                if(plScore > 0 && maxScore == plScore)
+                {
+                    wins++;
+                }
+            }
+
+            TxtWins[i].text = wins.ToString();
+            TxtWinImages[i].gameObject.SetActive(true);
+
+            // add to list
+            winList.Add(wins);
+
+            var averageScore = totalScore / matchesForPlayers.Count;
+            TxtAverages[i].text = ((int)averageScore).ToString();
+
+            var c = TxtAveragesImages[i].color;
+            TxtAveragesImages[i].color = new Color(c.r, c.g, c.b, 0.25f);
+
+            averageList.Add(averageScore);
+        }
+
+        // hide unused
+        for(int i = _playerDisplaysInUse.Count - 1; i < TxtWins.Length; i++)
+        {
+            TxtWinImages[i].gameObject.SetActive(false);
+
+            var c = TxtAveragesImages[i].color;
+            TxtAveragesImages[i].color = new Color(c.r, c.g, c.b, 0);
+            TxtAverages[i].text = "";
+        }
+
+        // set up charts
+        WinBreakdown.SetValues(winList.ToArray(), (matchesForPlayers.Count + " matches"));
+        BarChart.SetValues(averageList.ToArray(), "");
+    }
+
     /// <summary>
     /// Works out which matches include all the players
     /// </summary>
@@ -265,7 +356,7 @@ public class ComparisonController : MonoBehaviour
     
         foreach(var match in allMatches)
         {
-            bool correctPlayerCount = (match.Count == _playerDisplaysInUse.Count - 1);
+            bool correctPlayerCount = (match.Count() == _playerDisplaysInUse.Count - 1);
             
             // check that the correct number of players 
             if(correctPlayerCount)
@@ -274,7 +365,7 @@ public class ComparisonController : MonoBehaviour
                 foreach(var player in match)
                 {
                     // check each player was involved in the previous game
-                    if(!_playerDisplaysInUse.Any(d => d.PlayerID() == player)
+                    if(!_playerDisplaysInUse.Any(d => d.PlayerID() == player.GetPlayerId()))
                     {
                         allPlayersMatch = false;
                         break;

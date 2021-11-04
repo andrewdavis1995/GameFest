@@ -22,15 +22,13 @@ public class ComparisonGraphScriptBase : MonoBehaviour
         ResetDisplay_();
 
         List<float> displayValues = new List<float>();
-        foreach (var v in values)
-            displayValues.Add(v);
 
         var max = values.Max();
 
         var index = 0;
         foreach (var v in values)
         {
-            displayValues[index] = v / max;
+            displayValues.Add(v / max);
             index++;
         }
 
@@ -45,7 +43,8 @@ public class ComparisonGraphScriptBase : MonoBehaviour
     /// <returns>Data to show</returns>
     public IEnumerator DisplayData(float[] values, string display)
     {
-        TxtDisplayValue.text = display;
+        if (TxtDisplayValue != null)
+            TxtDisplayValue.text = display;
 
         _currentValues = new List<float>();
         foreach (var f in values)
