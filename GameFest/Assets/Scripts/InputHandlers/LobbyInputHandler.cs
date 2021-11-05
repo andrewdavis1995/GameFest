@@ -167,32 +167,19 @@ public class LobbyInputHandler : GenericInputHandler
 
                     if (pl != null) pl.NoLongerReady();
 
-                    // if mode select, only host can go back
-                    if (!PlayerManagerScript.Instance.ModeSelection.activeInHierarchy)
+                    if (_newProfile)
                     {
-                        if (_newProfile)
-                        {
-                            _state.SetState(PlayerStateEnum.CharacterSelection);
-                            _display.ShowReadyPanel(false);
+                        _state.SetState(PlayerStateEnum.CharacterSelection);
+                        _display.ShowReadyPanel(false);
 
-                            // TODO: Delete saved profile
-                            PlayerManagerScript.Instance.RemoveProfile(_newProfileGuid);
-                        }
-                        else
-                        {
-                            _state.SetState(PlayerStateEnum.ProfileSelection);
-                            _display.ShowReadyPanel(false);
-                            statusPanel = false;
-                        }
+                        // TODO: Delete saved profile
+                        PlayerManagerScript.Instance.RemoveProfile(_newProfileGuid);
                     }
                     else
                     {
-                        // host can go back
-                        if (IsHost())
-                        {
-                            PlayerManagerScript.Instance.NotComplete();
-                            _done = false;
-                        }
+                        _state.SetState(PlayerStateEnum.ProfileSelection);
+                        _display.ShowReadyPanel(false);
+                        statusPanel = false;
                     }
                 }
                 break;
@@ -219,13 +206,7 @@ public class LobbyInputHandler : GenericInputHandler
                 break;
             case PlayerStateEnum.Ready:
             {
-                var allPlayers = FindObjectsOfType<LobbyInputHandler>();
-
-                // show next page
-                if (PlayerManagerScript.Instance.ModeSelection.activeInHierarchy && IsHost())
-                    PlayerManagerScript.Instance.Complete(allPlayers);
-                else
-                    StartGame_();
+                StartGame_();
             }
             break;
             case PlayerStateEnum.ProfileSelection:
@@ -292,15 +273,6 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.CharacterSelection:
                 UpdateCharacters_(-1);
                 break;
-            case PlayerStateEnum.Ready:
-            {
-                // update mode
-                if (PlayerManagerScript.Instance.ModeSelection.activeInHierarchy && IsHost())
-                {
-                    PlayerManagerScript.Instance.UpdateMode(GameMode.QuickPlayMode);
-                }
-                break;
-            }
         }
     }
 
@@ -319,15 +291,6 @@ public class LobbyInputHandler : GenericInputHandler
             case PlayerStateEnum.CharacterSelection:
                 UpdateCharacters_(1);
                 break;
-            case PlayerStateEnum.Ready:
-            {
-                // update mode
-                if (PlayerManagerScript.Instance.ModeSelection.activeInHierarchy && IsHost())
-                {
-                    PlayerManagerScript.Instance.UpdateMode(GameMode.HeroMode);
-                }
-                break;
-            }
         }
     }
 
@@ -450,7 +413,7 @@ public class LobbyInputHandler : GenericInputHandler
         // if all ready...
         if (allReady && !_done)
         {
-            PlayerManagerScript.Instance.ShowModeSelection();
+            PlayerManagerScript.Instance.Complete(allPlayers);
         }
         else
         {
