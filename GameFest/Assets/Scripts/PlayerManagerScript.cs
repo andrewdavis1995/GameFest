@@ -6,8 +6,6 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-enum GameMode { QuickPlayMode, HeroMode }
-
 /// <summary>
 /// Script to handle the management of the player inputs
 /// </summary>
@@ -19,9 +17,7 @@ public class PlayerManagerScript : MonoBehaviour
     public PlayerInputManager Manager;
     public RuntimeAnimatorController[] CharacterControllers;   // controllers to control players appearance and animations
     public TransitionFader EndFader;
-    public GameObject ModeSelection;
     public GameObject[] PausePopups;
-    public GameObject[] ModeSelectionBorders;
     public Sprite[] FaderImages;
 
     List<PlayerControls> _players = new List<PlayerControls>();
@@ -132,16 +128,8 @@ public class PlayerManagerScript : MonoBehaviour
     /// </summary>
     public Scene GetCentralScreen()
     {
+        // TODO: Potential to add another mode in future - story mode of some sort
         Scene scene = Scene.QuickPlayLobby;
-
-        switch (_mode)
-        {
-            case GameMode.HeroMode:
-
-                scene = Scene.GameCentral;
-                break;
-        }
-
         return scene;
     }
 
@@ -176,43 +164,6 @@ public class PlayerManagerScript : MonoBehaviour
 
         // move to the game central scene
         EndFader.StartFade(0, 1, CentralScene);
-    }
-
-    /// <summary>
-    /// Shows the mode selection menu
-    /// </summary>
-    public void ShowModeSelection()
-    {
-        ModeSelection.SetActive(true);
-        Manager.DisableJoining();
-    }
-
-    /// <summary>
-    /// Lobby is no longer complete
-    /// </summary>
-    internal void NotComplete()
-    {
-        ModeSelection.SetActive(false);
-        LobbyComplete = false;
-        Manager.EnableJoining();
-    }
-
-    /// <summary>r
-    /// Store and display the correct mode
-    /// </summary>
-    /// <param name="mode">The mode to set</param>
-    internal void UpdateMode(GameMode mode)
-    {
-        if (LobbyComplete) return;
-
-        _mode = mode;
-
-        EndFader.GetComponentInChildren<Image>().sprite = FaderImages[(int)_mode];
-
-        ModeSelectionBorders[(int)GameMode.QuickPlayMode].SetActive(false);
-        ModeSelectionBorders[(int)GameMode.HeroMode].SetActive(false);
-
-        ModeSelectionBorders[(int)mode].SetActive(true);
     }
 
     /// <summary>
