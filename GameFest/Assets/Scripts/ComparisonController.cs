@@ -10,7 +10,10 @@ using System;
 public class ComparisonController : MonoBehaviour
 {
     bool _playerComparison = false;
+    bool _closing = true;   // start at true to avoid Fade in being affected by back button
 
+    public TransitionFader EndFader;
+    
     public HighScoreElement[] HighScores;
 
     public GameObject ComparisonWindow;
@@ -51,6 +54,9 @@ public class ComparisonController : MonoBehaviour
     /// </summary>
     private void Start()
     {
+    
+        EndFader.StartFade(1, 0, () => { _closing = false; });
+    
         Instance = this;
         _stats = ScoreStoreHandler.LoadScores();
         SpawnPlayers_();
@@ -184,6 +190,19 @@ public class ComparisonController : MonoBehaviour
     /// Returns to the menu
     /// </summary>
     public void ReturnToMenu()
+    {
+        if(!_closing)
+        {        
+            _closing = true;
+            EndFader.StartFade(0, 1, ReturnToMenu_);
+        }
+    }
+    
+
+    /// <summary>
+    /// Callback for when the screen fades out - loads menu
+    /// </summary>
+    void ReturnToMenu_()
     {
         PlayerManagerScript.Instance.CentralScene();
     }
