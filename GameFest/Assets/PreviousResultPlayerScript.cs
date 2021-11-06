@@ -20,7 +20,7 @@ public class PreviousResultPlayerScript : MonoBehaviour
     /// <param name="win">Did the player win</param>
     public void SetData(DateTime date, int score, List<int> otherCharacters, bool win)
     {
-        // TODO: Green if won, Red if loss, Blue if solo
+        // Green if won, Red if loss, Blue if solo
         if(otherCharacters.Count > 0)
         {
             if (win && (score > 0))

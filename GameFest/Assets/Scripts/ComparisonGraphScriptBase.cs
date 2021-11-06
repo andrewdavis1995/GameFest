@@ -25,6 +25,9 @@ public class ComparisonGraphScriptBase : MonoBehaviour
 
         var max = values.Max();
 
+        // can't divide by 0
+        max = max == 0 ? 1 : max;
+
         var index = 0;
         foreach (var v in values)
         {
@@ -68,8 +71,6 @@ public class ComparisonGraphScriptBase : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log(i);
-
                     // done
                     DisplayImages[i].fillAmount = values[i];
                 }

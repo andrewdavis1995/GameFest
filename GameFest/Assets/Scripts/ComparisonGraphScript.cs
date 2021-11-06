@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class ComparisonGraphScript : ComparisonGraphScriptBase
 {
@@ -16,7 +17,7 @@ public class ComparisonGraphScript : ComparisonGraphScriptBase
         foreach (var v in values)
             _values.Add(v);
 
-        var totalAmount = values.Sum();
+        var totalAmount = values.Sum() > 0 ? values.Sum() : 1;
 
         var runningTotal = 0f;
         var index = 0;

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,7 @@ public class PreviousResultCompareScript : MonoBehaviour
 
     public Text DateText;
 
-    internal void Initialise(System.Collections.Generic.List<StatContent> items, string date)
+    internal void Initialise(System.Collections.Generic.List<StatContent> items, string date, System.Collections.Generic.List<Guid> profileIds)
     {
         DateText.text = date;
         var maxIndex = -1;
@@ -18,11 +19,15 @@ public class PreviousResultCompareScript : MonoBehaviour
         // update texts
         for (int i = 0; i < items.Count; i++)
         {
-            TxtScoreTexts[i].text = items[i].GetScore().ToString();
+            var playerScore = items.Where(item => item.GetPlayerId() == profileIds[i]).FirstOrDefault().GetScore();
 
-            if(items[i].GetScore() > maxScore)
+            TxtScoreTexts[i].text = playerScore.ToString();
+
+            // check for max score
+            if(playerScore > maxScore)
             {
                 maxIndex = i;
+                maxScore = playerScore;
             }
         }
 
@@ -30,7 +35,7 @@ public class PreviousResultCompareScript : MonoBehaviour
         for (int i = 0; i < items.Count; i++)
         {
             // only full colour if won
-            var a = (i == maxIndex) ? 1f : 0.25f;
+            var a = (i == maxIndex) ? 1f : 0.125f;
             var col = TxtScoreImages[i].color;
 
             TxtScoreImages[i].gameObject.SetActive(true);

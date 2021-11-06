@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+enum GameMode { QuickPlayMode };        // TODO: expand when more modes added
+
 /// <summary>
 /// Script to handle the management of the player inputs
 /// </summary>
@@ -158,6 +160,7 @@ public class PlayerManagerScript : MonoBehaviour
     internal void Complete(LobbyInputHandler[] allPlayers)
     {
         LobbyComplete = true;
+        Manager.DisableJoining();
 
         // ...store the player list in the manager
         SetPlayers(allPlayers.Select(p => p.GetComponent<PlayerControls>()).ToList());

@@ -13,7 +13,7 @@ public class ComparisonController : MonoBehaviour
     bool _closing = true;   // start at true to avoid Fade in being affected by back button
 
     public TransitionFader EndFader;
-    
+
     public HighScoreElement[] HighScores;
 
     public GameObject ComparisonWindow;
@@ -60,9 +60,9 @@ public class ComparisonController : MonoBehaviour
     /// </summary>
     private void Start()
     {
-    
+
         EndFader.StartFade(1, 0, () => { _closing = false; });
-    
+
         Instance = this;
         _stats = ScoreStoreHandler.LoadScores();
         SpawnPlayers_();
@@ -107,6 +107,8 @@ public class ComparisonController : MonoBehaviour
     /// </summary>
     public void GameRight()
     {
+        if (_closing) return;
+
         _gameIndex++;
 
         // loop around
@@ -123,6 +125,8 @@ public class ComparisonController : MonoBehaviour
     /// </summary>
     public void GameLeft()
     {
+        if (_closing) return;
+
         _gameIndex--;
 
         // loop around
@@ -139,6 +143,8 @@ public class ComparisonController : MonoBehaviour
     /// </summary>
     public void PlayerDown()
     {
+        if (_closing) return;
+
         // don't go beyond bottom
         if (_playerIndex < _playerDisplaysInUse.Count - 1)
         {
@@ -158,6 +164,8 @@ public class ComparisonController : MonoBehaviour
     /// </summary>
     public void PlayerUp()
     {
+        if (_closing) return;
+
         // don't go beyond bottom
         if (_playerIndex > 0)
         {
@@ -197,13 +205,13 @@ public class ComparisonController : MonoBehaviour
     /// </summary>
     public void ReturnToMenu()
     {
-        if(!_closing)
-        {        
+        if (!_closing)
+        {
             _closing = true;
             EndFader.StartFade(0, 1, ReturnToMenu_);
         }
     }
-    
+
 
     /// <summary>
     /// Callback for when the screen fades out - loads menu
@@ -281,15 +289,23 @@ public class ComparisonController : MonoBehaviour
             {
                 // update charts
                 CreateComparisonData_(matchesForPlayers);
-                var ordered = matchesForPlayers.OrderBy(d => d.OrderByDescending(o => o.GetDateTime())).ToList();
-
+                var ordered = matchesForPlayers.OrderBy(d => d.First().GetDateTime()).ToList();
 
                 // show previous scores
                 var scoreIndex = 0;
                 for (; scoreIndex < ordered.Count() && scoreIndex < PreviousResultsCompare.Count(); scoreIndex++)
                 {
                     PreviousResultsCompare[scoreIndex].gameObject.SetActive(true);
-                    PreviousResultsCompare[scoreIndex].Initialise(ordered[scoreIndex].ToList(), ordered[scoreIndex].Key.ToString("dd/MM"));
+
+                    // get list of profiles
+                    var profileIds = new List<Guid>();
+                    foreach(var player in _playerDisplaysInUse)
+                    {
+                        if (player.PlayerID() != null)
+                            profileIds.Add(player.PlayerID());
+                    }
+
+                    PreviousResultsCompare[scoreIndex].Initialise(ordered[scoreIndex].ToList(), ordered[scoreIndex].Key.ToString("dd/MM"), profileIds);
                 }
 
                 // hide unused controls
@@ -330,7 +346,7 @@ public class ComparisonController : MonoBehaviour
                 totalScore += (int)plScore;
 
                 // check if they had the winning score
-                if(plScore > 0 && maxScore == plScore)
+                if (plScore > 0 && maxScore == plScore)
                 {
                     wins++;
                 }
@@ -352,7 +368,7 @@ public class ComparisonController : MonoBehaviour
         }
 
         // hide unused
-        for(int i = _playerDisplaysInUse.Count - 1; i < TxtWins.Length; i++)
+        for (int i = _playerDisplaysInUse.Count - 1; i < TxtWins.Length; i++)
         {
             TxtWinImages[i].gameObject.SetActive(false);
 
@@ -372,33 +388,33 @@ public class ComparisonController : MonoBehaviour
     private List<IGrouping<DateTime, StatContent>> GetMatchesForPlayers_(List<IGrouping<DateTime, StatContent>> allMatches)
     {
         var matches = new List<IGrouping<DateTime, StatContent>>();
-    
-        foreach(var match in allMatches)
+
+        foreach (var match in allMatches)
         {
             bool correctPlayerCount = (match.Count() == _playerDisplaysInUse.Count - 1);
-            
+
             // check that the correct number of players 
-            if(correctPlayerCount)
+            if (correctPlayerCount)
             {
                 var allPlayersMatch = true;
-                foreach(var player in match)
+                foreach (var player in match)
                 {
                     // check each player was involved in the previous game
-                    if(!_playerDisplaysInUse.Any(d => d.PlayerID() == player.GetPlayerId()))
+                    if (!_playerDisplaysInUse.Any(d => d.PlayerID() == player.GetPlayerId()))
                     {
                         allPlayersMatch = false;
                         break;
                     }
                 }
-            
+
                 // add if the correct players are involved
-                if(allPlayersMatch)
+                if (allPlayersMatch)
                 {
                     matches.Add(match);
                 }
             }
         }
-    
+
         return matches;
     }
 
@@ -417,7 +433,7 @@ public class ComparisonController : MonoBehaviour
         var index = 0;
 
         // loop though controls - up to 5
-        for(; index < PreviousResults.Count() && index < sorted.Count(); index++)
+        for (; index < PreviousResults.Count() && index < sorted.Count(); index++)
         {
             // find active player
             var activePlayerId = _playerDisplaysInUse[_playerIndex].PlayerID();
@@ -433,7 +449,7 @@ public class ComparisonController : MonoBehaviour
             var otherCharacters = new List<int>();
 
             // get a list of the characters that were used by other players
-            foreach(var p in otherPlayers)
+            foreach (var p in otherPlayers)
             {
                 var profile = ph.GetProfile(p.GetPlayerId());
                 if (profile != null)

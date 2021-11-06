@@ -261,7 +261,7 @@ public class MarshLandController : GenericController
         foreach (var player in _playerJumpers)
         {
             player.transform.parent = null;
-            player.transform.position = PlayerEndPositionStart + new Vector3((2*index), 0, (.01f * index));
+            player.transform.position = PlayerEndPositionStart + new Vector3((2*index), 0, (-.01f * index));
             player.transform.localScale *= 1.85f;
             index++;
         }
