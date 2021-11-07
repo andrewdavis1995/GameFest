@@ -33,11 +33,13 @@ public class PlayerMovement : MonoBehaviour
     bool _flipX = false;
     bool _animationControl = true;
     bool _disabled = false;
+    float _jumpForce = JUMP_FORCE;
 
     // callback functions
     Action<Collider2D> _triggerEnterCallback;
     Action<Collider2D> _triggerExitCallback;
     Action<Collision2D> _collisionCallback;
+    Action<Collision2D> _collisionExitCallback;
 
     public PlayerAnimation PlayerAnimator;
     public PlayerAnimation ShadowAnimator;
@@ -54,9 +56,20 @@ public class PlayerMovement : MonoBehaviour
     /// Adds a callback for when the item collides with something
     /// </summary>
     /// <param name="collisionEnter">The callback action to carry out</param>
-    internal void AddMovementCallbacks(Action<Collision2D> collisionEnter)
+    /// <param name="collisionExit">The callback action to carry out</param>
+    internal void AddMovementCallbacks(Action<Collision2D> collisionEnter, Action<Collision2D> collisionExit)
     {
         _collisionCallback = collisionEnter;
+        _collisionExitCallback = collisionExit;
+    }
+
+    /// <summary>
+    /// Changes the force used to make the player jump
+    /// </summary>
+    /// <param name="modifier">How much to affect the power by</param>
+    public void SetJumpModifier(float modifier)
+    {
+        _jumpForce = JUMP_FORCE * modifier;
     }
 
     /// <summary>
@@ -228,7 +241,7 @@ public class PlayerMovement : MonoBehaviour
         Animate("Jump");
 
         // might as well JUMP!
-        _rigidBody.AddForce(new Vector2(0, JUMP_FORCE));
+        _rigidBody.AddForce(new Vector2(0, _jumpForce));
         _onGround = false;
     }
 
@@ -263,6 +276,9 @@ public class PlayerMovement : MonoBehaviour
             _onGround = false;
             Animate("Jump");
         }
+
+        // invoke the callback if set
+        _collisionExitCallback?.Invoke(collision);
     }
 
     /// <summary>

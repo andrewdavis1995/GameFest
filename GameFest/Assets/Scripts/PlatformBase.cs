@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlatformBase : MonoBehaviour
 {
+    [SerializeField]
     bool _isEnabled;
 
     public bool Enabled()

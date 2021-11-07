@@ -39,7 +39,7 @@ public class MineGamesInputHandler : GenericInputHandler
         _movement = spawned.GetComponent<PlayerMovement>();
         // assign callbacks for when the item interacts with triggers and colliders
         _movement.AddTriggerCallbacks(TriggerEnter, TriggerExit);
-        _movement.AddMovementCallbacks(CollisionEnter);
+        _movement.AddMovementCallbacks(CollisionEnter, null);
 
         // get the collider for the player
         _collider = _movement.GetComponentInChildren<Collider2D>();

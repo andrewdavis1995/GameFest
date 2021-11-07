@@ -4,6 +4,11 @@ public class CashDashController : MonoBehaviour
 {
     public PlayerMovement Player;
 
+    private void Start()
+    {
+        SpawnPlayers_();
+    }
+
     private void Update()
     {
         if (Input.GetKey(KeyCode.LeftArrow))
@@ -25,8 +30,36 @@ public class CashDashController : MonoBehaviour
         }
     }
 
+    // TODO: Move to input handler
+
+
+    void PlatformLanded(Collision2D collider)
+    {
+        if (collider.gameObject.tag == "Ground")
+            Player.transform.SetParent(collider.transform);
+    }
+
+    void PlatformLeft(Collision2D collider)
+    {
+        if (collider.gameObject.tag == "Ground")
+            Player.transform.SetParent(null);
+    }
+
+    void TriggerEnter(Collider2D collider)
+    {
+        if(collider.gameObject.tag == "PowerUp")
+        {
+            // TODO: add points
+            collider.GetComponent<CoinScript>().Disable();
+        }
+    }
+
     void SpawnPlayers_()
     {
-
+        // TODO: Set heights
+        // TODO: Set jump power
+        Player.SetJumpModifier(0.82f);
+        Player.AddMovementCallbacks(PlatformLanded, PlatformLeft);
+        Player.AddTriggerCallbacks(TriggerEnter, null);
     }
 }
