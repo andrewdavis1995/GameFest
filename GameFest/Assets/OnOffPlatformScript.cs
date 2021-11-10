@@ -1,39 +1,41 @@
 using System.Collections;
 using UnityEngine;
 
+public enum OnOffPlatformState { Pause, Right, Left }
+
 public class OnOffPlatformScript : PlatformBase
 {
     public float LeftX;
     public float RightX;
     public float Speed;
 
-    public bool? MovingRight = false;
+    public OnOffPlatformState State = OnOffPlatformState.Pause;
 
     // Update is called once per frame
     void Update()
     {
         if (!Enabled()) return;
 
-        if (MovingRight == true)
+        if (State == OnOffPlatformState.Right)
         {
             transform.Translate(new Vector3(Speed * Time.deltaTime, 0, 0));
 
             if (transform.localPosition.x > RightX)
-                StartCoroutine(SetState_(false));
+                StartCoroutine(SetState_(OnOffPlatformState.Left));
         }
-        else if (MovingRight == false)
+        if (State == OnOffPlatformState.Left)
         {
             transform.Translate(new Vector3(-Speed * Time.deltaTime, 0, 0));
 
             if (transform.localPosition.x < LeftX)
-                StartCoroutine(SetState_(true));
+                StartCoroutine(SetState_(OnOffPlatformState.Right));
         }
     }
 
-    IEnumerator SetState_(bool state)
+    IEnumerator SetState_(OnOffPlatformState state)
     {
-        MovingRight = null;
+        State = OnOffPlatformState.Pause;
         yield return new WaitForSeconds(2.5f);
-        MovingRight = state;
+        State = state;
     }
 }

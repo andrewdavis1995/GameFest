@@ -18,6 +18,7 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody2D _rigidBody;
     Animator[] _animators;
     SpriteRenderer _renderer;
+    Collider2D _collider;
 
     // public objects
     public TextMesh TxtPlayerName;
@@ -34,6 +35,7 @@ public class PlayerMovement : MonoBehaviour
     bool _animationControl = true;
     bool _disabled = false;
     float _jumpForce = JUMP_FORCE;
+    float _movementForce = 1;
 
     // callback functions
     Action<Collider2D> _triggerEnterCallback;
@@ -50,6 +52,7 @@ public class PlayerMovement : MonoBehaviour
         _renderer = GetComponent<SpriteRenderer>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _animators = GetComponentsInChildren<Animator>();
+        _collider = GetComponent<Collider2D>();
     }
 
     /// <summary>
@@ -70,6 +73,17 @@ public class PlayerMovement : MonoBehaviour
     public void SetJumpModifier(float modifier)
     {
         _jumpForce = JUMP_FORCE * modifier;
+        _movementForce = modifier;
+    }
+
+    /// <summary>
+    /// Causes thee player to ignore collisions with the specified colliders
+    /// </summary>
+    /// <param name="bvColliders"></param>
+    internal void IgnoreCollisions(Collider2D[] bvColliders)
+    {
+        foreach (var col in bvColliders)
+            Physics2D.IgnoreCollision(_collider, col);
     }
 
     /// <summary>
@@ -225,7 +239,7 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="movement">How much to move by</param>
     public void Move(Vector2 movement)
     {
-        _movementInput = movement;
+        _movementInput = movement* _movementForce;
     }
 
     /// <summary>

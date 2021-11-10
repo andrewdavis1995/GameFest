@@ -1,65 +1,59 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CashDashController : MonoBehaviour
 {
-    public PlayerMovement Player;
+    public static CashDashController Instance;
+
+    public Transform PlayerPrefab;
+    public Vector3[] StartPositions;
+    public CameraFollow CameraFollowScript;
+    public CameraZoomFollow CameraFollowZoomScript;
+    public Collider2D[] BvColliders;
+
+    public GameObject[] BvKeysLeft;
+    public GameObject[] BvKeysRight;
 
     private void Start()
     {
-        SpawnPlayers_();
+        Instance = this;
+
+        var players = SpawnPlayers_();
+
+        // assign players to the camera
+        CameraFollowScript.SetPlayers(players, FollowDirection.Up);
+        CameraFollowZoomScript.SetPlayers(players, FollowDirection.Up);
+
+        HideUnusedKeys_();
     }
 
-    private void Update()
+    private void HideUnusedKeys_()
     {
-        if (Input.GetKey(KeyCode.LeftArrow))
+        for(int i = PlayerManagerScript.Instance.GetPlayerCount(); i < BvKeysLeft.Length; i++)
         {
-            Player.Move(new Vector2(-1, 0));
-        }
-        else if (Input.GetKey(KeyCode.RightArrow))
-        {
-            Player.Move(new Vector2(1, 0));
-        }
-        else
-        {
-            Player.Move(new Vector2(0, 0));
-        }
-
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            Player.Jump();
+            BvKeysLeft[i].SetActive(false);
+            BvKeysRight[i].SetActive(false);
         }
     }
 
-    // TODO: Move to input handler
-
-
-    void PlatformLanded(Collision2D collider)
+    private List<Transform> SpawnPlayers_()
     {
-        if (collider.gameObject.tag == "Ground")
-            Player.transform.SetParent(collider.transform);
-    }
+        var playerTransforms = new List<Transform>();
 
-    void PlatformLeft(Collision2D collider)
-    {
-        if (collider.gameObject.tag == "Ground")
-            Player.transform.SetParent(null);
-    }
-
-    void TriggerEnter(Collider2D collider)
-    {
-        if(collider.gameObject.tag == "PowerUp")
+        // loop through all players
+        var index = 0;
+        foreach (var player in PlayerManagerScript.Instance.GetPlayers())
         {
-            // TODO: add points
-            collider.GetComponent<CoinScript>().Disable();
-        }
-    }
+            // switch to use an input handler suitable for this scene
+            player.SetActiveScript(typeof(CashDashInputHandler));
 
-    void SpawnPlayers_()
-    {
-        // TODO: Set heights
-        // TODO: Set jump power
-        Player.SetJumpModifier(0.82f);
-        Player.AddMovementCallbacks(PlatformLanded, PlatformLeft);
-        Player.AddTriggerCallbacks(TriggerEnter, null);
+            // create the "visual" player at the start point
+            var playerTransform = player.Spawn(PlayerPrefab, StartPositions[index++]);
+
+            playerTransforms.Add(playerTransform);
+        }
+
+        return playerTransforms;
     }
 }
