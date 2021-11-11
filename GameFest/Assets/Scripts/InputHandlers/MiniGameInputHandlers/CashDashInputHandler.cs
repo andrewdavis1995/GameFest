@@ -31,6 +31,7 @@ public class CashDashInputHandler : GenericInputHandler
         _movement.SetJumpModifier(0.82f);
         _movement.AddMovementCallbacks(PlatformLanded, PlatformLeft);
         _movement.AddTriggerCallbacks(TriggerEnter, null);
+        _movement.SetMasking(SpriteMaskInteraction.VisibleOutsideMask);
 
         // set the height of the object
         SetHeight(spawned, characterIndex);
@@ -70,8 +71,28 @@ public class CashDashInputHandler : GenericInputHandler
             if (collider.gameObject.name == GetPlayerIndex().ToString())
                 collider.gameObject.SetActive(false);
 
+            _movement.ActivePlayerIcon.gameObject.SetActive(true);
             _hasBvKey = true;
+            _movement.SetIcon(CashDashController.Instance.KeyIcon);
             _movement.IgnoreCollisions(CashDashController.Instance.BvColliders);
+        }
+        else if (collider.gameObject.tag == "KickBack")
+        {
+            var bvGate = collider.GetComponentInParent<BvGateScript>();
+            if(bvGate != null)
+            {
+                if (_hasBvKey)
+                {
+                    _passedBv = true;
+                    _movement.ActivePlayerIcon.gameObject.SetActive(false);
+                    bvGate.DisplayMessage("Welcome " + GetPlayerName(), GetPlayerIndex());
+                }
+                else
+                {
+                    StartCoroutine(_movement.Disable(2, CashDashController.Instance.DisabledImages[GetCharacterIndex()]));
+                    bvGate.DisplayMessage("FOREIGN OBJECT", GetPlayerIndex());
+                }
+            }
         }
     }
 

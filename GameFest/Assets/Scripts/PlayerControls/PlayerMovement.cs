@@ -46,7 +46,7 @@ public class PlayerMovement : MonoBehaviour
     public PlayerAnimation PlayerAnimator;
     public PlayerAnimation ShadowAnimator;
 
-    void Start()
+    void Awake()
     {
         // find necessary components
         _renderer = GetComponent<SpriteRenderer>();
@@ -64,6 +64,14 @@ public class PlayerMovement : MonoBehaviour
     {
         _collisionCallback = collisionEnter;
         _collisionExitCallback = collisionExit;
+    }
+
+    /// <summary>
+    /// Sets whether the sprite renderer is affected by SpriteMasks
+    /// </summary>
+    public void SetMasking(SpriteMaskInteraction interaction)
+    {
+        _renderer.maskInteraction = interaction;
     }
 
     /// <summary>
@@ -86,6 +94,11 @@ public class PlayerMovement : MonoBehaviour
             Physics2D.IgnoreCollision(_collider, col);
     }
 
+    internal void SetIcon(object keyIcon)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Sets the functions to call when the player collides with a trigger
     /// </summary>
@@ -105,7 +118,16 @@ public class PlayerMovement : MonoBehaviour
     public void SetActiveIcon(bool state, int imgIndex)
     {
         ActivePlayerIcon.gameObject.SetActive(state);
-        ActivePlayerIcon.sprite = PunchlineBlingController.Instance.ActiveIcons[imgIndex];
+        SetIcon(PunchlineBlingController.Instance.ActiveIcons[imgIndex]);
+    }
+
+    /// <summary>
+    /// Sets the icon that displays over head
+    /// </summary>
+    /// <param name="sprite"></param>
+    public void SetIcon(Sprite sprite)
+    {
+        ActivePlayerIcon.sprite = sprite;
     }
 
     /// <summary>
@@ -123,11 +145,11 @@ public class PlayerMovement : MonoBehaviour
     /// Stop movement for a duration
     /// </summary>
     /// <param name="duration">How long to disable for</param>
-    /// <param name="playerIndex">Index of the player</param>
-    public IEnumerator Disable(float duration, int playerIndex)
+    /// <param name="disabledImage">Image to use when disabled</param>
+    public IEnumerator Disable(float duration, Sprite disabledImage)
     {
         _disabled = true;
-        _renderer.sprite = MineGamesController.Instance.DisabledImages[playerIndex];
+        _renderer.sprite = disabledImage;
 
         // disable animations
         foreach (var anim in _animators)
@@ -249,6 +271,10 @@ public class PlayerMovement : MonoBehaviour
     {
         // cannot jump if not on the ground
         if (!_onGround)
+            return;
+
+        // cannot jump is disabled
+        if (_disabled)
             return;
 
         // set the animation to the jumping animation

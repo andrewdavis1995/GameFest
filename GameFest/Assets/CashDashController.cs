@@ -9,12 +9,17 @@ public class CashDashController : MonoBehaviour
     public Transform PlayerPrefab;
     public Vector3[] StartPositions;
     public CameraFollow CameraFollowScript;
-    public CameraZoomFollow CameraFollowZoomScript;
     public Collider2D[] BvColliders;
+    public Sprite KeyIcon;
+
+    public Sprite[] DisabledImages;
 
     public GameObject[] BvKeysLeft;
     public GameObject[] BvKeysRight;
 
+    /// <summary>
+    /// Called once on startup
+    /// </summary>
     private void Start()
     {
         Instance = this;
@@ -23,20 +28,27 @@ public class CashDashController : MonoBehaviour
 
         // assign players to the camera
         CameraFollowScript.SetPlayers(players, FollowDirection.Up);
-        CameraFollowZoomScript.SetPlayers(players, FollowDirection.Up);
 
         HideUnusedKeys_();
     }
 
+    /// <summary>
+    /// Hides the unused keys (for players who are not taking part)
+    /// </summary>
     private void HideUnusedKeys_()
     {
-        for(int i = PlayerManagerScript.Instance.GetPlayerCount(); i < BvKeysLeft.Length; i++)
+        // for all indexes after the number of players, hide keys
+        for (int i = PlayerManagerScript.Instance.GetPlayerCount(); i < BvKeysLeft.Length; i++)
         {
             BvKeysLeft[i].SetActive(false);
             BvKeysRight[i].SetActive(false);
         }
     }
 
+    /// <summary>
+    /// Spawns the player movement objects to be used in this game
+    /// </summary>
+    /// <returns>List of spawned items</returns>
     private List<Transform> SpawnPlayers_()
     {
         var playerTransforms = new List<Transform>();

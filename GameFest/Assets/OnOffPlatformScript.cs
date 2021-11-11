@@ -8,6 +8,7 @@ public class OnOffPlatformScript : PlatformBase
     public float LeftX;
     public float RightX;
     public float Speed;
+    public float Delay;
 
     public OnOffPlatformState State = OnOffPlatformState.Pause;
 
@@ -35,7 +36,7 @@ public class OnOffPlatformScript : PlatformBase
     IEnumerator SetState_(OnOffPlatformState state)
     {
         State = OnOffPlatformState.Pause;
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(Delay);
         State = state;
     }
 }

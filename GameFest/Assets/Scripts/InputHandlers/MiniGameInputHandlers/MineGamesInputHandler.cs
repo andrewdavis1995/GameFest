@@ -117,7 +117,7 @@ public class MineGamesInputHandler : GenericInputHandler
         // hit a rock
         if(collision.gameObject.name == "Rock" && (GetPlayerIndex() != MineGamesController.Instance.ActivePlayerIndex()))
         {
-            StartCoroutine(_movement.Disable(4, GetCharacterIndex()));
+            StartCoroutine(_movement.Disable(4, MineGamesController.Instance.DisabledImages[GetCharacterIndex()]));
         }
     }
 
