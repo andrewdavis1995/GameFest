@@ -15,13 +15,13 @@ public class CoinCompletionController : MonoBehaviour
     /// </summary>
     public void CheckCompletion()
     {
-        var count = Coins.Where(c => c.IsActive());
+        var count = Coins.Count(c => !c.IsActive());
     
         // if all coins complete, enable the platforms and update traffic light display
         if(count == Coins.Length)
         {
             // traffic light goes to green
-            TrafficLight.sprite = TrafficLightSprites[TrafficLightSpriteIndexes.Green];
+            TrafficLight.sprite = TrafficLightSprites[(int)TrafficLightSpriteIndexes.Green];
         
             // platforms
             foreach (var p in PlatformsToEnable)
@@ -30,7 +30,7 @@ public class CoinCompletionController : MonoBehaviour
         // more than half have been collected, so traffic light goes to amber
         else if (count > (Coins.Length / 2))
         {        
-            TrafficLight.sprite = TrafficLightSprites[TrafficLightSpriteIndexes.Amber];
+            TrafficLight.sprite = TrafficLightSprites[(int)TrafficLightSpriteIndexes.Amber];
         }
     }
 }

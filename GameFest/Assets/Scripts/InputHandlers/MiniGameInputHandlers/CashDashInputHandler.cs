@@ -8,7 +8,6 @@ public class CashDashInputHandler : GenericInputHandler
     bool _canMove = true;
 
     bool _hasBvKey = false;
-    bool _passedBv = false;
 
     /// <summary>
     /// Creates the specified object for the player attached to this object
@@ -45,26 +44,43 @@ public class CashDashInputHandler : GenericInputHandler
         return spawned;
     }
 
+    /// <summary>
+    /// Callback for when the player collides with an object
+    /// </summary>
+    /// <param name="collider">The item that was collided with</param>
     void PlatformLanded(Collision2D collider)
     {
         if (collider.gameObject.tag == "Ground")
             _movement.transform.SetParent(collider.transform);
+        else if (collider.gameObject.tag == "KickBack")
+            // bounce back a bit
+            _movement.BounceBack(collider);
     }
 
+    /// <summary>
+    /// Callback for when the player stops colliding with an object
+    /// </summary>
+    /// <param name="collider">The item that was left</param>
     void PlatformLeft(Collision2D collider)
     {
         if (collider.gameObject.tag == "Ground")
             _movement.transform.SetParent(null);
     }
 
+    /// <summary>
+    /// Callback for when the player enters a trigger
+    /// </summary>
+    /// <param name="collider">The trigger that was triggered</param>
     void TriggerEnter(Collider2D collider)
     {
+        // is it a coin?
         if (collider.gameObject.tag == "PowerUp")
         {
             var coin = collider.GetComponent<CoinScript>();
             coin.Disable();
             AddPoints(coin.Points);
         }
+        // is it the BV key?
         else if (collider.gameObject.tag == "Card")
         {
             // only destroy if matches the player
@@ -76,19 +92,22 @@ public class CashDashInputHandler : GenericInputHandler
             _movement.SetIcon(CashDashController.Instance.KeyIcon);
             _movement.IgnoreCollisions(CashDashController.Instance.BvColliders);
         }
+        // BV gate causes player to be blocked
         else if (collider.gameObject.tag == "KickBack")
         {
             var bvGate = collider.GetComponentInParent<BvGateScript>();
             if(bvGate != null)
             {
+                // check if the player has a key
                 if (_hasBvKey)
                 {
-                    _passedBv = true;
+                    // they may pass
                     _movement.ActivePlayerIcon.gameObject.SetActive(false);
                     bvGate.DisplayMessage("Welcome " + GetPlayerName(), GetPlayerIndex());
                 }
                 else
                 {
+                    // blocked
                     StartCoroutine(_movement.Disable(2, CashDashController.Instance.DisabledImages[GetCharacterIndex()]));
                     bvGate.DisplayMessage("FOREIGN OBJECT", GetPlayerIndex());
                 }

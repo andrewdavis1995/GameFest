@@ -6,7 +6,7 @@ using UnityEngine;
 /// <summary>
 /// Controls the behaviour of the carts
 /// </summary>
-public class MediaJamWheel/* : MonoBehaviour*/
+public class MediaJamWheel : MonoBehaviour
 {
     public Transform Platform;
     public SpriteRenderer Wheel;

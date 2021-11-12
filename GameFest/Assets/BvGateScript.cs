@@ -11,7 +11,7 @@ public class BvGateScript : MonoBehaviour
 
     ParticleSystem.MainModule _particleModule;
 
-    Color _particleColour = new Color(0.4313f, 0.1137f, 0959f);
+    Color _particleColour = new Color(.2941f, 0f, .4627f);
 
     private void Start()
     {

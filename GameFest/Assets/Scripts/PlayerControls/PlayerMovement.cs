@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -64,6 +65,18 @@ public class PlayerMovement : MonoBehaviour
     {
         _collisionCallback = collisionEnter;
         _collisionExitCallback = collisionExit;
+    }
+
+    /// <summary>
+    /// Bonces the player back from the item it collided with
+    /// </summary>
+    /// <param name="collider"></param>
+    internal void BounceBack(Collision2D collider)
+    {
+        // work out which direction to apply force in
+        Debug.Log("HIT " + transform.position.x + " vs " + collider.transform.position.x);
+        int offset = transform.position.x < collider.transform.position.x ? -1 : 1;
+        _rigidBody.AddForce(new Vector3(180f * offset, 150f, 0));
     }
 
     /// <summary>

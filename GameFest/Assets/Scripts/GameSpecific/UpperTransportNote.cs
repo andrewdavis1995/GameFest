@@ -1,12 +1,9 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// Controls the movement of a note through the top transport
 /// </summary>
-public class UpperTransportNote /* : MonoBehaviour */
+public class UpperTransportNote : MonoBehaviour 
 {
     float _noteResetX;
     bool _moving = false;
