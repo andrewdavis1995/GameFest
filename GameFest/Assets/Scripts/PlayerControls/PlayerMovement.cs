@@ -206,6 +206,15 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the renderer of the player
+    /// </summary>
+    /// <returns>The renderer</returns>
+    internal SpriteRenderer GetRenderer()
+    {
+        return _renderer;
+    }
+
+    /// <summary>
     /// Sets the animation trigger of the player and shadow
     /// </summary>
     /// <param name="animation"></param>

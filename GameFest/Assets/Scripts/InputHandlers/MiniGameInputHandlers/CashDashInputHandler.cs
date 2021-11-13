@@ -1,6 +1,9 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class CashDashInputHandler : GenericInputHandler
 {
@@ -8,6 +11,12 @@ public class CashDashInputHandler : GenericInputHandler
     bool _canMove = true;
 
     bool _hasBvKey = false;
+
+    RectTransform _offScreenDisplay;
+
+    bool _offScreenDying = false;
+
+    MediaJamWheel[] _jamWheelPlatforms;
 
     /// <summary>
     /// Creates the specified object for the player attached to this object
@@ -51,7 +60,14 @@ public class CashDashInputHandler : GenericInputHandler
     void PlatformLanded(Collision2D collider)
     {
         if (collider.gameObject.tag == "Ground")
+        {
             _movement.transform.SetParent(collider.transform);
+            var cwns = collider.transform.GetComponent<CogWheelNoteScript>();
+            if(cwns != null)
+            {
+                cwns.CogSystem.PlayerLanded();
+            }
+        }
         else if (collider.gameObject.tag == "KickBack")
             // bounce back a bit
             _movement.BounceBack(collider);
@@ -64,7 +80,15 @@ public class CashDashInputHandler : GenericInputHandler
     void PlatformLeft(Collision2D collider)
     {
         if (collider.gameObject.tag == "Ground")
+        {
             _movement.transform.SetParent(null);
+
+            var cwns = collider.transform.GetComponent<CogWheelNoteScript>();
+            if (cwns != null)
+            {
+                cwns.CogSystem.PlayerLeft();
+            }
+        }
     }
 
     /// <summary>
@@ -83,20 +107,23 @@ public class CashDashInputHandler : GenericInputHandler
         // is it the BV key?
         else if (collider.gameObject.tag == "Card")
         {
-            // only destroy if matches the player
-            if (collider.gameObject.name == GetPlayerIndex().ToString())
-                collider.gameObject.SetActive(false);
+            if (!_hasBvKey)
+            {
+                // only destroy if matches the player
+                if (collider.gameObject.name == GetPlayerIndex().ToString())
+                    collider.gameObject.SetActive(false);
 
-            _movement.ActivePlayerIcon.gameObject.SetActive(true);
-            _hasBvKey = true;
-            _movement.SetIcon(CashDashController.Instance.KeyIcon);
-            _movement.IgnoreCollisions(CashDashController.Instance.BvColliders);
+                _movement.ActivePlayerIcon.gameObject.SetActive(true);
+                _hasBvKey = true;
+                _movement.SetIcon(CashDashController.Instance.KeyIcon);
+                _movement.IgnoreCollisions(CashDashController.Instance.BvColliders);
+            }
         }
         // BV gate causes player to be blocked
         else if (collider.gameObject.tag == "KickBack")
         {
             var bvGate = collider.GetComponentInParent<BvGateScript>();
-            if(bvGate != null)
+            if (bvGate != null)
             {
                 // check if the player has a key
                 if (_hasBvKey)
@@ -107,12 +134,31 @@ public class CashDashInputHandler : GenericInputHandler
                 }
                 else
                 {
-                    // blocked
+                    // blocked 
                     StartCoroutine(_movement.Disable(2, CashDashController.Instance.DisabledImages[GetCharacterIndex()]));
                     bvGate.DisplayMessage("FOREIGN OBJECT", GetPlayerIndex());
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Sets the image to use when the player goes off screen
+    /// </summary>
+    /// <param name="rectTransform">The object to use</param>
+    internal void SetOffScreenDisplay(RectTransform rectTransform)
+    {
+        _offScreenDisplay = rectTransform;
+        _offScreenDisplay.GetComponentsInChildren<Image>()[2].sprite = CashDashController.Instance.FlailImages[GetCharacterIndex()];
+    }
+
+    /// <summary>
+    /// Sets the platforms that are in use for this player
+    /// </summary>
+    public void SetMediaJamPlatforms(List<MediaJamWheel> wheels)
+    {
+        Debug.Log("Setting " + wheels.Count + " platforms");
+        _jamWheelPlatforms = wheels.ToArray();
     }
 
     /// <summary>
@@ -180,4 +226,66 @@ public class CashDashInputHandler : GenericInputHandler
         _movement.Jump();
     }
 
+    /// <summary>
+    /// Called once per frame
+    /// </summary>
+    void Update()
+    {
+        var yPos = Camera.main.WorldToViewportPoint(_movement.transform.position).y;
+        bool isVisible = yPos > 0 && yPos < 1;
+
+        // if the player can't be seen, show the off-screen icon
+        if (!isVisible)
+        {
+            var xPos = Camera.main.WorldToScreenPoint(_movement.transform.position).x;
+            _offScreenDisplay.position = new Vector3(xPos, _offScreenDisplay.position.y, _offScreenDisplay.position.z);
+            _offScreenDisplay.gameObject.SetActive(true);
+
+            // start the wait before dying
+            if (!_offScreenDying)
+            {
+                _offScreenDying = true;
+                StartCoroutine(WaitBeforeDying_());
+            }
+        }
+        else
+        {
+            // hide if visible
+            _offScreenDisplay.gameObject.SetActive(false);
+
+            // if the player was off screen, stop the process of dying
+            if (_offScreenDying)
+            {
+                _offScreenDying = false;
+                StopCoroutine(WaitBeforeDying_());
+            }
+        }
+    }
+
+    /// <summary>
+    /// If the player is off screen for 7+ seconds, they die
+    /// </summary>
+    private IEnumerator WaitBeforeDying_()
+    {
+        yield return new WaitForSeconds(7);
+
+        // belt-and-braces check
+        if(_offScreenDying)
+        {
+            // disable forever
+            StartCoroutine(_movement.Disable(1000, CashDashController.Instance.DisabledImages[GetCharacterIndex()]));
+        }
+    }
+
+    /// <summary>
+    /// When the right joystick is moved
+    /// </summary>
+    /// <param name="ctx">Context of the input</param>
+    public override void OnMoveRight(InputAction.CallbackContext ctx)
+    {
+        foreach(var platform in _jamWheelPlatforms)
+        {
+            platform.OnMove(ctx.ReadValue<Vector2>());
+        }
+    }
 }

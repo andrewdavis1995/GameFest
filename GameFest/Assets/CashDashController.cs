@@ -1,9 +1,19 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CashDashController : MonoBehaviour
 {
+    // configuration
+    private const int GAME_TIMEOUT = 180;
+    private const int MAX_POINTS = 1800;
+    private int[] POSITIONAL_POINTS = { 160, 70, 20 };
+
+    public RectTransform[] OffScreenDisplays;
+
     public static CashDashController Instance;
 
     public Transform PlayerPrefab;
@@ -11,11 +21,24 @@ public class CashDashController : MonoBehaviour
     public CameraFollow CameraFollowScript;
     public Collider2D[] BvColliders;
     public Sprite KeyIcon;
+    public MediaJamWheel[] MediaJamWheels;
 
     public Sprite[] DisabledImages;
+    public Sprite[] FlailImages;
 
     public GameObject[] BvKeysLeft;
     public GameObject[] BvKeysRight;
+
+    public UpperTransportController UpperTransport;
+
+    // time out
+    TimeLimit _overallLimit;
+    TimeLimit _pointCountdown;
+
+    public Text TxtCountdown;
+    public Text TxtPoints;
+
+    int _remainingPoints;
 
     /// <summary>
     /// Called once on startup
@@ -29,19 +52,85 @@ public class CashDashController : MonoBehaviour
         // assign players to the camera
         CameraFollowScript.SetPlayers(players, FollowDirection.Up);
 
-        HideUnusedKeys_();
+        _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _overallLimit.Initialise(GAME_TIMEOUT, OnTimeLimitTick, OnTimeUp);
+        _pointCountdown = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _pointCountdown.Initialise(MAX_POINTS, OnPointsTick, null, 0.1f);
+
+        HideUnusedItems_();
+
+        // TODO: Move to after pause/intro completed
+        StartGame_();
+    }
+
+    /// <summary>
+    /// Starts the game
+    /// </summary>
+    private void StartGame_()
+    {
+        _overallLimit.StartTimer();
+        _pointCountdown.StartTimer();
+
+        UpperTransport.StartNoteMovement();
+    }
+
+    /// <summary>
+    /// Called every 0.1 seconds
+    /// </summary>
+    /// <param name="seconds">How many points are left</param>
+    private void OnPointsTick(int points)
+    {
+        _remainingPoints = points;
+        TxtPoints.text = points.ToString();
+    }
+
+    /// <summary>
+    /// Called when time runs out
+    /// </summary>
+    void OnTimeUp()
+    {
+        // show results
+        StartCoroutine(EndGame_());
+    }
+
+    /// <summary>
+    /// Ends the game
+    /// </summary>
+    private IEnumerator EndGame_()
+    {
+        CameraFollowScript.enabled = false;
+
+        // kill timers
+        _overallLimit.Abort();
+        _pointCountdown.Abort();
+
+        yield return new WaitForSeconds(2f);
+
+        // TODO: Carry on with results
+    }
+
+    /// <summary>
+    /// Called each second
+    /// </summary>
+    /// <param name="seconds">How many seconds are left</param>
+    void OnTimeLimitTick(int seconds)
+    {
+        // display countdown from 10 to 0
+        TxtCountdown.text = seconds <= 10 ? seconds.ToString() : "";
     }
 
     /// <summary>
     /// Hides the unused keys (for players who are not taking part)
     /// </summary>
-    private void HideUnusedKeys_()
+    private void HideUnusedItems_()
     {
         // for all indexes after the number of players, hide keys
         for (int i = PlayerManagerScript.Instance.GetPlayerCount(); i < BvKeysLeft.Length; i++)
         {
             BvKeysLeft[i].SetActive(false);
             BvKeysRight[i].SetActive(false);
+            OffScreenDisplays[i].gameObject.SetActive(false);
+            MediaJamWheels[i].gameObject.SetActive(false);
         }
     }
 
@@ -61,9 +150,24 @@ public class CashDashController : MonoBehaviour
             player.SetActiveScript(typeof(CashDashInputHandler));
 
             // create the "visual" player at the start point
-            var playerTransform = player.Spawn(PlayerPrefab, StartPositions[index++]);
+            var playerTransform = player.Spawn(PlayerPrefab, StartPositions[index]);
 
+            player.GetComponent<CashDashInputHandler>().SetOffScreenDisplay(OffScreenDisplays[index]);
+
+            var platforms = FindObjectsOfType<MediaJamWheel>();
+            var matchingPlatforms = platforms.Where(t => LayerMask.LayerToName(t.gameObject.layer) == ("Player" + (index + 1) + "A"));
+            var nonPlayerPlatforms = platforms.Where(t => LayerMask.LayerToName(t.gameObject.layer) != ("Player" + (index + 1) + "A"));
+
+            player.GetComponent<CashDashInputHandler>().SetMediaJamPlatforms(platforms.ToList());
             playerTransforms.Add(playerTransform);
+
+            foreach(var p in nonPlayerPlatforms)
+            {
+                Debug.Log("Ignoring collision");
+                Physics2D.IgnoreCollision(p.Platform.GetComponent<Collider2D>(), playerTransform.GetComponent<Collider2D>());
+            }
+
+            index++;
         }
 
         return playerTransforms;

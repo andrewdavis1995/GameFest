@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -18,12 +16,15 @@ public class MediaJamWheel : MonoBehaviour
     bool _playerOnPlatform;
     float _targetPositionX;
     const float MOVE_SPEED = 2f;
+    Vector2 _joystickPosition;
 
     /// <summary>
     /// Called once per frame
     /// </summary>
     void Update()
     {
+        Debug.Log(_joystickPosition);
+
         if (_playerOnPlatform && Platform.localPosition.x < _targetPositionX)
         {
             Platform.Translate(new Vector3(MOVE_SPEED * Time.deltaTime, 0, 0));
@@ -41,6 +42,8 @@ public class MediaJamWheel : MonoBehaviour
     public void OnMove(Vector2 joystickPosition)
     {
         if (!_playerOnPlatform) return;
+
+        _joystickPosition = joystickPosition;
 
         // is it moving clockwise?
         if (NextZone_(joystickPosition))
@@ -77,7 +80,7 @@ public class MediaJamWheel : MonoBehaviour
     private bool NextZone_(Vector2 joystickPosition)
     {
         // TODO: Implement this check
-        return false;
+        return true;
     }
 
     /// <summary>
@@ -85,6 +88,7 @@ public class MediaJamWheel : MonoBehaviour
     /// </summary>
     public void PlayerLanded()
     {
+        Debug.Log("Player landed");
         _playerOnPlatform = true;
 
         StopAllCoroutines();
@@ -98,6 +102,7 @@ public class MediaJamWheel : MonoBehaviour
     /// </summary>
     public void PlayerLeft()
     {
+        Debug.Log("Player left");
         StartCoroutine(ReturnToStart_());
     }
 
@@ -113,6 +118,3 @@ public class MediaJamWheel : MonoBehaviour
         _targetPositionX = LeftPositionX;
     }
 }
-
-
-

@@ -29,6 +29,7 @@ public abstract class GenericInputHandler : MonoBehaviour
     }
 
     public virtual void OnMove(InputAction.CallbackContext ctx) { }
+    public virtual void OnMoveRight(InputAction.CallbackContext ctx) { }
     public virtual void OnCross() { }
     public virtual void OnCircle() { }
     public virtual void OnTriangle() { }

@@ -194,6 +194,16 @@ public class PlayerControls : MonoBehaviour
     }
 
     /// <summary>
+    /// When the right-stick movement input is triggered
+    /// </summary>
+    /// <param name="ctx">The context of the input</param>
+    public void OnMoveRight(InputAction.CallbackContext ctx)
+    {
+        if (_activeHandler != null)
+            _activeHandler.OnMoveRight(ctx);
+    }
+
+    /// <summary>
     /// When the Touchpad input is triggered
     /// </summary>
     /// <param name="ctx">The context of the input</param>

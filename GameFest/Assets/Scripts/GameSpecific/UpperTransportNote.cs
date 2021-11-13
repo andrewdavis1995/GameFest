@@ -8,7 +8,7 @@ public class UpperTransportNote : MonoBehaviour
     float _noteResetX;
     bool _moving = false;
 
-    const float SPEED = 2.5f;
+    const float SPEED = 11f;
 
     /// <summary>
     /// Starts the movement of the note to the specified point
@@ -17,6 +17,7 @@ public class UpperTransportNote : MonoBehaviour
     /// <param name="noteResetX">Where to stop the movement</param>
     public void StartMovement(float noteStartX, float noteResetX)
     {
+        _noteResetX = noteResetX;
         transform.localPosition = new Vector3(noteStartX, transform.localPosition.y, transform.localPosition.z);
         _moving = true;
     }
@@ -25,8 +26,8 @@ public class UpperTransportNote : MonoBehaviour
     {
         if (_moving)
         {
-            //transform.Translate(new Vector3(SPEED * Time.deltaTime, 0, 0));
-            if (transform.localPosition.x < _noteResetX)
+            transform.Translate(new Vector3(-SPEED * Time.deltaTime, 0, 0));
+            if (transform.position.x < _noteResetX)
             {
                 _moving = false;
             }

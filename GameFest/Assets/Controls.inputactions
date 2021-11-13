@@ -92,6 +92,14 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "RightMove",
+                    "type": "Value",
+                    "id": "3a17b493-335e-4437-9181-19f0d56b55ee",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -433,6 +441,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Options",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c3055922-f770-4c5d-9285-d08739fe54b2",
+                    "path": "<DualShockGamepad>/rightStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightMove",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
