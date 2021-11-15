@@ -15,16 +15,17 @@ public class MediaJamWheel : MonoBehaviour
 
     bool _playerOnPlatform;
     float _targetPositionX;
-    const float MOVE_SPEED = 2f;
+    const float MOVE_SPEED = 3f;
     Vector2 _joystickPosition;
+
+    Vector2[] _spinPositions = new Vector2[] { new Vector2(-1f, 0f), new Vector2(0f, 1f), new Vector2(1f, 0f), new Vector2(0, -1f) };
+    int _spinPositionIndex = 0;
 
     /// <summary>
     /// Called once per frame
     /// </summary>
     void Update()
     {
-        Debug.Log(_joystickPosition);
-
         if (_playerOnPlatform && Platform.localPosition.x < _targetPositionX)
         {
             Platform.Translate(new Vector3(MOVE_SPEED * Time.deltaTime, 0, 0));
@@ -48,28 +49,12 @@ public class MediaJamWheel : MonoBehaviour
         // is it moving clockwise?
         if (NextZone_(joystickPosition))
         {
-            _targetPositionX += 1f;
+            _targetPositionX += 0.15f;
             if (_targetPositionX > RightPositionX)
                 _targetPositionX = RightPositionX;
-        }
-        // is it moving anti-clockwise?
-        else if (PreviousZone_(joystickPosition))
-        {
-            _targetPositionX -= 1f;
-            if (_targetPositionX < LeftPositionX)
-                _targetPositionX = LeftPositionX;
-        }
-    }
 
-    /// <summary>
-    /// Check if the joystick is moving anti-clockwise
-    /// </summary>
-    /// <param name="joystickPosition">Position of the joystick</param>
-    /// <returns>If the joystick is moving anti-clockwise</returns>
-    private bool PreviousZone_(Vector2 joystickPosition)
-    {
-        // TODO: Implement this check
-        return false;
+            Wheel.transform.eulerAngles -= new Vector3(0, 0, 5f);
+        }
     }
 
     /// <summary>
@@ -79,8 +64,23 @@ public class MediaJamWheel : MonoBehaviour
     /// <returns>If the joystick is moving clockwise</returns>
     private bool NextZone_(Vector2 joystickPosition)
     {
-        // TODO: Implement this check
-        return true;
+        var hit = false;
+
+        var xDiff = Mathf.Abs(joystickPosition.x - _spinPositions[_spinPositionIndex].x);
+        var yDiff = Mathf.Abs(joystickPosition.y - _spinPositions[_spinPositionIndex].y);
+
+        // if close enough, progress
+        if(xDiff < 0.1f && yDiff < 0.1f)
+        {
+            hit = true;
+            _spinPositionIndex++;
+            if(_spinPositionIndex >= _spinPositions.Length)
+            {
+                _spinPositionIndex = 0;
+            }
+        }
+
+        return hit;
     }
 
     /// <summary>
@@ -88,7 +88,6 @@ public class MediaJamWheel : MonoBehaviour
     /// </summary>
     public void PlayerLanded()
     {
-        Debug.Log("Player landed");
         _playerOnPlatform = true;
 
         StopAllCoroutines();
@@ -102,7 +101,7 @@ public class MediaJamWheel : MonoBehaviour
     /// </summary>
     public void PlayerLeft()
     {
-        Debug.Log("Player left");
+        _playerOnPlatform = false;
         StartCoroutine(ReturnToStart_());
     }
 
@@ -111,10 +110,9 @@ public class MediaJamWheel : MonoBehaviour
     /// </summary>
     IEnumerator ReturnToStart_()
     {
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(1f);
 
         // move platform to the start
-        _playerOnPlatform = false;
         _targetPositionX = LeftPositionX;
     }
 }

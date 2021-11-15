@@ -10,26 +10,23 @@ public class CashDashController : MonoBehaviour
     // configuration
     private const int GAME_TIMEOUT = 180;
     private const int MAX_POINTS = 1800;
-    private int[] POSITIONAL_POINTS = { 160, 70, 20 };
+    public int[] POSITIONAL_POINTS = { 160, 70, 20, 0 };
 
     public RectTransform[] OffScreenDisplays;
-
-    public static CashDashController Instance;
-
+    public UpperTransportController UpperTransport;
     public Transform PlayerPrefab;
     public Vector3[] StartPositions;
     public CameraFollow CameraFollowScript;
     public Collider2D[] BvColliders;
     public Sprite KeyIcon;
     public MediaJamWheel[] MediaJamWheels;
-
+    public MediaJamWheel[] MediaJamWheelsUpper;
     public Sprite[] DisabledImages;
     public Sprite[] FlailImages;
-
     public GameObject[] BvKeysLeft;
     public GameObject[] BvKeysRight;
 
-    public UpperTransportController UpperTransport;
+    public static CashDashController Instance;
 
     // time out
     TimeLimit _overallLimit;
@@ -39,6 +36,9 @@ public class CashDashController : MonoBehaviour
     public Text TxtPoints;
 
     int _remainingPoints;
+
+    List<CashDashInputHandler> _players = new List<CashDashInputHandler>();
+    int _completedPlayers = 0;
 
     /// <summary>
     /// Called once on startup
@@ -61,6 +61,15 @@ public class CashDashController : MonoBehaviour
 
         // TODO: Move to after pause/intro completed
         StartGame_();
+    }
+
+    /// <summary>
+    /// Get how many points are left
+    /// </summary>
+    /// <returns>The points that are left to win at this moment</returns>
+    public int RemainingPoints()
+    {
+        return _remainingPoints;
     }
 
     /// <summary>
@@ -110,6 +119,17 @@ public class CashDashController : MonoBehaviour
     }
 
     /// <summary>
+    /// Check if there are any players left
+    /// </summary>
+    internal void CheckForCompletion()
+    {
+        var complete = _players.All(p => p.Complete());
+
+        if (complete)
+            StartCoroutine(EndGame_());
+    }
+
+    /// <summary>
     /// Called each second
     /// </summary>
     /// <param name="seconds">How many seconds are left</param>
@@ -131,6 +151,7 @@ public class CashDashController : MonoBehaviour
             BvKeysRight[i].SetActive(false);
             OffScreenDisplays[i].gameObject.SetActive(false);
             MediaJamWheels[i].gameObject.SetActive(false);
+            MediaJamWheelsUpper[i].gameObject.SetActive(false);
         }
     }
 
@@ -148,17 +169,19 @@ public class CashDashController : MonoBehaviour
         {
             // switch to use an input handler suitable for this scene
             player.SetActiveScript(typeof(CashDashInputHandler));
+            var ih = player.GetComponent<CashDashInputHandler>();
+            _players.Add(ih);
 
             // create the "visual" player at the start point
             var playerTransform = player.Spawn(PlayerPrefab, StartPositions[index]);
 
-            player.GetComponent<CashDashInputHandler>().SetOffScreenDisplay(OffScreenDisplays[index]);
+            ih.SetOffScreenDisplay(OffScreenDisplays[index]);
 
             var platforms = FindObjectsOfType<MediaJamWheel>();
             var matchingPlatforms = platforms.Where(t => LayerMask.LayerToName(t.gameObject.layer) == ("Player" + (index + 1) + "A"));
             var nonPlayerPlatforms = platforms.Where(t => LayerMask.LayerToName(t.gameObject.layer) != ("Player" + (index + 1) + "A"));
 
-            player.GetComponent<CashDashInputHandler>().SetMediaJamPlatforms(platforms.ToList());
+            ih.SetMediaJamPlatforms(platforms.ToList());
             playerTransforms.Add(playerTransform);
 
             foreach(var p in nonPlayerPlatforms)
@@ -171,5 +194,35 @@ public class CashDashController : MonoBehaviour
         }
 
         return playerTransforms;
+    }
+
+    /// <summary>
+    /// Gets the points for finishing (based on position)
+    /// </summary>
+    /// <returns>Points to award</returns>
+    internal int GetPositionalPoints()
+    {
+        var points = POSITIONAL_POINTS[_completedPlayers];
+        _completedPlayers++;
+        return points;
+    }
+
+    /// <summary>
+    /// Show the results window, and then return to menu
+    /// </summary>
+    private IEnumerator Complete_()
+    {
+        // TODO:
+        //ResultsScreen.Setup();
+        //ResultsScreen.SetPlayers(_players);
+
+        ScoreStoreHandler.StoreResults(Scene.PunchlineBling, _players.ToArray());
+        var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
+        ordered.FirstOrDefault()?.Winner();
+
+        yield return new WaitForSeconds(4 + _players.Count);
+
+        // fade out
+        //EndFader.StartFade(0, 1, ReturnToCentral_);
     }
 }

@@ -58,7 +58,7 @@ public class QuickPlayManager : MonoBehaviour
         {
             // if the game is not suitable for the players/controllers are not suitable, hide it
             if ((GameList[i].MinimumPlayers > PlayerManagerScript.Instance.GetPlayerCount())
-                || GameList[i].RequiresDualshock && PlayerManagerScript.Instance.GetPlayers().Any(p => p.GetDevice() is DualShockGamepad))
+                || GameList[i].RequiresDualshock && PlayerManagerScript.Instance.GetPlayers().Any(p => !(p.GetDevice() is DualShockGamepad)))
             {
                 GameList[i].gameObject.SetActive(false);
                 GameList.RemoveAt(i);

@@ -7,16 +7,14 @@ using UnityEngine.UI;
 
 public class CashDashInputHandler : GenericInputHandler
 {
-    PlayerMovement _movement;
     bool _canMove = true;
-
+    bool _complete = false;
     bool _hasBvKey = false;
-
-    RectTransform _offScreenDisplay;
-
     bool _offScreenDying = false;
 
+    RectTransform _offScreenDisplay;
     MediaJamWheel[] _jamWheelPlatforms;
+    PlayerMovement _movement;
 
     /// <summary>
     /// Creates the specified object for the player attached to this object
@@ -61,16 +59,29 @@ public class CashDashInputHandler : GenericInputHandler
     {
         if (collider.gameObject.tag == "Ground")
         {
+            // check if it was a cog
             _movement.transform.SetParent(collider.transform);
             var cwns = collider.transform.GetComponent<CogWheelNoteScript>();
-            if(cwns != null)
+            if (cwns != null)
             {
+                // player landed
                 cwns.CogSystem.PlayerLanded();
             }
         }
         else if (collider.gameObject.tag == "KickBack")
+        {
             // bounce back a bit
             _movement.BounceBack(collider);
+        }
+    }
+
+    /// <summary>
+    /// Check if the player is complete
+    /// </summary>
+    /// <returns>If the player is complete</returns>
+    internal bool Complete()
+    {
+        return _complete;
     }
 
     /// <summary>
@@ -79,6 +90,7 @@ public class CashDashInputHandler : GenericInputHandler
     /// <param name="collider">The item that was left</param>
     void PlatformLeft(Collision2D collider)
     {
+        // check if the player left the ground
         if (collider.gameObject.tag == "Ground")
         {
             _movement.transform.SetParent(null);
@@ -107,17 +119,18 @@ public class CashDashInputHandler : GenericInputHandler
         // is it the BV key?
         else if (collider.gameObject.tag == "Card")
         {
+            // only destroy if matches the player
+            if (collider.gameObject.name == GetPlayerIndex().ToString())
+                collider.gameObject.SetActive(false);
+
             if (!_hasBvKey)
             {
-                // only destroy if matches the player
-                if (collider.gameObject.name == GetPlayerIndex().ToString())
-                    collider.gameObject.SetActive(false);
-
                 _movement.ActivePlayerIcon.gameObject.SetActive(true);
                 _hasBvKey = true;
                 _movement.SetIcon(CashDashController.Instance.KeyIcon);
-                _movement.IgnoreCollisions(CashDashController.Instance.BvColliders);
             }
+
+            _movement.IgnoreCollisions(CashDashController.Instance.BvColliders);
         }
         // BV gate causes player to be blocked
         else if (collider.gameObject.tag == "KickBack")
@@ -138,6 +151,23 @@ public class CashDashInputHandler : GenericInputHandler
                     StartCoroutine(_movement.Disable(2, CashDashController.Instance.DisabledImages[GetCharacterIndex()]));
                     bvGate.DisplayMessage("FOREIGN OBJECT", GetPlayerIndex());
                 }
+            }
+        }
+        else if (collider.gameObject.tag == "AreaTrigger")
+        {
+            // check if we have reached the end
+            if (collider.gameObject.name == "END" && _canMove)
+            {
+                Debug.Log("ENDED!");
+
+                AddPoints(CashDashController.Instance.RemainingPoints());
+                AddPoints(CashDashController.Instance.GetPositionalPoints());
+
+                _canMove = false;
+                _complete = true;
+                _movement.Move(new Vector2(-1, 0));
+
+                CashDashController.Instance.CheckForCompletion();
             }
         }
     }
@@ -270,7 +300,7 @@ public class CashDashInputHandler : GenericInputHandler
         yield return new WaitForSeconds(7);
 
         // belt-and-braces check
-        if(_offScreenDying)
+        if (_offScreenDying)
         {
             // disable forever
             StartCoroutine(_movement.Disable(1000, CashDashController.Instance.DisabledImages[GetCharacterIndex()]));
@@ -283,7 +313,7 @@ public class CashDashInputHandler : GenericInputHandler
     /// <param name="ctx">Context of the input</param>
     public override void OnMoveRight(InputAction.CallbackContext ctx)
     {
-        foreach(var platform in _jamWheelPlatforms)
+        foreach (var platform in _jamWheelPlatforms)
         {
             platform.OnMove(ctx.ReadValue<Vector2>());
         }

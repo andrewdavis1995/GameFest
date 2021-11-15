@@ -35,24 +35,26 @@ public class UpperTransportController : MonoBehaviour
             var prePresentDelay = UnityEngine.Random.Range(2f, 7f);
             yield return new WaitForSeconds(prePresentDelay);
 
-            //for (int i = 0; i < 90; i++)
-            //{
-            //    Shutter.eulerAngles = new Vector3(0, 0, i);
-            //    yield return new WaitForSeconds(0.1f);
-            //}
+            // spin shutter up
+            for (int i = 270; i >= 90; i--)
+            {
+                Shutter.eulerAngles = new Vector3(0, 0, i);
+                yield return new WaitForSeconds(0.001f);
+            }
 
             var noteCount = UnityEngine.Random.Range(1f, Notes.Length);
+
             for (int i = 0; i < noteCount; i++)
             {
                 Notes[i].StartMovement(NoteStartX, NoteResetX);
                 yield return new WaitForSeconds(DelayBetweenNotes);
             }
 
-            //for (int i = 90; i >= 0; i--)
-            //{
-            //    Shutter.eulerAngles = new Vector3(0, 0, i);
-            //    yield return new WaitForSeconds(0.1f);
-            //}
+            for (int i = 90; i < 270; i++)
+            {
+                Shutter.eulerAngles = new Vector3(0, 0, i);
+                yield return new WaitForSeconds(0.001f);
+            }
         }
     }
 }

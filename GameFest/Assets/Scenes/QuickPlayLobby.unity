@@ -2417,6 +2417,10 @@ PrefabInstance:
       propertyPath: BackgroundImage
       value: 
       objectReference: {fileID: 21300000, guid: 009c272095e25344d820d08ff79330db, type: 3}
+    - target: {fileID: 7443154871356695337, guid: 016c0ebe34463014fbdc471a6bbca9b2, type: 3}
+      propertyPath: RequiresDualshock
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8121524496125912923, guid: 016c0ebe34463014fbdc471a6bbca9b2, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0.00024414062
