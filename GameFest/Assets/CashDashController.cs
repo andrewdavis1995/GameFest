@@ -115,7 +115,7 @@ public class CashDashController : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
-        // TODO: Carry on with results
+        StartCoroutine(Complete_());
     }
 
     /// <summary>
@@ -124,6 +124,8 @@ public class CashDashController : MonoBehaviour
     internal void CheckForCompletion()
     {
         var complete = _players.All(p => p.Complete());
+
+        Debug.Log("Complete " + complete);
 
         if (complete)
             StartCoroutine(EndGame_());

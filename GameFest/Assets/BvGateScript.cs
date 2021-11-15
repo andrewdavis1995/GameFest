@@ -32,7 +32,7 @@ public class BvGateScript : MonoBehaviour
         BvSignImage.color = ColourFetcher.GetColour(playerColour);
         yield return new WaitForSeconds(2f);
         BvSignImage.color = _particleColour;
-        BvSignText.text = "Waiting";
+        BvSignText.text = "BILL VALIDATOR";
         _particleModule.startColor = _particleColour;
     }
 }

@@ -63,8 +63,6 @@ public class CarControllerScript : MonoBehaviour
         else
             carRigidBody.drag = Mathf.Lerp(carRigidBody.drag, 0f, Time.fixedDeltaTime * 3);
 
-
-
         var engineForceVector = transform.up * _accelerationInput * AccelerationFactor;
         carRigidBody.AddForce(engineForceVector, ForceMode2D.Force);
     }

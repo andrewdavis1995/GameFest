@@ -53,7 +53,7 @@ public class MediaJamWheel : MonoBehaviour
             if (_targetPositionX > RightPositionX)
                 _targetPositionX = RightPositionX;
 
-            Wheel.transform.eulerAngles -= new Vector3(0, 0, 5f);
+            Wheel.transform.eulerAngles -= new Vector3(0, 0, 10f);
         }
     }
 
@@ -101,7 +101,6 @@ public class MediaJamWheel : MonoBehaviour
     /// </summary>
     public void PlayerLeft()
     {
-        _playerOnPlatform = false;
         StartCoroutine(ReturnToStart_());
     }
 
@@ -111,6 +110,8 @@ public class MediaJamWheel : MonoBehaviour
     IEnumerator ReturnToStart_()
     {
         yield return new WaitForSeconds(1f);
+
+        _playerOnPlatform = false;
 
         // move platform to the start
         _targetPositionX = LeftPositionX;
