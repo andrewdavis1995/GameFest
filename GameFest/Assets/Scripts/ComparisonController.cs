@@ -47,7 +47,7 @@ public class ComparisonController : MonoBehaviour
     public Image BackgroundImage;
     public Image LogoImage;
 
-    Scene[] _availableScenes = { Scene.PunchlineBling, Scene.ShopDrop, Scene.XTinguish, Scene.MarshLand, Scene.BeachBowles, Scene.MineGames };
+    Scene[] _availableScenes = { Scene.PunchlineBling, Scene.ShopDrop, Scene.XTinguish, Scene.MarshLand, Scene.BeachBowles, Scene.MineGames, Scene.CashDash };
 
     int _gameIndex = 0;
     int _playerIndex = 0;
@@ -504,6 +504,10 @@ public class ComparisonController : MonoBehaviour
 
         // display win %
         var winPercent = (float)wins / numberOfGames;
+
+        if(float.IsNaN(winPercent))
+            WinPercentage.SetValues(new float[] { 0 }, "n/a");
+        else
         WinPercentage.SetValues(new float[] { winPercent }, (int)(winPercent * 100) + "%");
     }
 

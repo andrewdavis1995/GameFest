@@ -5,12 +5,12 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CashDashController : MonoBehaviour
+public class CashDashController : GenericController
 {
     // configuration
     private const int GAME_TIMEOUT = 180;
-    private const int MAX_POINTS = 1800;
-    public int[] POSITIONAL_POINTS = { 160, 70, 20, 0 };
+    private const int MAX_POINTS = 1250;
+    public int[] POSITIONAL_POINTS = { 50, 20, 5, 0 };
 
     public RectTransform[] OffScreenDisplays;
     public UpperTransportController UpperTransport;
@@ -25,6 +25,8 @@ public class CashDashController : MonoBehaviour
     public Sprite[] FlailImages;
     public GameObject[] BvKeysLeft;
     public GameObject[] BvKeysRight;
+    public TransitionFader EndFader;
+    public ResultsPageScreen ResultsScreen;
 
     public static CashDashController Instance;
 
@@ -59,8 +61,19 @@ public class CashDashController : MonoBehaviour
 
         HideUnusedItems_();
 
-        // TODO: Move to after pause/intro completed
-        StartGame_();
+        EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
+        EndFader.StartFade(1, 0, FadeInComplete);
+
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers);
+    }
+
+    /// <summary>
+    /// Called once fully faded in
+    /// </summary>
+    private void FadeInComplete()
+    {
+        PauseGameHandler.Instance.Pause(true, StartGame_);
     }
 
     /// <summary>
@@ -125,8 +138,6 @@ public class CashDashController : MonoBehaviour
     {
         var complete = _players.All(p => p.Complete());
 
-        Debug.Log("Complete " + complete);
-
         if (complete)
             StartCoroutine(EndGame_());
     }
@@ -188,7 +199,6 @@ public class CashDashController : MonoBehaviour
 
             foreach(var p in nonPlayerPlatforms)
             {
-                Debug.Log("Ignoring collision");
                 Physics2D.IgnoreCollision(p.Platform.GetComponent<Collider2D>(), playerTransform.GetComponent<Collider2D>());
             }
 
@@ -214,17 +224,26 @@ public class CashDashController : MonoBehaviour
     /// </summary>
     private IEnumerator Complete_()
     {
-        // TODO:
-        //ResultsScreen.Setup();
-        //ResultsScreen.SetPlayers(_players);
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        ResultsScreen.Setup();
+        ResultsScreen.SetPlayers(genericPlayers.ToArray());
 
-        ScoreStoreHandler.StoreResults(Scene.PunchlineBling, _players.ToArray());
+        ScoreStoreHandler.StoreResults(Scene.CashDash, _players.ToArray());
         var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
         ordered.FirstOrDefault()?.Winner();
 
         yield return new WaitForSeconds(4 + _players.Count);
 
         // fade out
-        //EndFader.StartFade(0, 1, ReturnToCentral_);
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Moves back to the central screen
+    /// </summary>
+    void ReturnToCentral_()
+    {
+        // when no more players, move to the central page
+        PlayerManagerScript.Instance.CentralScene();
     }
 }

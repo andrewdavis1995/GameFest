@@ -8,7 +8,7 @@ public class UpperTransportNote : MonoBehaviour
     float _noteResetX;
     bool _moving = false;
 
-    const float SPEED = 8f;
+    const float SPEED = 10f;
 
     /// <summary>
     /// Starts the movement of the note to the specified point

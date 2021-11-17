@@ -158,11 +158,14 @@ public class CashDashInputHandler : GenericInputHandler
             // check if we have reached the end
             if (collider.gameObject.name == "END" && _canMove)
             {
-                Debug.Log("ENDED!");
-
+                // assign completion points
                 AddPoints(CashDashController.Instance.RemainingPoints());
-                AddPoints(CashDashController.Instance.GetPositionalPoints());
+                var bonuses = CashDashController.Instance.GetPositionalPoints();
+                AddPoints(bonuses);
+                Debug.Log("About to add bonuses " + bonuses);
+                SetBonusPoints(bonuses);
 
+                // disable movement
                 _canMove = false;
                 _complete = true;
                 _movement.Move(new Vector2(-1, 0));
@@ -187,7 +190,6 @@ public class CashDashInputHandler : GenericInputHandler
     /// </summary>
     public void SetMediaJamPlatforms(List<MediaJamWheel> wheels)
     {
-        Debug.Log("Setting " + wheels.Count + " platforms");
         _jamWheelPlatforms = wheels.ToArray();
     }
 
@@ -316,6 +318,22 @@ public class CashDashInputHandler : GenericInputHandler
         foreach (var platform in _jamWheelPlatforms)
         {
             platform.OnMove(ctx.ReadValue<Vector2>());
+        }
+    }
+
+    public override void OnL1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.PreviousPage();
+        }
+    }
+
+    public override void OnR1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.NextPage();
         }
     }
 }

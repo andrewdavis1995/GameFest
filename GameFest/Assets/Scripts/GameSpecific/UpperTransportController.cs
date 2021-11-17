@@ -9,6 +9,7 @@ using UnityEngine;
 public class UpperTransportController : MonoBehaviour
 {
     public Transform Shutter;
+    public SpriteRenderer ShutterGlow;
     public UpperTransportNote[] Notes;
     public float NoteStartX;
     public float NoteResetX;
@@ -36,9 +37,10 @@ public class UpperTransportController : MonoBehaviour
             yield return new WaitForSeconds(prePresentDelay);
 
             // spin shutter up
-            for (int i = 270; i >= 90; i--)
+            for (int i = 0; i <= 90; i++)
             {
                 Shutter.eulerAngles = new Vector3(0, 0, i);
+                ShutterGlow.color = new Color(1, 1, 1, (i / 255f));
                 yield return new WaitForSeconds(0.001f);
             }
 
@@ -50,9 +52,12 @@ public class UpperTransportController : MonoBehaviour
                 yield return new WaitForSeconds(DelayBetweenNotes);
             }
 
-            for (int i = 90; i < 270; i++)
+            yield return new WaitForSeconds(2);
+
+            for (int i = 90; i >= 0; i--)
             {
                 Shutter.eulerAngles = new Vector3(0, 0, i);
+                ShutterGlow.color = new Color(1, 1, 1, (i / 255f));
                 yield return new WaitForSeconds(0.001f);
             }
         }

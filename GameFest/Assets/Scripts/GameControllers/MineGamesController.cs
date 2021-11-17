@@ -71,6 +71,8 @@ public class MineGamesController : GenericController
 
     private void Start()
     {
+        PauseGameHandler.Instance.Pause(true, StartGame_);
+
         Instance = this;
 
         SpawnPlayers_();
@@ -95,16 +97,7 @@ public class MineGamesController : GenericController
 
         // fade in
         EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
-        EndFader.StartFade(1, 0, FadeInComplete);
-    }
-
-
-    /// <summary>
-    /// Called once fully faded in
-    /// </summary>
-    private void FadeInComplete()
-    {
-        PauseGameHandler.Instance.Pause(true, StartGame_);
+        EndFader.StartFade(1, 0, null);
     }
 
     /// <summary>

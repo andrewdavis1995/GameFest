@@ -6,10 +6,10 @@ public class CarControllerScript : MonoBehaviour
     public float AccelerationFactor = 30.0f;
     public float TurnFactor = 3.5f;
     public float DriftFactor = 0.95f;
-    public float MaxSpeed = 20f;
+    public float MaxSpeed = 30f;
     public float MaxDrag = 3f;
 
-    public float BoostFactor = 2f;
+    public float BoostFactor = 1.1f;
 
 
     float _accelerationInput = 0;
@@ -26,7 +26,8 @@ public class CarControllerScript : MonoBehaviour
 
     public void Boost()
     {
-        StartCoroutine(Boost_());
+        if (!_boosting)
+            StartCoroutine(Boost_());
     }
 
     IEnumerator Boost_()
@@ -47,14 +48,12 @@ public class CarControllerScript : MonoBehaviour
 
     void ApplyEngineForce_()
     {
-
         float _velocityVsUp = Vector2.Dot(transform.up, carRigidBody.velocity);
-        Debug.Log(_velocityVsUp);
 
         if (_velocityVsUp > MaxSpeed && _accelerationInput > 0)
             return;
 
-        if ((_velocityVsUp < -MaxSpeed *0.5f) && _accelerationInput < 0)
+        if ((_velocityVsUp < -MaxSpeed * 0.5f) && _accelerationInput < 0)
             return;
 
         // adjust drag
