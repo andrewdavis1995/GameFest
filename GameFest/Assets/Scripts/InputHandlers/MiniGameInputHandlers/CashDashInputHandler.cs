@@ -242,7 +242,7 @@ public class CashDashInputHandler : GenericInputHandler
     /// <param name="ctx">The context of the movement</param>
     public override void OnMove(InputAction.CallbackContext ctx)
     {
-        if (!_canMove) return;
+        if (!_canMove || !CashDashController.Instance.IsActive() || PauseGameHandler.Instance.IsPaused()) return;
 
         // move the player
         _movement.Move(ctx.ReadValue<Vector2>());
@@ -253,7 +253,7 @@ public class CashDashInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCross()
     {
-        if (!_canMove) return;
+        if (!_canMove || !CashDashController.Instance.IsActive() || PauseGameHandler.Instance.IsPaused()) return;
 
         _movement.Jump();
     }
@@ -263,6 +263,13 @@ public class CashDashInputHandler : GenericInputHandler
     /// </summary>
     void Update()
     {
+        // do not update the position if dead
+        if (_complete)
+        {
+            _offScreenDisplay.gameObject.SetActive(false);
+            return;
+        }
+
         var yPos = Camera.main.WorldToViewportPoint(_movement.transform.position).y;
         bool isVisible = yPos > 0 && yPos < 1;
 
@@ -271,7 +278,7 @@ public class CashDashInputHandler : GenericInputHandler
         {
             var xPos = Camera.main.WorldToScreenPoint(_movement.transform.position).x;
             _offScreenDisplay.position = new Vector3(xPos, _offScreenDisplay.position.y, _offScreenDisplay.position.z);
-            _offScreenDisplay.gameObject.SetActive(true);
+            _offScreenDisplay.gameObject.SetActive(!_complete);
 
             // start the wait before dying
             if (!_offScreenDying)
@@ -289,7 +296,10 @@ public class CashDashInputHandler : GenericInputHandler
             if (_offScreenDying)
             {
                 _offScreenDying = false;
-                StopCoroutine(WaitBeforeDying_());
+                StopAllCoroutines();
+
+                // re-enable movement (disable completion would be skipped if off screen)
+                _movement.Reenable();
             }
         }
     }
@@ -304,6 +314,8 @@ public class CashDashInputHandler : GenericInputHandler
         // belt-and-braces check
         if (_offScreenDying)
         {
+            _complete = true;
+
             // disable forever
             StartCoroutine(_movement.Disable(1000, CashDashController.Instance.DisabledImages[GetCharacterIndex()]));
         }
@@ -321,6 +333,9 @@ public class CashDashInputHandler : GenericInputHandler
         }
     }
 
+    /// <summary>
+    /// Input handler for L1 button
+    /// </summary>
     public override void OnL1()
     {
         if (PauseGameHandler.Instance.IsPaused() && IsHost())
@@ -329,6 +344,9 @@ public class CashDashInputHandler : GenericInputHandler
         }
     }
 
+    /// <summary>
+    /// Input handler for R1 button
+    /// </summary>
     public override void OnR1()
     {
         if (PauseGameHandler.Instance.IsPaused() && IsHost())

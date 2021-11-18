@@ -168,6 +168,14 @@ public class PlayerMovement : MonoBehaviour
             anim.enabled = false;
 
         yield return new WaitForSeconds(duration);
+        Reenable();
+    }
+
+    /// <summary>
+    /// Re-enables the movement
+    /// </summary>
+    public void Reenable()
+    {
         _disabled = false;
         // enable animations
         foreach (var anim in _animators)

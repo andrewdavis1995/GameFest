@@ -38,6 +38,7 @@ public class CashDashController : GenericController
     public Text TxtPoints;
 
     int _remainingPoints;
+    bool _active = false;
 
     List<CashDashInputHandler> _players = new List<CashDashInputHandler>();
     int _completedPlayers = 0;
@@ -69,6 +70,15 @@ public class CashDashController : GenericController
     }
 
     /// <summary>
+    /// Is the game active
+    /// </summary>
+    /// <returns></returns>
+    public bool IsActive()
+    {
+        return _active;
+    }
+
+    /// <summary>
     /// Called once fully faded in
     /// </summary>
     private void FadeInComplete()
@@ -92,6 +102,7 @@ public class CashDashController : GenericController
     {
         _overallLimit.StartTimer();
         _pointCountdown.StartTimer();
+        _active = true;
 
         UpperTransport.StartNoteMovement();
     }
@@ -178,6 +189,9 @@ public class CashDashController : GenericController
 
         // loop through all players
         var index = 0;
+
+        var platforms = FindObjectsOfType<MediaJamWheel>();
+
         foreach (var player in PlayerManagerScript.Instance.GetPlayers())
         {
             // switch to use an input handler suitable for this scene
@@ -190,19 +204,29 @@ public class CashDashController : GenericController
 
             ih.SetOffScreenDisplay(OffScreenDisplays[index]);
 
-            var platforms = FindObjectsOfType<MediaJamWheel>();
             var matchingPlatforms = platforms.Where(t => LayerMask.LayerToName(t.gameObject.layer) == ("Player" + (index + 1) + "A"));
             var nonPlayerPlatforms = platforms.Where(t => LayerMask.LayerToName(t.gameObject.layer) != ("Player" + (index + 1) + "A"));
 
-            ih.SetMediaJamPlatforms(platforms.ToList());
-            playerTransforms.Add(playerTransform);
+            ih.SetMediaJamPlatforms(matchingPlatforms.ToList());
 
             foreach(var p in nonPlayerPlatforms)
             {
                 Physics2D.IgnoreCollision(p.Platform.GetComponent<Collider2D>(), playerTransform.GetComponent<Collider2D>());
             }
 
+            playerTransforms.Add(playerTransform);
             index++;
+        }
+
+        // hide unused platforms
+        for(; index < 4; index++)
+        {
+            // get platforms for this "phantom player"
+            var matchingPlatforms = platforms.Where(t => LayerMask.LayerToName(t.gameObject.layer) == ("Player" + (index + 1) + "A"));
+            foreach(var p in matchingPlatforms)
+            {
+                p.Platform.gameObject.SetActive(false);
+            }
         }
 
         return playerTransforms;

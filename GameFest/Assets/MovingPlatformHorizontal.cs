@@ -18,6 +18,8 @@ public class MovingPlatformHorizontal : PlatformBase
     {
         if (!Enabled()) return;
 
+        if (!CashDashController.Instance.IsActive() || PauseGameHandler.Instance.IsPaused()) return;
+
         if (MovingRight)
         {
             transform.Translate(new Vector3(Speed * Time.deltaTime, 0, 0));

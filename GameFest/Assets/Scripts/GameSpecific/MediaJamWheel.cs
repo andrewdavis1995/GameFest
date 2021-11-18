@@ -14,6 +14,7 @@ public class MediaJamWheel : MonoBehaviour
     public float RightPositionX;
 
     bool _playerOnPlatform;
+    bool _playerControl;
     float _targetPositionX;
     const float MOVE_SPEED = 3f;
     Vector2 _joystickPosition;
@@ -42,7 +43,7 @@ public class MediaJamWheel : MonoBehaviour
     /// <param name="joystickPosition">The position the joystick is in</param>
     public void OnMove(Vector2 joystickPosition)
     {
-        if (!_playerOnPlatform) return;
+        if (!_playerControl) return;
 
         _joystickPosition = joystickPosition;
 
@@ -89,6 +90,7 @@ public class MediaJamWheel : MonoBehaviour
     public void PlayerLanded()
     {
         _playerOnPlatform = true;
+        _playerControl = true;
 
         StopAllCoroutines();
 
@@ -109,6 +111,8 @@ public class MediaJamWheel : MonoBehaviour
     /// </summary>
     IEnumerator ReturnToStart_()
     {
+        _playerControl = false;
+
         yield return new WaitForSeconds(1f);
 
         _playerOnPlatform = false;

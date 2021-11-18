@@ -20,7 +20,9 @@ public class MovingPlatformVertical : PlatformBase
     {
         if (!Enabled()) return;
 
-        if(MovingUp)
+        if (!CashDashController.Instance.IsActive() || PauseGameHandler.Instance.IsPaused()) return;
+
+        if (MovingUp)
         {
             transform.Translate(new Vector3(0, Speed * Time.deltaTime, 0));
 
