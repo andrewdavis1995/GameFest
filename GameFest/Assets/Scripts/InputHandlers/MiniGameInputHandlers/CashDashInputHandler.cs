@@ -162,7 +162,6 @@ public class CashDashInputHandler : GenericInputHandler
                 AddPoints(CashDashController.Instance.RemainingPoints());
                 var bonuses = CashDashController.Instance.GetPositionalPoints();
                 AddPoints(bonuses);
-                Debug.Log("About to add bonuses " + bonuses);
                 SetBonusPoints(bonuses);
 
                 // disable movement

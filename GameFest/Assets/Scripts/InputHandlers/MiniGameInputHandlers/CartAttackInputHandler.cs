@@ -26,14 +26,24 @@ public class CartAttackInputHandler : GenericInputHandler
     {
         _active = state;
     }
-    
+
+    /// <summary>
+    /// Does the necessary actions at the start of the race
+    /// </summary>
+    public void StartRace()
+    {
+        SetActiveState(true);
+        _carController.StartRace();
+    }
+
     /// <summary>
     /// Sets the car to use for this player
     /// </summary>
     /// <param id="car">The car to use</param>
-    public void SetCarController(CarController car)
+    public void SetCarController(CarControllerScript car)
     {
         _carController = car;
+        _carController.Initialise(AddPoints);
     }
 
     // Update is called once per frame

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -8,6 +9,10 @@ using UnityEngine;
 /// </summary>
 public class CarControllerScript : MonoBehaviour
 {
+    const int MAX_LAP_POINTS = 350;
+    const int LOWEST_LAP_POINTS = 20;
+    const int ACCURACY_BONUS = 25;
+
     List<List<Tuple<Vector3, bool>>> _lapDrawings = new List<List<Tuple<Vector3, bool>>>();
 
     // configurable parameters about car movement
@@ -26,6 +31,7 @@ public class CarControllerScript : MonoBehaviour
     bool _boosting = false;
     int _checkpointIndex = 0;
     int _trailPositions = 0;
+    float _lapPoints = 0;
 
     List<Collider2D> _outOfBoundsZone = new List<Collider2D>();
 
@@ -33,14 +39,55 @@ public class CarControllerScript : MonoBehaviour
     Rigidbody2D carRigidBody;
     public TrailRenderer[] Trails;
     public TrailRenderer DrawTrail;
+    Action<int> _addPointsCallback;
+
+    TimeLimit _lapTimer;
 
     /// <summary>
     /// Called when the script starts up
     /// </summary>
     private void Awake()
     {
+        _lapTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _lapTimer.Initialise(MAX_LAP_POINTS - LOWEST_LAP_POINTS, lapTimerTick_, null, 0.1f);
+
         carRigidBody = GetComponent<Rigidbody2D>();
         _lapDrawings.Add(new List<Tuple<Vector3, bool>>());
+    }
+
+    /// <summary>
+    /// Initialises the controller with necessary values
+    /// </summary>
+    public void Initialise(Action<int> pointsCallback)
+    {
+        _addPointsCallback = pointsCallback;
+    }
+
+    /// <summary>
+    /// Starts the points ticking down for the lap
+    /// </summary>
+    void StartLapTimer_()
+    {
+        _lapTimer.Abort();
+        _lapPoints = MAX_LAP_POINTS;
+        _lapTimer.StartTimer();
+    }
+
+    /// <summary>
+    /// Does the necessary actions at the start of the race
+    /// </summary>
+    public void StartRace()
+    {
+        StartLapTimer_();
+    }
+
+    /// <summary>
+    /// Callback for the lap timer
+    /// </summary>
+    /// <param name="points">Remaining points</param>
+    private void lapTimerTick_(int points)
+    {
+        _lapPoints = LOWEST_LAP_POINTS + points;
     }
 
     /// <summary>
@@ -88,9 +135,9 @@ public class CarControllerScript : MonoBehaviour
         if(DrawTrail.positionCount > _trailPositions)
         {
             // get all positions
-            Vector3[] trailPositions = new Vector[DrawTrail.positionCount];
+            Vector3[] trailPositions = new Vector3[DrawTrail.positionCount];
             DrawTrail.GetPositions(trailPositions);
-            
+
             // add the new ones to the list, along with whether they were in bounds or not
             for(var i = _trailPositions; i < DrawTrail.positionCount; i++)
             {
@@ -220,16 +267,30 @@ public class CarControllerScript : MonoBehaviour
     internal void LapComplete_()
     {
         // TODO: Assign points based on time and accuracy of _lapDrawings
-    
+        var onTrack = _lapDrawings.Last().Count(p => p.Item2);
+        var offTrack = _lapDrawings.Last().Count(p => !p.Item2);
+
+        var score = onTrack / (float)(onTrack + offTrack);
+        _addPointsCallback((int)(score * _lapPoints));
+
+        // add bonus points for staying in the lines
+        if(score > 0.9f)
+        {
+            _addPointsCallback(ACCURACY_BONUS);
+        }
+
         // new item on lap drawing list
         _lapDrawings.Add(new List<Tuple<Vector3, bool>>());
-        
+
         // clear trail
         DrawTrail.Clear();
         _trailPositions = 0;
         
         // back to first checkpoint
         _checkpointIndex = 0;
+
+        // restart lap timer
+        StartLapTimer_();
     }
 
     /// <summary>
