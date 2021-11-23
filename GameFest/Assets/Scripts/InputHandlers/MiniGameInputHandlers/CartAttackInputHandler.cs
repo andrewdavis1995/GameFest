@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Input handler for Cart Attack mini-game
 /// </summary>
-public class CartAttackInputHandler : MonoBehaviour
+public class CartAttackInputHandler : GenericInputHandler
 {
     CarControllerScript _carController;
     
