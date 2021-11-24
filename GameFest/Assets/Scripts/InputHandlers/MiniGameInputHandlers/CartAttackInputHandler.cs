@@ -25,6 +25,12 @@ public class CartAttackInputHandler : GenericInputHandler
     public void SetActiveState(bool state)
     {
         _active = state;
+
+        if(!_active)
+        {
+            _carController.SetAccelerationValue(0);
+            _carController.SetSteeringValue(0);
+        }
     }
 
     /// <summary>

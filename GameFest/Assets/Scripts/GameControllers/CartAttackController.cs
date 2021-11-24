@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -50,7 +51,7 @@ public class CartAttackController : MonoBehaviour
     private IEnumerator StartRace_()
     {
         // show countdown
-        for(int i = 0; i < StarterLightSprites.Count; i++)
+        for(int i = 0; i < StarterLightSprites.Length; i++)
         {
             // wait, then update image
             yield return new WaitForSeconds(1);
@@ -65,6 +66,9 @@ public class CartAttackController : MonoBehaviour
 
         // start timer
         _raceTimer.StartTimer();
+
+        yield return new WaitForSeconds(3);
+        StarterLights.sprite = StarterLightSprites[0];
     }
 
     /// <summary>
@@ -190,7 +194,7 @@ public class CartAttackController : MonoBehaviour
         //ResultsScreen.Setup();
 
         // TODO: add this in
-        //GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
+        GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
         //ResultsScreen.SetPlayers(genericPlayers);
 
         // store scores
@@ -209,6 +213,7 @@ public class CartAttackController : MonoBehaviour
     /// </summary>
     void ReturnToCentral_()
     {
-        PlayerManagerScript.Instance.CentralScene();
+        // TODO: Add back once full menu system done
+        // PlayerManagerScript.Instance.CentralScene();
     }
 }

@@ -54,8 +54,8 @@ public class CarControllerScript : MonoBehaviour
         _lapTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _lapTimer.Initialise(MAX_LAP_POINTS - LOWEST_LAP_POINTS, lapTimerTick_, null, 0.1f);
         
-        _lapStopwatch = (TimerStopwatch)gameObject.AddComponent(typeof(TimerStopwatch));
-        _lapStopwatch.Initialise(raceStopwatchTick_, .001f);
+        _lapStopwatch = (TimeStopwatch)gameObject.AddComponent(typeof(TimeStopwatch));
+        _lapStopwatch.Initialise(lapStopwatchTick_, .001f);
 
         carRigidBody = GetComponent<Rigidbody2D>();
         _lapDrawings.Add(new List<Tuple<Vector3, bool>>());
@@ -110,7 +110,7 @@ public class CarControllerScript : MonoBehaviour
     /// <param name="points">Current time</param>
     private void lapStopwatchTick_(int time)
     {
-        _stopwatchTime = points;
+        _stopwatchTime = time;
     }
 
     /// <summary>
@@ -289,7 +289,7 @@ public class CarControllerScript : MonoBehaviour
     /// </summary>
     internal void LapComplete_()
     {
-        // TODO: Assign points based on time and accuracy of _lapDrawings
+        // add points based on time and accuracy of _lapDrawings
         var onTrack = _lapDrawings.Last().Count(p => p.Item2);
         var offTrack = _lapDrawings.Last().Count(p => !p.Item2);
 
@@ -313,7 +313,7 @@ public class CarControllerScript : MonoBehaviour
         _checkpointIndex = 0;
         
         // check if this was the fastest lap - store if it is
-        CartAttackController.Instance.CheckFastestLap(_lapStopwatch.GetCurrentTime());
+        CartAttackController.Instance.CheckFastestLap(_playerIndex, _lapStopwatch.GetCurrentTime());
 
         // restart lap timer
         StartLapTimer_();
