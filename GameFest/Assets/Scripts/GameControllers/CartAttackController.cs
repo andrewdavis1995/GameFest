@@ -72,7 +72,18 @@ public class CartAttackController : MonoBehaviour
             player.SetActiveState(false);
         }
 
-        // TODO: end the game
+        StartCoroutine(ShowResults_());
+    }
+    
+    /// <summary>
+    /// Show the canvases and scores for each players
+    /// </summary>
+    IEnumerator ShowResults_()
+    {
+        // TODO: show canvases for eacy player
+        yield return new WaitForSeconds(1);
+        
+        StartCoroutine(Complete_());
     }
 
     /// <summary>
@@ -114,5 +125,63 @@ public class CartAttackController : MonoBehaviour
             // hide car
             Cars[index].gameObject.SetActive(false);
         }
+    }   
+    
+    /// <summary>
+    /// Assigns bonus points to the winner
+    /// </summary>
+    private void AssignBonusPoints_()
+    {
+        // sort the players by points scored
+        var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
+        int[] winnerPoints = new int[] { 150, 50, 20 };
+
+        // add winning score points 
+        for (int i = 0; i < ordered.Count(); i++)
+        {
+            if (ordered[i].GetPoints() > 0)
+            {
+                ordered[i].AddPoints(winnerPoints[i]);
+                ordered[i].SetBonusPoints(winnerPoints[i]);
+            }
+        }
+
+        // set the winner
+        ordered.FirstOrDefault()?.Winner();
+    }
+    
+    /// <summary>
+    /// Completes the game and return to object
+    /// </summary>
+    IEnumerator Complete_()
+    {
+        AssignBonusPoints_();
+
+        yield return new WaitForSeconds(3f);
+
+        // TODO: add this in
+        //ResultsScreen.Setup();
+
+        // TODO: add this in
+        //GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
+        //ResultsScreen.SetPlayers(genericPlayers);
+
+        // store scores
+        ScoreStoreHandler.StoreResults(Scene.CartAttack, genericPlayers);
+
+        yield return new WaitForSeconds(4 + genericPlayers.Length);
+
+        // fade out
+        //EndFader.StartFade(0, 1, ReturnToCentral_);
+        // TODO: replace this
+        ReturnToCentral_();
+    }
+    
+    /// <summary>
+    /// Moves back to the central screen
+    /// </summary>
+    void ReturnToCentral_()
+    {
+        PlayerManagerScript.Instance.CentralScene();
     }
 }
