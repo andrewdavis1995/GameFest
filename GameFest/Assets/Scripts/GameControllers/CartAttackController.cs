@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Controls the flow of "Cart Attack"
@@ -10,6 +11,9 @@ public class CartAttackController : MonoBehaviour
 {
     public Collider2D[] Checkpoints;
     public CarControllerScript[] Cars;
+    public SpriteRenderer StarterLights;
+    public Sprite[] StarterLightSprites;
+    public Text TxtRemainingTime;
     
     List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
 
@@ -31,14 +35,22 @@ public class CartAttackController : MonoBehaviour
         HideUnusedElements_(_players.Count, Cars.Length);
 
         // TODO: this moves to after the countdown lights
-        StartRace_();
+        StartCoroutine(StartRace_());
     }
 
     /// <summary>
     /// Enables racers, starts timer and begins the race
     /// </summary>
-    private void StartRace_()
+    private IEnumerator StartRace_()
     {
+        // show countdown
+        for(int i = 0; i < StarterLightSprites.Count; i++)
+        {
+            // wait, then update image
+            yield return new WaitForSeconds(1);
+            StarterLights.sprite = StarterLightSprites[i];
+        }
+    
         // enable all players
         foreach (var player in _players)
         {
@@ -68,8 +80,8 @@ public class CartAttackController : MonoBehaviour
     /// </summary>
     private void raceTimerTick_(int time)
     {
-        // TODO: show in UI
-        Debug.Log(time);
+        // show remaining time
+        TxtRemainingTime.text = time.ToString();
     }
 
     /// <summary>
