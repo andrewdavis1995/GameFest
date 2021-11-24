@@ -9,6 +9,8 @@ using UnityEngine.UI;
 /// </summary>
 public class CartAttackController : MonoBehaviour
 {
+    const int FASTEST_LAP_BONUS = 30;
+
     public Collider2D[] Checkpoints;
     public CarControllerScript[] Cars;
     public SpriteRenderer StarterLights;
@@ -21,6 +23,9 @@ public class CartAttackController : MonoBehaviour
     public static CartAttackController Instance;
 
     TimeLimit _raceTimer;
+    
+    int _currentBestLap = Int32.MaxValue;
+    int _currentBestLapPlayer = -1;
 
     // Called once on startup
     private void Start()
@@ -133,7 +138,11 @@ public class CartAttackController : MonoBehaviour
     /// </summary>
     private void AssignBonusPoints_()
     {
-        // TODO: add bonus points for quickest lap
+        // add bonus points for quickest lap
+        if(_currentBestLapPlayer > -1)
+        {
+            _players[_currentBestLapPlayer].AddPoints(FASTEST_LAP_BONUS);
+        }
     
         // sort the players by points scored
         var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
@@ -151,6 +160,21 @@ public class CartAttackController : MonoBehaviour
 
         // set the winner
         ordered.FirstOrDefault()?.Winner();
+    }
+    
+    /// <summary>
+    /// Checks if the recently completed lap is bigger than the current best time
+    /// </summary>
+    /// <param id="playerIndex">The index of the player who completed the lap</param>
+    /// <param id="lapTime">The time taken to complete the lap</param>
+    public void CheckFastestLap(int playerIndex, int lapTime)
+    {
+        // if faster than the current record, store this lap as the new record
+        if(lapTime < _currentBestLap)
+        {
+            _currentBestLap = lapTime;
+            _currentBestLapPlayer = playerIndex;
+        }
     }
     
     /// <summary>
