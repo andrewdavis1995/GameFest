@@ -14,6 +14,7 @@ public class CartAttackController : MonoBehaviour
     public SpriteRenderer StarterLights;
     public Sprite[] StarterLightSprites;
     public Text TxtRemainingTime;
+    // public CarStatusDisplay[] CarStatuses;   // TODO: implement this UI first
     
     List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
 
@@ -132,6 +133,8 @@ public class CartAttackController : MonoBehaviour
     /// </summary>
     private void AssignBonusPoints_()
     {
+        // TODO: add bonus points for quickest lap
+    
         // sort the players by points scored
         var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
         int[] winnerPoints = new int[] { 150, 50, 20 };
@@ -173,7 +176,7 @@ public class CartAttackController : MonoBehaviour
 
         // fade out
         //EndFader.StartFade(0, 1, ReturnToCentral_);
-        // TODO: replace this
+        // TODO: replace this with the above
         ReturnToCentral_();
     }
     
