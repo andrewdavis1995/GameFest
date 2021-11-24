@@ -43,7 +43,7 @@ public class CartAttackInputHandler : GenericInputHandler
     public void SetCarController(CarControllerScript car)
     {
         _carController = car;
-        _carController.Initialise(AddPoints);
+        _carController.Initialise(AddPoints, GetPlayerIndex());
     }
 
     // Update is called once per frame
