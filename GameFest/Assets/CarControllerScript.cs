@@ -32,6 +32,8 @@ public class CarControllerScript : MonoBehaviour
     int _checkpointIndex = 0;
     int _trailPositions = 0;
     float _lapPoints = 0;
+    int _stopwatchTime = 0;
+    int _playerIndex = 0;
 
     List<Collider2D> _outOfBoundsZone = new List<Collider2D>();
 
@@ -42,6 +44,7 @@ public class CarControllerScript : MonoBehaviour
     Action<int> _addPointsCallback;
 
     TimeLimit _lapTimer;
+    TimeStopwatch _lapStopwatch;
 
     /// <summary>
     /// Called when the script starts up
@@ -50,6 +53,9 @@ public class CarControllerScript : MonoBehaviour
     {
         _lapTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _lapTimer.Initialise(MAX_LAP_POINTS - LOWEST_LAP_POINTS, lapTimerTick_, null, 0.1f);
+        
+        _lapStopwatch = (TimerStopwatch)gameObject.AddComponent(typeof(TimerStopwatch));
+        _lapStopwatch.Initialise(raceStopwatchTick_, .001f);
 
         carRigidBody = GetComponent<Rigidbody2D>();
         _lapDrawings.Add(new List<Tuple<Vector3, bool>>());
@@ -58,9 +64,12 @@ public class CarControllerScript : MonoBehaviour
     /// <summary>
     /// Initialises the controller with necessary values
     /// </summary>
-    public void Initialise(Action<int> pointsCallback)
+    /// <param id="pointsCallback">Function to call when points need to be added</param>
+    /// <param id="playerIndex">The index of the player</param>
+    public void Initialise(Action<int> pointsCallback, int playerIndex)
     {
         _addPointsCallback = pointsCallback;
+        _playerIndex = playerIndex;
     }
 
     /// <summary>
@@ -68,9 +77,14 @@ public class CarControllerScript : MonoBehaviour
     /// </summary>
     void StartLapTimer_()
     {
+        // points countdown 
         _lapTimer.Abort();
         _lapPoints = MAX_LAP_POINTS;
         _lapTimer.StartTimer();
+        
+        // time stopwatch
+        _stopwatchTime = 0;
+        _lapStopwatch.StartTimer();
     }
 
     /// <summary>
@@ -88,6 +102,15 @@ public class CarControllerScript : MonoBehaviour
     private void lapTimerTick_(int points)
     {
         _lapPoints = LOWEST_LAP_POINTS + points;
+    }
+
+    /// <summary>
+    /// Callback for the lap stopwatch
+    /// </summary>
+    /// <param name="points">Current time</param>
+    private void lapStopwatchTick_(int time)
+    {
+        _stopwatchTime = points;
     }
 
     /// <summary>
@@ -288,6 +311,9 @@ public class CarControllerScript : MonoBehaviour
         
         // back to first checkpoint
         _checkpointIndex = 0;
+        
+        // check if this was the fastest lap - store if it is
+        CartAttackController.Instance.CheckFastestLap(_lapStopwatch.GetCurrentTime());
 
         // restart lap timer
         StartLapTimer_();
