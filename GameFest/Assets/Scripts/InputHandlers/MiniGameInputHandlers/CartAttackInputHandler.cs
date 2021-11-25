@@ -71,7 +71,7 @@ public class CartAttackInputHandler : GenericInputHandler
         if(_active)
         {
             if (Input.GetKey(KeyCode.Space))
-                _carController.Boost();
+                _carController.ApplyPowerUp();
 
             _carController.SetAccelerationValue(y);
             _carController.SetSteeringValue(x);
