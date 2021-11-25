@@ -17,7 +17,7 @@ public class CartAttackController : MonoBehaviour
     public SpriteRenderer StarterLights;
     public Sprite[] StarterLightSprites;
     public Text TxtRemainingTime;
-    // public CarStatusDisplay[] CarStatuses;   // TODO: implement this UI first
+    public CartAttackPlayerUiScript [] CarStatuses;
     
     List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
 
