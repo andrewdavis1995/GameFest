@@ -16,6 +16,8 @@ public class CartAttackPlayerUiScript : MonoBehaviour
     public Text TxtBestLap;
     public GameObject BestLap;
     public Image AccuracyBonusPopup; 
+    public Image PowerUpIcon; 
+    public Sprite[] PowerUpIcons;
     
     // TODO: code for swapping positions
     
@@ -76,6 +78,15 @@ public class CartAttackPlayerUiScript : MonoBehaviour
     public void ShowAccuracyPopup()
     {
         StartCoroutine(ShowAccuracyPopup_());
+    }    
+    
+    /// <summary>
+    /// Sets the power up icon
+    /// </summary>
+    /// <param id="index">Index of the image to use</param> 
+    public void UpdatePowerUpIcon(int index)
+    {
+        PowerUpIcon.sprite = PowerUpIcons[index];
     }    
     
     /// <summary>
