@@ -136,6 +136,9 @@ public class CarControllerScript : MonoBehaviour
         
         // no power up left
         _activePowerUp = PowerUp.None;
+        
+        // hide power up icon
+        CartAttackController.Instance.CarStatuses[_playerIndex].HidePowerUpIcon();
     }
     
     /// <summary>
@@ -429,6 +432,5 @@ public class CarControllerScript : MonoBehaviour
         
         // set the active power up
         _activePowerUp = (PowerUp)((iterations % numOptions)+ 1);        
-    }
-    
+    }    
 }
