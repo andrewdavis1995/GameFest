@@ -41,7 +41,6 @@ public class CarControllerScript : MonoBehaviour
     // link to car elements
     public TrailRenderer[] Trails;
     public TrailRenderer DrawTrail;
-    public Sprite[] PowerUpIcons;
     
     Action<int> _addPointsCallback;
     PowerUp _activePowerUp = PowerUp.None;
@@ -397,6 +396,7 @@ public class CarControllerScript : MonoBehaviour
             if(_activePowerUp == PowerUp.None)
             {
                 // start selecting a power up
+                StartCoroutine(SetPowerUp_());
             }
             
             // destroy power up
@@ -419,8 +419,11 @@ public class CarControllerScript : MonoBehaviour
         for(int i = 0; i < iterations; i++)
         {
             var index = i % numOptions;
-            // TODO: update UI with image
             
+            // update UI with image
+            CartAttackController.Instance.CarStatuses[_playerIndex].UpdatePowerUpIcon(index);
+            
+            // wait before flickering
             yield return new WaitForSeconds(0.1f);
         }
         
