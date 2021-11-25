@@ -71,6 +71,15 @@ public abstract class GenericInputHandler : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the name of the player
+    /// </summary>
+    /// <param id="plName">The players name</param>
+    internal void SetPlayerName(string plName)
+    {
+        _playerName = plName;
+    }
+
+    /// <summary>
     /// Returns the GUID of the profile
     /// </summary>
     /// <returns>The ID</returns>

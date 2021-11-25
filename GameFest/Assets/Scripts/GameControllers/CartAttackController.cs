@@ -17,14 +17,14 @@ public class CartAttackController : MonoBehaviour
     public SpriteRenderer StarterLights;
     public Sprite[] StarterLightSprites;
     public Text TxtRemainingTime;
-    public CartAttackPlayerUiScript [] CarStatuses;
-    
+    public CartAttackPlayerUiScript[] CarStatuses;
+
     List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
 
     public static CartAttackController Instance;
 
     TimeLimit _raceTimer;
-    
+
     int _currentBestLap = Int32.MaxValue;
     int _currentBestLapPlayer = -1;
 
@@ -51,13 +51,13 @@ public class CartAttackController : MonoBehaviour
     private IEnumerator StartRace_()
     {
         // show countdown
-        for(int i = 0; i < StarterLightSprites.Length; i++)
+        for (int i = 0; i < StarterLightSprites.Length; i++)
         {
             // wait, then update image
             yield return new WaitForSeconds(1);
             StarterLights.sprite = StarterLightSprites[i];
         }
-    
+
         // enable all players
         foreach (var player in _players)
         {
@@ -84,7 +84,7 @@ public class CartAttackController : MonoBehaviour
 
         StartCoroutine(ShowResults_());
     }
-    
+
     /// <summary>
     /// Show the canvases and scores for each players
     /// </summary>
@@ -92,7 +92,7 @@ public class CartAttackController : MonoBehaviour
     {
         // TODO: show canvases for eacy player
         yield return new WaitForSeconds(1);
-        
+
         StartCoroutine(Complete_());
     }
 
@@ -118,6 +118,8 @@ public class CartAttackController : MonoBehaviour
         // TODO: replace with calls to create input handler
         list = FindObjectsOfType<CartAttackInputHandler>().ToList();
         list[index].SetCarController(Cars[index]);
+        list[index].SetPlayerName("DEMO");
+        CarStatuses[index].Initialise(list[index].GetPlayerName(), index);
 
         return list;
     }
@@ -130,24 +132,25 @@ public class CartAttackController : MonoBehaviour
     void HideUnusedElements_(int index, int maximum)
     {
         // hide unused cars
-        for(; index < maximum; index++)
+        for (; index < maximum; index++)
         {
             // hide car
             Cars[index].gameObject.SetActive(false);
+            CarStatuses[index].gameObject.SetActive(false);
         }
-    }   
-    
+    }
+
     /// <summary>
     /// Assigns bonus points to the winner
     /// </summary>
     private void AssignBonusPoints_()
     {
         // add bonus points for quickest lap
-        if(_currentBestLapPlayer > -1)
+        if (_currentBestLapPlayer > -1)
         {
             _players[_currentBestLapPlayer].AddPoints(FASTEST_LAP_BONUS);
         }
-    
+
         // sort the players by points scored
         var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
         int[] winnerPoints = new int[] { 150, 50, 20 };
@@ -165,7 +168,7 @@ public class CartAttackController : MonoBehaviour
         // set the winner
         ordered.FirstOrDefault()?.Winner();
     }
-    
+
     /// <summary>
     /// Checks if the recently completed lap is bigger than the current best time
     /// </summary>
@@ -174,13 +177,19 @@ public class CartAttackController : MonoBehaviour
     public void CheckFastestLap(int playerIndex, int lapTime)
     {
         // if faster than the current record, store this lap as the new record
-        if(lapTime < _currentBestLap)
+        if (lapTime < _currentBestLap)
         {
             _currentBestLap = lapTime;
             _currentBestLapPlayer = playerIndex;
         }
+
+        // update UIs
+        for(int i = 0; i < CarStatuses.Length; i++)
+        {
+            CarStatuses[i].SetBestLap(i == _currentBestLapPlayer, _currentBestLap);
+        }
     }
-    
+
     /// <summary>
     /// Completes the game and return to object
     /// </summary>
@@ -207,7 +216,7 @@ public class CartAttackController : MonoBehaviour
         // TODO: replace this with the above
         ReturnToCentral_();
     }
-    
+
     /// <summary>
     /// Moves back to the central screen
     /// </summary>

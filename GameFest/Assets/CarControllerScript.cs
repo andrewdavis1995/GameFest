@@ -35,13 +35,16 @@ public class CarControllerScript : MonoBehaviour
     float _lapPoints = 0;
     int _stopwatchTime = 0;
     int _playerIndex = 0;
+    bool _powerUpCycle = false;
 
     List<Collider2D> _outOfBoundsZone = new List<Collider2D>();
 
     // link to car elements
     public TrailRenderer[] Trails;
     public TrailRenderer DrawTrail;
-    
+    public Transform PinPrefab;
+    public Collider2D CollisionCollider;
+
     Action<int> _addPointsCallback;
     PowerUp _activePowerUp = PowerUp.None;
     Rigidbody2D _carRigidBody;
@@ -56,9 +59,9 @@ public class CarControllerScript : MonoBehaviour
     {
         _lapTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _lapTimer.Initialise(MAX_LAP_POINTS - LOWEST_LAP_POINTS, lapTimerTick_, null, 0.1f);
-        
+
         _lapStopwatch = (TimeStopwatch)gameObject.AddComponent(typeof(TimeStopwatch));
-        _lapStopwatch.Initialise(lapStopwatchTick_, .001f);
+        _lapStopwatch.Initialise(lapStopwatchTick_, .01f);
 
         _carRigidBody = GetComponent<Rigidbody2D>();
         _lapDrawings.Add(new List<Tuple<Vector3, bool>>());
@@ -84,7 +87,7 @@ public class CarControllerScript : MonoBehaviour
         _lapTimer.Abort();
         _lapPoints = MAX_LAP_POINTS;
         _lapTimer.StartTimer();
-        
+
         // time stopwatch
         _stopwatchTime = 0;
         _lapStopwatch.StartTimer();
@@ -121,58 +124,73 @@ public class CarControllerScript : MonoBehaviour
     /// </summary>
     public void ApplyPowerUp()
     {
-        switch(_activePowerUp)
+        if (!_powerUpCycle)
         {
-            case PowerUp.SpeedBoost:
-                StartCoroutine(Boost_());
-                break;
-            case PowerUp.ReverseSteering:
-                StartCoroutine(ReverseSteering_());
-                break;
-            case PowerUp.PinDrop:
-                StartCoroutine(DropPin_());
-                break;
+            switch (_activePowerUp)
+            {
+                case PowerUp.SpeedBoost:
+                    StartCoroutine(Boost_());
+                    break;
+                case PowerUp.ReverseSteering:
+                    StartCoroutine(ReverseSteering_());
+                    break;
+                case PowerUp.PinDrop:
+                    StartCoroutine(DropPin_());
+                    break;
+            }
+
+            // no power up left
+            _activePowerUp = PowerUp.None;
+
+            // hide power up icon
+            CartAttackController.Instance.CarStatuses[_playerIndex].HidePowerUpIcon();
         }
-        
-        // no power up left
-        _activePowerUp = PowerUp.None;
-        
-        // hide power up icon
-        CartAttackController.Instance.CarStatuses[_playerIndex].HidePowerUpIcon();
     }
-    
+
     /// <summary>
     /// Causes a brief increase in speed
     /// </summary>
     IEnumerator Boost_()
     {
         MaxSpeed *= BOOST_FACTOR;
-        
+
         // enforce the boost for 2 seconds
         yield return new WaitForSeconds(2);
-        
+
         // return to normal speed
         MaxSpeed /= BOOST_FACTOR;
     }
-    
+
     /// <summary>
     /// Drops a pin
     /// </summary>
-    void DropPin_()
+    IEnumerator DropPin_()
     {
-        // TODO: Drop pin at current point
+        // briefly delay
+        yield return new WaitForSeconds(0.25f);
+
+        // drop pin at current point
+        var created = Instantiate(PinPrefab, transform.position, Quaternion.identity);
+        created.GetComponentsInChildren<SpriteRenderer>()[1].color = ColourFetcher.GetColour(_playerIndex);
+        Debug.Log(created.GetComponent<Collider2D>().gameObject.name + " ignored");
+
+        // can pass through briefly (gives time for car to drive away)
+        created.GetComponent<Collider2D>().isTrigger = true;
+        yield return new WaitForSeconds(0.1f);
+        created.GetComponent<Collider2D>().isTrigger = false;
     }
-    
+
     /// <summary>
     /// Causes a brief increase in speed
     /// </summary>
     IEnumerator ReverseSteering_()
     {
+        Debug.Log("Reversing");
         // TODO: tell controller to flip player steering
-        
+
         // enforce the boost for 2 seconds
         yield return new WaitForSeconds(2);
-        
+
         // TODO: tell controller to stop flipping player steering
     }
 
@@ -186,30 +204,30 @@ public class CarControllerScript : MonoBehaviour
         ApplySteering_();
         CheckNewTrail_();
     }
-    
+
     /// <summary>
     /// Checks if new positions have been added to the drawing (colour) trail
     /// </summary>
     void CheckNewTrail_()
     {
         // check if there are more positions than there previously were
-        if(DrawTrail.positionCount > _trailPositions)
+        if (DrawTrail.positionCount > _trailPositions)
         {
             // get all positions
             Vector3[] trailPositions = new Vector3[DrawTrail.positionCount];
             DrawTrail.GetPositions(trailPositions);
 
             // add the new ones to the list, along with whether they were in bounds or not
-            for(var i = _trailPositions; i < DrawTrail.positionCount; i++)
+            for (var i = _trailPositions; i < DrawTrail.positionCount; i++)
             {
                 _lapDrawings.Last().Add(new Tuple<Vector3, bool>(trailPositions[i], CurrentlyInBounds_()));
             }
         }
-    
+
         // store the current count of items
         _trailPositions = DrawTrail.positionCount;
     }
-    
+
     /// <summary>
     /// Checks if the car is in the bounds of the track
     /// </summary>
@@ -263,7 +281,7 @@ public class CarControllerScript : MonoBehaviour
         // check if we are moving fast enough to turn
         float minSpeed = (_carRigidBody.velocity.magnitude / 8);
         minSpeed = Mathf.Clamp01(minSpeed);
-        
+
         // rotate the car
         _rotationAngle -= (_steeringInput * TurnFactor * minSpeed);
         _carRigidBody.MoveRotation(_rotationAngle);
@@ -276,7 +294,7 @@ public class CarControllerScript : MonoBehaviour
     public void SetSteeringValue(float steerValue)
     {
         _steeringInput = steerValue;
-        
+
         // if steering, turn skid marks on
         var emit = (Math.Abs(_steeringInput) > 0.5f) && (_accelerationInput > 0.5f);
         ToggleTrail(emit);
@@ -335,10 +353,18 @@ public class CarControllerScript : MonoBehaviour
         _addPointsCallback((int)(score * _lapPoints));
 
         // add bonus points for staying in the lines
-        if(score > 0.9f)
+        if (score > 0.9f)
         {
             _addPointsCallback(ACCURACY_BONUS);
         }
+
+        // back to first checkpoint
+        _checkpointIndex = 0;
+
+        CartAttackController.Instance.CarStatuses[_playerIndex].SetLapCount(_lapDrawings.Count);
+
+        // check if this was the fastest lap - store if it is
+        CartAttackController.Instance.CheckFastestLap(_playerIndex, _lapStopwatch.GetCurrentTime());
 
         // new item on lap drawing list
         _lapDrawings.Add(new List<Tuple<Vector3, bool>>());
@@ -346,12 +372,6 @@ public class CarControllerScript : MonoBehaviour
         // clear trail
         DrawTrail.Clear();
         _trailPositions = 0;
-        
-        // back to first checkpoint
-        _checkpointIndex = 0;
-        
-        // check if this was the fastest lap - store if it is
-        CartAttackController.Instance.CheckFastestLap(_playerIndex, _lapStopwatch.GetCurrentTime());
 
         // restart lap timer
         StartLapTimer_();
@@ -386,7 +406,7 @@ public class CarControllerScript : MonoBehaviour
         // check the list for the current index and make sure that the one the car is at is the correct one
         return (collider == CartAttackController.Instance.Checkpoints[_checkpointIndex]);
     }
-    
+
     /// <summary>
     /// Called when a trigger is entered
     /// </summary>
@@ -394,43 +414,56 @@ public class CarControllerScript : MonoBehaviour
     void OnTriggerEnter2D(Collider2D collider)
     {
         // if collided with power up, pick it up
-        if(collider.gameObject.tag == "PowerUp")
+        if (collider.gameObject.tag == "PowerUp")
         {
-            if(_activePowerUp == PowerUp.None)
+            if (_activePowerUp == PowerUp.None)
             {
                 // start selecting a power up
                 StartCoroutine(SetPowerUp_());
             }
-            
+
             // destroy power up
-            Destroy(collider.gameObject);
+            collider.gameObject.SetActive(false);
         }
     }
-    
+
     /// <summary>
     /// Selects a random power up
     /// </summary>
     /// <param id="collision">The trigger that was entered</param>
     IEnumerator SetPowerUp_()
     {
-        var numOptions = (Enum.GetNames(typeof(PowerUp)).Length) - 1;
-        
-        // generate a random value
-        var iterations = UnityEngine.Random.Range(26, 38);
-        
-        // flick through the options
-        for(int i = 0; i < iterations; i++)
+        // check a power up is not happening
+        if (!_powerUpCycle)
         {
-            var index = i % numOptions;
-            
-            // update UI with image
+            _powerUpCycle = true;
+
+            var numOptions = (Enum.GetNames(typeof(PowerUp)).Length) - 1;
+
+            // generate a random value
+            var iterations = UnityEngine.Random.Range(15, 30);
+
+            var index = 0;
+
+            // flick through the options
+            for (int i = 0; i < iterations; i++)
+            {
+                index = i % numOptions;
+
+                // update UI with image
+                CartAttackController.Instance.CarStatuses[_playerIndex].UpdatePowerUpIcon(index);
+
+                // wait before flickering
+                yield return new WaitForSeconds(0.15f);
+            }
+
+            index = iterations % numOptions;
+
+            // set the active power up
+            _activePowerUp = (PowerUp)((index) + 1);
             CartAttackController.Instance.CarStatuses[_playerIndex].UpdatePowerUpIcon(index);
-            
-            // wait before flickering
-            yield return new WaitForSeconds(0.1f);
+
+            _powerUpCycle = false;
         }
-        
-        // set the active power up
-        _activePowerUp = (PowerUp)((iterations % numOptions)+ 1);        
-    }    
+    }
 }

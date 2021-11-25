@@ -1331,8 +1331,9 @@ MonoBehaviour:
   MaxSpeed: 12
   MaxDrag: 3
   AccelerationSpeed: 3
-  BoostFactor: 1.5
   Trails:
   - {fileID: 6343743168756823362}
   - {fileID: 6343743169747535010}
   DrawTrail: {fileID: 6343743168382966353}
+  PinPrefab: {fileID: 9029495394976719173, guid: 2aad65eb75e9faf4090cd3d8df3a9b2d, type: 3}
+  CollisionCollider: {fileID: 6343743168765597653}
