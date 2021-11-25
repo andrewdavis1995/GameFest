@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+enum PowerUp { None, SpeedBoost, ReverseSteering, PinDrop }
+
 /// <summary>
 /// Class to control car movement (Cart Attack)
 /// </summary>
@@ -12,6 +14,7 @@ public class CarControllerScript : MonoBehaviour
     const int MAX_LAP_POINTS = 350;
     const int LOWEST_LAP_POINTS = 20;
     const int ACCURACY_BONUS = 25;
+    const float BOOST_FACTOR = 1.1f;
 
     List<List<Tuple<Vector3, bool>>> _lapDrawings = new List<List<Tuple<Vector3, bool>>>();
 
@@ -22,13 +25,11 @@ public class CarControllerScript : MonoBehaviour
     public float MaxSpeed = 30f;
     public float MaxDrag = 3f;
     public float AccelerationSpeed = 3f;
-    public float BoostFactor = 1.1f;
 
     // status variables for car movement
     float _accelerationInput = 0;
     float _steeringInput = 0;
     float _rotationAngle = 0;
-    bool _boosting = false;
     int _checkpointIndex = 0;
     int _trailPositions = 0;
     float _lapPoints = 0;
@@ -38,10 +39,13 @@ public class CarControllerScript : MonoBehaviour
     List<Collider2D> _outOfBoundsZone = new List<Collider2D>();
 
     // link to car elements
-    Rigidbody2D carRigidBody;
     public TrailRenderer[] Trails;
     public TrailRenderer DrawTrail;
+    public Sprite[] PowerUpIcons;
+    
     Action<int> _addPointsCallback;
+    PowerUp _activePowerUp = PowerUp.None;
+    Rigidbody2D _carRigidBody;
 
     TimeLimit _lapTimer;
     TimeStopwatch _lapStopwatch;
@@ -57,7 +61,7 @@ public class CarControllerScript : MonoBehaviour
         _lapStopwatch = (TimeStopwatch)gameObject.AddComponent(typeof(TimeStopwatch));
         _lapStopwatch.Initialise(lapStopwatchTick_, .001f);
 
-        carRigidBody = GetComponent<Rigidbody2D>();
+        _carRigidBody = GetComponent<Rigidbody2D>();
         _lapDrawings.Add(new List<Tuple<Vector3, bool>>());
     }
 
@@ -114,12 +118,25 @@ public class CarControllerScript : MonoBehaviour
     }
 
     /// <summary>
-    /// Causes a brief increase in speed
+    /// Applies the power up that was collected
     /// </summary>
-    public void Boost()
+    public void ApplyPowerUp()
     {
-        if (!_boosting)
-            StartCoroutine(Boost_());
+        switch(_activePowerUp)
+        {
+            case PowerUp.SpeedBoost:
+                StartCoroutine(Boost_());
+                break;
+            case PowerUp.ReverseSteering:
+                StartCoroutine(ReverseSteering_());
+                break;
+            case PowerUp.PinDrop:
+                StartCoroutine(DropPin_());
+                break;
+        }
+        
+        // no power up left
+        _activePowerUp = PowerUp.None;
     }
     
     /// <summary>
@@ -127,15 +144,34 @@ public class CarControllerScript : MonoBehaviour
     /// </summary>
     IEnumerator Boost_()
     {
-        _boosting = true;
-        MaxSpeed *= BoostFactor;
+        MaxSpeed *= BOOST_FACTOR;
         
         // enforce the boost for 2 seconds
         yield return new WaitForSeconds(2);
         
         // return to normal speed
-        _boosting = false;
-        MaxSpeed /= BoostFactor;
+        MaxSpeed /= BOOST_FACTOR;
+    }
+    
+    /// <summary>
+    /// Drops a pin
+    /// </summary>
+    void DropPin_()
+    {
+        // TODO: Drop pin at current point
+    }
+    
+    /// <summary>
+    /// Causes a brief increase in speed
+    /// </summary>
+    IEnumerator ReverseSteering_()
+    {
+        // TODO: tell controller to flip player steering
+        
+        // enforce the boost for 2 seconds
+        yield return new WaitForSeconds(2);
+        
+        // TODO: tell controller to stop flipping player steering
     }
 
     /// <summary>
@@ -196,7 +232,7 @@ public class CarControllerScript : MonoBehaviour
     void ApplyEngineForce_()
     {
         // get the forward speed
-        float velocityVsUp = Vector2.Dot(transform.up, carRigidBody.velocity);
+        float velocityVsUp = Vector2.Dot(transform.up, _carRigidBody.velocity);
 
         // limit speed
         if (velocityVsUp > MaxSpeed && _accelerationInput > 0)
@@ -208,13 +244,13 @@ public class CarControllerScript : MonoBehaviour
 
         // adjust drag based on acceleration input
         if (_accelerationInput == 0)
-            carRigidBody.drag = Mathf.Lerp(carRigidBody.drag, MaxDrag, Time.fixedDeltaTime * AccelerationSpeed);
+            _carRigidBody.drag = Mathf.Lerp(_carRigidBody.drag, MaxDrag, Time.fixedDeltaTime * AccelerationSpeed);
         else
-            carRigidBody.drag = Mathf.Lerp(carRigidBody.drag, 0f, Time.fixedDeltaTime * 2);
+            _carRigidBody.drag = Mathf.Lerp(_carRigidBody.drag, 0f, Time.fixedDeltaTime * 2);
 
         // apply force
         var engineForceVector = transform.up * _accelerationInput * AccelerationFactor;
-        carRigidBody.AddForce(engineForceVector, ForceMode2D.Force);
+        _carRigidBody.AddForce(engineForceVector, ForceMode2D.Force);
     }
 
     /// <summary>
@@ -223,12 +259,12 @@ public class CarControllerScript : MonoBehaviour
     void ApplySteering_()
     {
         // check if we are moving fast enough to turn
-        float minSpeed = (carRigidBody.velocity.magnitude / 8);
+        float minSpeed = (_carRigidBody.velocity.magnitude / 8);
         minSpeed = Mathf.Clamp01(minSpeed);
         
         // rotate the car
         _rotationAngle -= (_steeringInput * TurnFactor * minSpeed);
-        carRigidBody.MoveRotation(_rotationAngle);
+        _carRigidBody.MoveRotation(_rotationAngle);
     }
 
     /// <summary>
@@ -259,11 +295,11 @@ public class CarControllerScript : MonoBehaviour
     void KillOrthogonalVelocity_()
     {
         // get directional velocities
-        Vector2 forwardVelocity = transform.up * Vector2.Dot(carRigidBody.velocity, transform.up);
-        Vector2 rightVelocity = transform.right * Vector2.Dot(carRigidBody.velocity, transform.right);
+        Vector2 forwardVelocity = transform.up * Vector2.Dot(_carRigidBody.velocity, transform.up);
+        Vector2 rightVelocity = transform.right * Vector2.Dot(_carRigidBody.velocity, transform.right);
 
         // correct the velocity
-        carRigidBody.velocity = forwardVelocity + rightVelocity * DriftFactor;
+        _carRigidBody.velocity = forwardVelocity + rightVelocity * DriftFactor;
     }
 
     /// <summary>
@@ -348,4 +384,48 @@ public class CarControllerScript : MonoBehaviour
         // check the list for the current index and make sure that the one the car is at is the correct one
         return (collider == CartAttackController.Instance.Checkpoints[_checkpointIndex]);
     }
+    
+    /// <summary>
+    /// Called when a trigger is entered
+    /// </summary>
+    /// <param id="collision">The trigger that was entered</param>
+    void OnTriggerEnter2D(Collider2D collider)
+    {
+        // if collided with power up, pick it up
+        if(collider.gameObject.tag == "PowerUp")
+        {
+            if(_activePowerUp == PowerUp.None)
+            {
+                // start selecting a power up
+            }
+            
+            // destroy power up
+            Destroy(collider.gameObject);
+        }
+    }
+    
+    /// <summary>
+    /// Selects a random power up
+    /// </summary>
+    /// <param id="collision">The trigger that was entered</param>
+    IEnumerator SetPowerUp_()
+    {
+        var numOptions = (Enum.GetNames(typeof(PowerUp)).Length) - 1;
+        
+        // generate a random value
+        var iterations = UnityEngine.Random.Range(26, 38);
+        
+        // flick through the options
+        for(int i = 0; i < iterations; i++)
+        {
+            var index = i % numOptions;
+            // TODO: update UI with image
+            
+            yield return new WaitForSeconds(0.1f);
+        }
+        
+        // set the active power up
+        _activePowerUp = (PowerUp)((iterations % numOptions)+ 1);        
+    }
+    
 }
