@@ -15,6 +15,8 @@ public class CarControllerScript : MonoBehaviour
     const int LOWEST_LAP_POINTS = 20;
     const int ACCURACY_BONUS = 25;
     const float BOOST_FACTOR = 1.1f;
+    const float BOOST_DURATION = 1.6f;
+    const float ROCKET_BOSSTER_OFFSET = 0.5f;
 
     List<List<Tuple<Vector3, bool>>> _lapDrawings = new List<List<Tuple<Vector3, bool>>>();
 
@@ -45,6 +47,7 @@ public class CarControllerScript : MonoBehaviour
     public TrailRenderer DrawTrail;
     public Transform PinPrefab;
     public Collider2D CollisionCollider;
+    public Transform RocketBooster;
 
     Action<int> _addPointsCallback;
     PowerUp _activePowerUp = PowerUp.None;
@@ -153,13 +156,29 @@ public class CarControllerScript : MonoBehaviour
     /// </summary>
     IEnumerator Boost_()
     {
+        RocketBooster.gameObject.SetActive(true);
         MaxSpeed *= BOOST_FACTOR;
 
+        // show booster
+        for(float i = 0; i < ROCKET_BOOSTER_OFFSET; i+=0.01f)
+        {
+            RocketBooster.localPosition = new Vector3(0, i);
+            yield return new WaitForSeconds(0.1f);
+        }
+
         // enforce the boost for 2 seconds
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(BOOST_DURATION);
+        
+        // hide booster
+        for(float i = ROCKET_BOOSTER_OFFSET; i >= 0 i-=0.1f)
+        {
+            RocketBooster.localPosition = new Vector3(0, i);
+            yield return new WaitForSeconds(0.1f);
+        }
 
         // return to normal speed
         MaxSpeed /= BOOST_FACTOR;
+        RocketBooster.gameObject.SetActive(true);
     }
 
     /// <summary>
