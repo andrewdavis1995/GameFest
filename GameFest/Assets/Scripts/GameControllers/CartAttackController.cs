@@ -247,4 +247,32 @@ public class CartAttackController : MonoBehaviour
         // TODO: Add back once full menu system done
         // PlayerManagerScript.Instance.CentralScene();
     }
+    
+    /// <summary>
+    /// Flips all players steering direction (other than the player that triggered it)
+    /// </summary>
+    /// <param id="plTrigger">The index of the player who triggered the power up</param>
+    public void FlipSteering(int plTrigger)
+    {
+        for(int i = 0; i < _players.Count; i++)
+        {
+            // don't flip direction of player who triggered the behaviour
+            if(i != plTrigger)
+                _players[i].FlipSteeringStarted();
+        }
+    }
+    
+    /// <summary>
+    /// Stops flipping all players steering direction (other than the player that triggered it)
+    /// </summary>
+    /// <param id="plTrigger">The index of the player who triggered the power up</param>
+    public void FlipSteering(int plTrigger)
+    {
+        for(int i = 0; i < _players.Count; i++)
+        {
+            // don't update player who triggered the behaviour
+            if(i != plTrigger)
+                _players[i].FlipSteeringStopped();
+        }
+    }
 }
