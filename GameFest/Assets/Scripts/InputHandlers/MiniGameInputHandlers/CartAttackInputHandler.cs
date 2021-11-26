@@ -76,5 +76,21 @@ public class CartAttackInputHandler : GenericInputHandler
             _carController.SetAccelerationValue(y);
             _carController.SetSteeringValue(x);
         }
+    }    
+    
+    /// <summary>
+    /// A player has triggered a power up to flip this players steering direction
+    /// </summary>
+    public void FlipSteeringStarted()
+    {
+        _carController.FlipSteeringStarted();
+    }
+    
+    /// <summary>
+    /// A power up to flip this players steering direction has ended
+    /// </summary>
+    public void FlipSteeringStopped()
+    {
+        _carController.FlipSteeringStopped();
     }
 }
