@@ -36,6 +36,7 @@ public class CarControllerScript : MonoBehaviour
     int _stopwatchTime = 0;
     int _playerIndex = 0;
     bool _powerUpCycle = false;
+    int _flipSteeringRequests = 0;
 
     List<Collider2D> _outOfBoundsZone = new List<Collider2D>();
 
@@ -185,13 +186,14 @@ public class CarControllerScript : MonoBehaviour
     /// </summary>
     IEnumerator ReverseSteering_()
     {
-        Debug.Log("Reversing");
-        // TODO: tell controller to flip player steering
-
+        // tell controller to flip player steering
+        CartAttackController.Instance.FlipSteering(_playerIndex);
+        
         // enforce the boost for 2 seconds
         yield return new WaitForSeconds(2);
 
-        // TODO: tell controller to stop flipping player steering
+        // tell controller to stop flipping player steering
+        CartAttackController.Instance.UnflipSteering(_playerIndex);
     }
 
     /// <summary>
@@ -272,6 +274,22 @@ public class CarControllerScript : MonoBehaviour
         var engineForceVector = transform.up * _accelerationInput * AccelerationFactor;
         _carRigidBody.AddForce(engineForceVector, ForceMode2D.Force);
     }
+    
+    /// <summary>
+    /// A player has triggered a power up to flip this players steering direction
+    /// </summary>
+    public void FlipSteeringStarted()
+    {
+        _flipSteeringRequests++;
+    }
+    
+    /// <summary>
+    /// A power up to flip this players steering direction has ended
+    /// </summary>
+    public void FlipSteeringStopped()
+    {
+        _flipSteeringRequests--;
+    }
 
     /// <summary>
     /// Handle the steering/change in direction of car
@@ -282,8 +300,11 @@ public class CarControllerScript : MonoBehaviour
         float minSpeed = (_carRigidBody.velocity.magnitude / 8);
         minSpeed = Mathf.Clamp01(minSpeed);
 
+        // change direction if steering is flipped
+        var flipFactor = (_flipSteeringRequests > 0) ? -1 : 1;
+
         // rotate the car
-        _rotationAngle -= (_steeringInput * TurnFactor * minSpeed);
+        _rotationAngle -= (_steeringInput * TurnFactor * minSpeed * flipFactor);
         _carRigidBody.MoveRotation(_rotationAngle);
     }
 
