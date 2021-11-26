@@ -18,6 +18,7 @@ public class CartAttackController : MonoBehaviour
     public Sprite[] StarterLightSprites;
     public Text TxtRemainingTime;
     public CartAttackPlayerUiScript[] CarStatuses;
+    public GameObject[] PowerUps;
 
     List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
 
@@ -27,6 +28,7 @@ public class CartAttackController : MonoBehaviour
 
     int _currentBestLap = Int32.MaxValue;
     int _currentBestLapPlayer = -1;
+    bool _running = false;
 
     // Called once on startup
     private void Start()
@@ -58,6 +60,8 @@ public class CartAttackController : MonoBehaviour
             StarterLights.sprite = StarterLightSprites[i];
         }
 
+        _running = true;
+
         // enable all players
         foreach (var player in _players)
         {
@@ -69,6 +73,22 @@ public class CartAttackController : MonoBehaviour
 
         yield return new WaitForSeconds(3);
         StarterLights.sprite = StarterLightSprites[0];
+
+        // start process of spawning power ups
+        StartCoroutine(SpawnPowerups());
+    }
+
+    private IEnumerator SpawnPowerups()
+    {
+        while(_running)
+        {
+            // wait 7 seconds
+            yield return new WaitForSeconds(7f);
+
+            // spawn a random power up
+            var r = UnityEngine.Random.Range(0, PowerUps.Length - 1);
+            PowerUps[r].SetActive(true);
+        }
     }
 
     /// <summary>
@@ -76,6 +96,8 @@ public class CartAttackController : MonoBehaviour
     /// </summary>
     private void raceTimerComplete_()
     {
+        _running = false;
+
         // disable all players
         foreach (var player in _players)
         {
