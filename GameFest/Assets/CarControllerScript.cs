@@ -13,8 +13,8 @@ public class CarControllerScript : MonoBehaviour
 {
     const int MAX_LAP_POINTS = 350;
     const int LOWEST_LAP_POINTS = 20;
-    const int ACCURACY_BONUS = 25;
-    const float BOOST_FACTOR = 1.1f;
+    const int ACCURACY_BONUS = 30;
+    const float BOOST_FACTOR = 1.2f;
 
     List<List<Tuple<Vector3, bool>>> _lapDrawings = new List<List<Tuple<Vector3, bool>>>();
 

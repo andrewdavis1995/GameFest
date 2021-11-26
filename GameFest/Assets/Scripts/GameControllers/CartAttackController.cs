@@ -10,7 +10,7 @@ using UnityEngine.UI;
 /// </summary>
 public class CartAttackController : MonoBehaviour
 {
-    const int FASTEST_LAP_BONUS = 30;
+    const int FASTEST_LAP_BONUS = 50;
 
     public Collider2D[] Checkpoints;
     public CarControllerScript[] Cars;
