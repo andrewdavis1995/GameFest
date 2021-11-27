@@ -19,14 +19,15 @@ public class CartAttackController : MonoBehaviour
     public Text TxtRemainingTime;
     public CartAttackPlayerUiScript[] CarStatuses;
     public GameObject[] PowerUps;
+    public VehicleSelectionController VehicleSelection;
 
-    List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
+     List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
 
     public static CartAttackController Instance;
 
     TimeLimit _raceTimer;
 
-    int _currentBestLap = Int32.MaxValue;
+    double _currentBestLap = Int32.MaxValue;
     int _currentBestLapPlayer = -1;
     bool _running = false;
 
@@ -158,7 +159,7 @@ public class CartAttackController : MonoBehaviour
         {
             // hide car
             Cars[index].gameObject.SetActive(false);
-            CarStatuses[index].gameObject.SetActive(false);
+            VehicleSelection.VehicleSelectionDisplays[index].gameObject.SetActive(false);
         }
     }
 
@@ -196,11 +197,12 @@ public class CartAttackController : MonoBehaviour
     /// </summary>
     /// <param id="playerIndex">The index of the player who completed the lap</param>
     /// <param id="lapTime">The time taken to complete the lap</param>
-    public void CheckFastestLap(int playerIndex, int lapTime)
+    public void CheckFastestLap(int playerIndex, double lapTime)
     {
         // if faster than the current record, store this lap as the new record
         if (lapTime < _currentBestLap)
         {
+            Debug.Log("NEW best score! " + playerIndex);
             _currentBestLap = lapTime;
             _currentBestLapPlayer = playerIndex;
         }
@@ -266,7 +268,7 @@ public class CartAttackController : MonoBehaviour
     /// Stops flipping all players steering direction (other than the player that triggered it)
     /// </summary>
     /// <param id="plTrigger">The index of the player who triggered the power up</param>
-    public void FlipSteering(int plTrigger)
+    public void UnflipSteering(int plTrigger)
     {
         for(int i = 0; i < _players.Count; i++)
         {

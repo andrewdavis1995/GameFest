@@ -16,7 +16,7 @@ public class CarControllerScript : MonoBehaviour
     const int ACCURACY_BONUS = 30;
     const float BOOST_FACTOR = 1.2f;
     const float BOOST_DURATION = 1.6f;
-    const float ROCKET_BOSSTER_OFFSET = 0.5f;
+    const float ROCKET_BOOSTER_OFFSET = -0.9f;
 
     List<List<Tuple<Vector3, bool>>> _lapDrawings = new List<List<Tuple<Vector3, bool>>>();
 
@@ -35,10 +35,10 @@ public class CarControllerScript : MonoBehaviour
     int _checkpointIndex = 0;
     int _trailPositions = 0;
     float _lapPoints = 0;
-    int _stopwatchTime = 0;
     int _playerIndex = 0;
     bool _powerUpCycle = false;
     int _flipSteeringRequests = 0;
+    DateTime _lapStart;
 
     List<Collider2D> _outOfBoundsZone = new List<Collider2D>();
 
@@ -54,7 +54,6 @@ public class CarControllerScript : MonoBehaviour
     Rigidbody2D _carRigidBody;
 
     TimeLimit _lapTimer;
-    TimeStopwatch _lapStopwatch;
 
     /// <summary>
     /// Called when the script starts up
@@ -63,9 +62,6 @@ public class CarControllerScript : MonoBehaviour
     {
         _lapTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _lapTimer.Initialise(MAX_LAP_POINTS - LOWEST_LAP_POINTS, lapTimerTick_, null, 0.1f);
-
-        _lapStopwatch = (TimeStopwatch)gameObject.AddComponent(typeof(TimeStopwatch));
-        _lapStopwatch.Initialise(lapStopwatchTick_, .01f);
 
         _carRigidBody = GetComponent<Rigidbody2D>();
         _lapDrawings.Add(new List<Tuple<Vector3, bool>>());
@@ -93,8 +89,7 @@ public class CarControllerScript : MonoBehaviour
         _lapTimer.StartTimer();
 
         // time stopwatch
-        _stopwatchTime = 0;
-        _lapStopwatch.StartTimer();
+        _lapStart = DateTime.Now;
     }
 
     /// <summary>
@@ -112,15 +107,6 @@ public class CarControllerScript : MonoBehaviour
     private void lapTimerTick_(int points)
     {
         _lapPoints = LOWEST_LAP_POINTS + points;
-    }
-
-    /// <summary>
-    /// Callback for the lap stopwatch
-    /// </summary>
-    /// <param name="points">Current time</param>
-    private void lapStopwatchTick_(int time)
-    {
-        _stopwatchTime = time;
     }
 
     /// <summary>
@@ -160,19 +146,19 @@ public class CarControllerScript : MonoBehaviour
         MaxSpeed *= BOOST_FACTOR;
 
         // show booster
-        for(float i = 0; i < ROCKET_BOOSTER_OFFSET; i+=0.01f)
+        for(float i = 0; i >= ROCKET_BOOSTER_OFFSET; i-=0.01f)
         {
-            RocketBooster.localPosition = new Vector3(0, i);
-            yield return new WaitForSeconds(0.1f);
+            RocketBooster.localPosition = new Vector3(0, i, 0.1f);
+            yield return new WaitForSeconds(0.01f);
         }
 
         // enforce the boost for 2 seconds
         yield return new WaitForSeconds(BOOST_DURATION);
         
         // hide booster
-        for(float i = ROCKET_BOOSTER_OFFSET; i >= 0 i-=0.1f)
+        for(float i = ROCKET_BOOSTER_OFFSET; i <= 0; i+=0.1f)
         {
-            RocketBooster.localPosition = new Vector3(0, i);
+            RocketBooster.localPosition = new Vector3(0, i, 0.1f);
             yield return new WaitForSeconds(0.1f);
         }
 
@@ -403,8 +389,14 @@ public class CarControllerScript : MonoBehaviour
 
         CartAttackController.Instance.CarStatuses[_playerIndex].SetLapCount(_lapDrawings.Count);
 
+        var lapEnd = DateTime.Now;
+        var duration = lapEnd - _lapStart;
+
+        var ms = (duration.Minutes * 1000 * 60) + (duration.Seconds * 1000) + duration.Milliseconds;
+        Debug.Log(ms + "(" + duration.Minutes + ", " + duration.Seconds + ", " + duration.Milliseconds);
+
         // check if this was the fastest lap - store if it is
-        CartAttackController.Instance.CheckFastestLap(_playerIndex, _lapStopwatch.GetCurrentTime());
+        CartAttackController.Instance.CheckFastestLap(_playerIndex, ms);
 
         // new item on lap drawing list
         _lapDrawings.Add(new List<Tuple<Vector3, bool>>());

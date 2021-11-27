@@ -55,7 +55,7 @@ public class CartAttackPlayerUiScript : MonoBehaviour
     /// </summary>
     /// <param id="ms">Time taken for the lap</param> 
     /// <param id="thisPlayer">Whether this player was the one who set the best lap</param> 
-    public void SetBestLap(bool thisPlayer, int ms)
+    public void SetBestLap(bool thisPlayer, double ms)
     {
         // show/hide the display based on if this player set the lap time
         BestLap.SetActive(thisPlayer);
@@ -64,9 +64,9 @@ public class CartAttackPlayerUiScript : MonoBehaviour
         if (thisPlayer)
         {
             // calculate time components
-            var minutes = (ms / 60000);
-            var seconds = (ms - (minutes * 60000)) / 100;
-            var milliseconds = (ms - (minutes * 60000) - (seconds * 100));
+            int minutes = (int)(ms / 60000);
+            int seconds = (int)((ms - (minutes * 60000)) / 1000);
+            int milliseconds = (int)((ms - (minutes * 60000) - (seconds * 1000)));
 
             TxtBestLap.text = $"{minutes.ToString("00")}:{seconds.ToString("00")}.{milliseconds.ToString("000")}";
         }
