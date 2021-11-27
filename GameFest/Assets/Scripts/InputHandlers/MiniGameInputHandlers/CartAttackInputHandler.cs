@@ -6,8 +6,9 @@ using UnityEngine;
 public class CartAttackInputHandler : GenericInputHandler
 {
     CarControllerScript _carController;
-    
+
     bool _active = false;
+    bool _vehicleSelected = false;
 
     /// <summary>
     /// Called once when the script begins
@@ -17,7 +18,7 @@ public class CartAttackInputHandler : GenericInputHandler
         // TODO: remove once hooked up with proper controller and game system
         _carController = GetComponent<CarControllerScript>();
     }
-    
+
     /// <summary>
     /// Sets whether the car can move
     /// </summary>
@@ -26,7 +27,7 @@ public class CartAttackInputHandler : GenericInputHandler
     {
         _active = state;
 
-        if(!_active)
+        if (!_active)
         {
             _carController.SetAccelerationValue(0);
             _carController.SetSteeringValue(0);
@@ -52,32 +53,71 @@ public class CartAttackInputHandler : GenericInputHandler
         _carController.Initialise(AddPoints, GetPlayerIndex());
     }
 
+    /// <summary>
+    /// Check if the vehicle selection is complete for this player
+    /// </summary>
+    /// <returns>Whether they have selected a vehicle</returns>
+    public bool VehicleSelected()
+    {
+        return _vehicleSelected;
+    }
+
     // Update is called once per frame
     void Update()
     {
-        var x = 0;
-        var y = 0;
-
-        if (Input.GetKey(KeyCode.A))
-            x = -1;
-        if (Input.GetKey(KeyCode.D))
-            x = 1;
-        if (Input.GetKey(KeyCode.W))
-            y = 1;
-        if (Input.GetKey(KeyCode.S))
-            y = -1;
-
         // TODO: Move to inputsystem controls
-        if(_active)
-        {
-            if (Input.GetKey(KeyCode.Space))
-                _carController.ApplyPowerUp();
 
-            _carController.SetAccelerationValue(y);
-            _carController.SetSteeringValue(x);
+        // if vehicle selection in progress, update UI
+        if (CartAttackController.Instance.VehicleSelection.GetActiveState())
+        {
+            var direction = 0;
+
+            if (Input.GetKeyDown(KeyCode.A))
+                direction = -1;
+            if (Input.GetKeyDown(KeyCode.D))
+                direction = 1;
+
+            if (direction != 0)
+                CartAttackController.Instance.VehicleSelection.UpdateDisplay(GetPlayerIndex(), direction);
+
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                _vehicleSelected = true;
+                CartAttackController.Instance.VehicleSelection.Complete(GetPlayerIndex());
+                CartAttackController.Instance.CheckVehicleSelectionComplete();
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                _vehicleSelected = false;
+                CartAttackController.Instance.VehicleSelection.Incomplete(GetPlayerIndex());
+            }
+            }
+        else
+        {
+            if (_active)
+            {
+                var x = 0;
+                var y = 0;
+
+                if (Input.GetKey(KeyCode.A))
+                    x = -1;
+                if (Input.GetKey(KeyCode.D))
+                    x = 1;
+                if (Input.GetKey(KeyCode.W))
+                    y = 1;
+                if (Input.GetKey(KeyCode.S))
+                    y = -1;
+
+                if (Input.GetKey(KeyCode.Space))
+                    _carController.ApplyPowerUp();
+
+                _carController.SetAccelerationValue(y);
+                _carController.SetSteeringValue(x);
+            }
         }
-    }    
-    
+    }
+
     /// <summary>
     /// A player has triggered a power up to flip this players steering direction
     /// </summary>
@@ -85,7 +125,7 @@ public class CartAttackInputHandler : GenericInputHandler
     {
         _carController.FlipSteeringStarted();
     }
-    
+
     /// <summary>
     /// A power up to flip this players steering direction has ended
     /// </summary>

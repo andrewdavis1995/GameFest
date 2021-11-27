@@ -46,8 +46,15 @@ public class CarControllerScript : MonoBehaviour
     public TrailRenderer[] Trails;
     public TrailRenderer DrawTrail;
     public Transform PinPrefab;
-    public Collider2D CollisionCollider;
+    public BoxCollider2D CollisionCollider;
+    public BoxCollider2D TriggerCollider;
     public Transform RocketBooster;
+    public SpriteRenderer BodyRenderer;
+    public SpriteRenderer BaseRenderer;
+    public SpriteRenderer LeftWheelRenderer;
+    public SpriteRenderer RightWheelRenderer;
+    public SpriteRenderer BackWheelsRenderer;
+    public SpriteRenderer GlassRenderer;
 
     Action<int> _addPointsCallback;
     PowerUp _activePowerUp = PowerUp.None;

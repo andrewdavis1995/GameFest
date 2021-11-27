@@ -20,8 +20,10 @@ public class CartAttackController : MonoBehaviour
     public CartAttackPlayerUiScript[] CarStatuses;
     public GameObject[] PowerUps;
     public VehicleSelectionController VehicleSelection;
+    public GameObject Leaderboard;
+    public CameraLerp CameraLerpController;
 
-     List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
+    List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
 
     public static CartAttackController Instance;
 
@@ -39,13 +41,12 @@ public class CartAttackController : MonoBehaviour
 
         Instance = this;
 
+        VehicleSelection.SetActiveState(true);
+
         _players = SpawnPlayers_();
 
-        // TODO: Move to after SpawnPlayers
+        // hide unused items (not enough players to fill slots)
         HideUnusedElements_(_players.Count, Cars.Length);
-
-        // TODO: this moves to after the countdown lights
-        StartCoroutine(StartRace_());
     }
 
     /// <summary>
@@ -53,6 +54,9 @@ public class CartAttackController : MonoBehaviour
     /// </summary>
     private IEnumerator StartRace_()
     {
+        CameraLerpController.enabled = true;
+        Leaderboard.SetActive(true);
+
         // show countdown
         for (int i = 0; i < StarterLightSprites.Length; i++)
         {
@@ -89,6 +93,23 @@ public class CartAttackController : MonoBehaviour
             // spawn a random power up
             var r = UnityEngine.Random.Range(0, PowerUps.Length - 1);
             PowerUps[r].SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// Checks if all vehicle selection is complete
+    /// </summary>
+    internal void CheckVehicleSelectionComplete()
+    {
+        var complete = _players.All(p => p.VehicleSelected());
+        var complete2 = _players.Any(p => !p.VehicleSelected());
+
+        if (complete)
+        {
+            VehicleSelection.SetActiveState(false);
+            VehicleSelection.VehicleSelectionUI.gameObject.SetActive(false);
+            StartCoroutine(StartRace_());
+            // TODO: move camera
         }
     }
 
@@ -144,6 +165,8 @@ public class CartAttackController : MonoBehaviour
         list[index].SetPlayerName("DEMO");
         CarStatuses[index].Initialise(list[index].GetPlayerName(), index);
 
+        VehicleSelection.VehicleSelectionDisplays[index].TxtPlayerName.text = list[index].GetPlayerName();
+
         return list;
     }
 
@@ -159,6 +182,7 @@ public class CartAttackController : MonoBehaviour
         {
             // hide car
             Cars[index].gameObject.SetActive(false);
+            CarStatuses[index].gameObject.SetActive(false);
             VehicleSelection.VehicleSelectionDisplays[index].gameObject.SetActive(false);
         }
     }
