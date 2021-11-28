@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -41,6 +43,41 @@ public class CartAttackInputHandler : GenericInputHandler
     {
         SetActiveState(true);
         _carController.StartRace();
+    }
+
+    /// <summary>
+    /// Gets the laps completed for this player
+    /// </summary>
+    /// <returns>The lap data</returns>
+    public List<List<Tuple<Vector3, bool>>> GetLaps()
+    {
+        return _carController.GetLaps();
+    }
+    /// <summary>
+    /// Gets the times for the laps completed for this player
+    /// </summary>
+    /// <returns>The lap data</returns>
+    public List<int> GetLapTimes()
+    {
+        return _carController.GetLapTimes();
+    }
+
+    /// <summary>
+    /// Gets the scores for the laps completed for this player
+    /// </summary>
+    /// <returns>The lap data</returns>
+    public List<int> GetLapScores()
+    {
+        return _carController.GetLapScores();
+    }
+
+    /// <summary>
+    /// Gets the accuracy ratings for the laps completed for this player
+    /// </summary>
+    /// <returns>The lap data</returns>
+    public List<float> GetLapAccuracies()
+    {
+        return _carController.GetLapAccuracies();
     }
 
     /// <summary>

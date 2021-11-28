@@ -14,11 +14,15 @@ public class CarControllerScript : MonoBehaviour
     const int MAX_LAP_POINTS = 350;
     const int LOWEST_LAP_POINTS = 20;
     const int ACCURACY_BONUS = 30;
+    public static float ACCURACY_BONUS_THRESHOLD = 0.9f;
     const float BOOST_FACTOR = 1.2f;
     const float BOOST_DURATION = 1.6f;
     const float ROCKET_BOOSTER_OFFSET = -0.9f;
 
     List<List<Tuple<Vector3, bool>>> _lapDrawings = new List<List<Tuple<Vector3, bool>>>();
+    List<int> _lapScores = new List<int>();
+    List<float> _lapAccuracies = new List<float>();
+    List<int> _lapTimes = new List<int>();
 
     // configurable parameters about car movement
     public float AccelerationFactor = 30.0f;
@@ -153,7 +157,7 @@ public class CarControllerScript : MonoBehaviour
         MaxSpeed *= BOOST_FACTOR;
 
         // show booster
-        for(float i = 0; i >= ROCKET_BOOSTER_OFFSET; i-=0.01f)
+        for (float i = 0; i >= ROCKET_BOOSTER_OFFSET; i -= 0.01f)
         {
             RocketBooster.localPosition = new Vector3(0, i, 0.1f);
             yield return new WaitForSeconds(0.01f);
@@ -161,9 +165,9 @@ public class CarControllerScript : MonoBehaviour
 
         // enforce the boost for 2 seconds
         yield return new WaitForSeconds(BOOST_DURATION);
-        
+
         // hide booster
-        for(float i = ROCKET_BOOSTER_OFFSET; i <= 0; i+=0.1f)
+        for (float i = ROCKET_BOOSTER_OFFSET; i <= 0; i += 0.1f)
         {
             RocketBooster.localPosition = new Vector3(0, i, 0.1f);
             yield return new WaitForSeconds(0.1f);
@@ -200,7 +204,7 @@ public class CarControllerScript : MonoBehaviour
     {
         // tell controller to flip player steering
         CartAttackController.Instance.FlipSteering(_playerIndex);
-        
+
         // enforce the boost for 2 seconds
         yield return new WaitForSeconds(2);
 
@@ -286,7 +290,7 @@ public class CarControllerScript : MonoBehaviour
         var engineForceVector = transform.up * _accelerationInput * AccelerationFactor;
         _carRigidBody.AddForce(engineForceVector, ForceMode2D.Force);
     }
-    
+
     /// <summary>
     /// A player has triggered a power up to flip this players steering direction
     /// </summary>
@@ -294,13 +298,49 @@ public class CarControllerScript : MonoBehaviour
     {
         _flipSteeringRequests++;
     }
-    
+
     /// <summary>
     /// A power up to flip this players steering direction has ended
     /// </summary>
     public void FlipSteeringStopped()
     {
         _flipSteeringRequests--;
+    }
+
+    /// <summary>
+    /// Gets the laps completed for this player
+    /// </summary>
+    /// <returns>The lap data</returns>
+    public List<List<Tuple<Vector3, bool>>> GetLaps()
+    {
+        return _lapDrawings;
+    }
+
+    /// <summary>
+    /// Gets the times for the laps completed for this player
+    /// </summary>
+    /// <returns>The lap data</returns>
+    public List<int> GetLapTimes()
+    {
+        return _lapTimes;
+    }
+
+    /// <summary>
+    /// Gets the scores for the laps completed for this player
+    /// </summary>
+    /// <returns>The lap data</returns>
+    public List<int> GetLapScores()
+    {
+        return _lapScores;
+    }
+
+    /// <summary>
+    /// Gets the accuracy ratings for the laps completed for this player
+    /// </summary>
+    /// <returns>The lap data</returns>
+    public List<float> GetLapAccuracies()
+    {
+        return _lapAccuracies;
     }
 
     /// <summary>
@@ -383,10 +423,12 @@ public class CarControllerScript : MonoBehaviour
         var offTrack = _lapDrawings.Last().Count(p => !p.Item2);
 
         var score = onTrack / (float)(onTrack + offTrack);
+        _lapAccuracies.Add(score);
+        _lapScores.Add((int)(score * _lapPoints));
         _addPointsCallback((int)(score * _lapPoints));
 
         // add bonus points for staying in the lines
-        if (score > 0.9f)
+        if (score > ACCURACY_BONUS_THRESHOLD)
         {
             _addPointsCallback(ACCURACY_BONUS);
         }
@@ -400,7 +442,7 @@ public class CarControllerScript : MonoBehaviour
         var duration = lapEnd - _lapStart;
 
         var ms = (duration.Minutes * 1000 * 60) + (duration.Seconds * 1000) + duration.Milliseconds;
-        Debug.Log(ms + "(" + duration.Minutes + ", " + duration.Seconds + ", " + duration.Milliseconds);
+        _lapTimes.Add(ms);
 
         // check if this was the fastest lap - store if it is
         CartAttackController.Instance.CheckFastestLap(_playerIndex, ms);

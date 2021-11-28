@@ -17,11 +17,16 @@ public class CartAttackController : MonoBehaviour
     public SpriteRenderer StarterLights;
     public Sprite[] StarterLightSprites;
     public Text TxtRemainingTime;
+    public Text TxtTotalPoints;
     public CartAttackPlayerUiScript[] CarStatuses;
     public GameObject[] PowerUps;
     public VehicleSelectionController VehicleSelection;
     public GameObject Leaderboard;
+    public GameObject Gallery;
     public CameraLerp CameraLerpController;
+
+    public DrawingDisplayScript[] GalleryFrames;
+    public TrailRenderer[] TrailRenderers;
 
     List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
 
@@ -85,7 +90,7 @@ public class CartAttackController : MonoBehaviour
 
     private IEnumerator SpawnPowerups()
     {
-        while(_running)
+        while (_running)
         {
             // wait 7 seconds
             yield return new WaitForSeconds(7f);
@@ -109,7 +114,6 @@ public class CartAttackController : MonoBehaviour
             VehicleSelection.SetActiveState(false);
             VehicleSelection.VehicleSelectionUI.gameObject.SetActive(false);
             StartCoroutine(StartRace_());
-            // TODO: move camera
         }
     }
 
@@ -134,7 +138,84 @@ public class CartAttackController : MonoBehaviour
     /// </summary>
     IEnumerator ShowResults_()
     {
-        // TODO: show canvases for eacy player
+        yield return new WaitForSeconds(2f);
+
+        Leaderboard.SetActive(false);
+        Gallery.SetActive(true);
+
+        // hide frames
+        for (int i = 0; i < GalleryFrames.Length; i++)
+        {
+            GalleryFrames[i].gameObject.SetActive(false);
+        }
+
+        foreach (var player in _players)
+        {
+            var laps = player.GetLaps();
+            var scores = player.GetLapScores();
+            var times = player.GetLapTimes();
+            var accuracies = player.GetLapAccuracies();
+
+            for (int i = 0; i < laps.Count; i++)
+            {
+                GalleryFrames[i].PictureSign.gameObject.SetActive(false);
+                GalleryFrames[i].AccuracyBonusRosette.gameObject.SetActive(false);
+                GalleryFrames[i].Rosette.gameObject.SetActive(false);
+                GalleryFrames[i].Rosette.color = ColourFetcher.GetColour(player.GetPlayerIndex());
+                GalleryFrames[i].gameObject.SetActive(true);
+
+                var x = 100 * (i + 1) + 3;
+                var tuples = laps[i].Select(t => t.Item1 + new Vector3(-x, 0, 0)).ToList();
+                tuples.RemoveAt(0);
+                tuples.RemoveAt(tuples.Count - 1);
+
+                TrailRenderers[i].transform.localPosition = new Vector3(tuples.Last().x + (100 * (i + 1)), tuples.Last().y, -0.1f);
+
+                TrailRenderers[i].startColor = ColourFetcher.GetColour(player.GetPlayerIndex());
+                TrailRenderers[i].endColor = ColourFetcher.GetColour(player.GetPlayerIndex());
+                TrailRenderers[i].Clear();
+                TrailRenderers[i].AddPositions(tuples.ToArray());
+
+                var lapTimeDisplay = "Not complete";
+                if (i < times.Count)
+                {
+                    var ms = times[i];
+
+                    // calculate time components
+                    int seconds = (int)(ms / 1000f);
+                    int milliseconds = (int)((ms - (seconds * 1000f)));
+
+                    lapTimeDisplay = $"{seconds.ToString("00")}.{milliseconds.ToString("000")} seconds";
+                }
+
+                GalleryFrames[i].TxtLapAccuracy.text = i >= accuracies.Count ? "" : Math.Round(accuracies[i] * 100, 1) + "%";
+                GalleryFrames[i].TxtLapTime.text = lapTimeDisplay;
+                GalleryFrames[i].TxtLapPoints.text = i >= scores.Count ? "" : scores[i].ToString();
+
+                yield return new WaitForSeconds(1);
+
+                GalleryFrames[i].PictureSign.gameObject.SetActive(true);
+
+                if (i < scores.Count)
+                {
+                    yield return new WaitForSeconds(1);
+                    GalleryFrames[i].Rosette.gameObject.SetActive(true);
+
+                    if (accuracies[i] > CarControllerScript.ACCURACY_BONUS_THRESHOLD)
+                    {
+                        yield return new WaitForSeconds(1);
+                        GalleryFrames[i].AccuracyBonusRosette.gameObject.SetActive(true);
+                    }
+                }
+
+                yield return new WaitForSeconds(1);
+            }
+
+            TxtTotalPoints.text = "Total: " + player.GetPoints() + "  points";
+            yield return new WaitForSeconds(1);
+        }
+
+        // TODO: show canvases for each player
         yield return new WaitForSeconds(1);
 
         StartCoroutine(Complete_());
@@ -232,7 +313,7 @@ public class CartAttackController : MonoBehaviour
         }
 
         // update UIs
-        for(int i = 0; i < CarStatuses.Length; i++)
+        for (int i = 0; i < CarStatuses.Length; i++)
         {
             CarStatuses[i].SetBestLap(i == _currentBestLapPlayer, _currentBestLap);
         }
@@ -273,31 +354,31 @@ public class CartAttackController : MonoBehaviour
         // TODO: Add back once full menu system done
         // PlayerManagerScript.Instance.CentralScene();
     }
-    
+
     /// <summary>
     /// Flips all players steering direction (other than the player that triggered it)
     /// </summary>
     /// <param id="plTrigger">The index of the player who triggered the power up</param>
     public void FlipSteering(int plTrigger)
     {
-        for(int i = 0; i < _players.Count; i++)
+        for (int i = 0; i < _players.Count; i++)
         {
             // don't flip direction of player who triggered the behaviour
-            if(i != plTrigger)
+            if (i != plTrigger)
                 _players[i].FlipSteeringStarted();
         }
     }
-    
+
     /// <summary>
     /// Stops flipping all players steering direction (other than the player that triggered it)
     /// </summary>
     /// <param id="plTrigger">The index of the player who triggered the power up</param>
     public void UnflipSteering(int plTrigger)
     {
-        for(int i = 0; i < _players.Count; i++)
+        for (int i = 0; i < _players.Count; i++)
         {
             // don't update player who triggered the behaviour
-            if(i != plTrigger)
+            if (i != plTrigger)
                 _players[i].FlipSteeringStopped();
         }
     }
