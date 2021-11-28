@@ -47,7 +47,7 @@ public class BeachBowlesInputHandler : GenericInputHandler
     /// When the move event is triggered
     /// </summary>
     /// <param name="ctx">The context of the movement</param>
-    public override void OnMove(InputAction.CallbackContext ctx)
+    public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
     {
         // the vector of the movement input from the user
         var movement = ctx.ReadValue<Vector2>();

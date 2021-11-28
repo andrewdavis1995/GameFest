@@ -64,7 +64,7 @@ public class LandslideInputHandler : GenericInputHandler
     /// When the move event is triggered
     /// </summary>
     /// <param name="ctx">The context of the movement</param>
-    public override void OnMove(InputAction.CallbackContext ctx)
+    public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
     {
         // move the player
         _climber.SetMovementVector(ctx.ReadValue<Vector2>().x);

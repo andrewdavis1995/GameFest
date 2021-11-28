@@ -239,7 +239,7 @@ public class CashDashInputHandler : GenericInputHandler
     /// When the move event is triggered
     /// </summary>
     /// <param name="ctx">The context of the movement</param>
-    public override void OnMove(InputAction.CallbackContext ctx)
+    public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
     {
         if (!_canMove || !CashDashController.Instance.IsActive() || PauseGameHandler.Instance.IsPaused()) return;
 

@@ -140,7 +140,7 @@ public class XTinguishInputHandler : GenericInputHandler
     }
 
     #region Input Handlers
-    public override void OnMove(InputAction.CallbackContext ctx)
+    public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
     {
         // get the value from the input
         var movement = ctx.ReadValue<Vector2>();

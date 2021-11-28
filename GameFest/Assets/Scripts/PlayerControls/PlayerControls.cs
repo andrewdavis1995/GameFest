@@ -190,7 +190,7 @@ public class PlayerControls : MonoBehaviour
     public void OnMove(InputAction.CallbackContext ctx)
     {
         if (_activeHandler != null)
-            _activeHandler.OnMove(ctx);
+            _activeHandler.OnMove(ctx, _device);
     }
 
     /// <summary>
@@ -301,11 +301,8 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnL2(InputAction.CallbackContext ctx)
     {
-        // only handle it once
-        if (!ctx.performed) return;
-
         if (_activeHandler != null)
-            _activeHandler.OnL2();
+            _activeHandler.OnL2(ctx);
     }
 
     /// <summary>
@@ -314,11 +311,8 @@ public class PlayerControls : MonoBehaviour
     /// <param name="ctx">The context of the input</param>
     public void OnR2(InputAction.CallbackContext ctx)
     {
-        // only handle it once
-        if (!ctx.performed) return;
-
         if (_activeHandler != null)
-            _activeHandler.OnR2();
+            _activeHandler.OnR2(ctx);
     }
 
     /// <summary>

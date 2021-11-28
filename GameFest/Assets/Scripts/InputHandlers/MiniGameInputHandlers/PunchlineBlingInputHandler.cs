@@ -130,7 +130,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// When the move event is triggered
     /// </summary>
     /// <param name="ctx">The context of the movement</param>
-    public override void OnMove(InputAction.CallbackContext ctx)
+    public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
     {
         if (!_canMove) return;
 

@@ -100,6 +100,22 @@
                     "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "L2",
+                    "type": "Value",
+                    "id": "f521302b-45a7-4f8d-88e9-33ee89056ed8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "R2",
+                    "type": "Value",
+                    "id": "7867de45-ac8a-4b8b-8ec2-1e2b4945db57",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -452,6 +468,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "RightMove",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "179daac0-9266-4481-bdd7-731244abf3b7",
+                    "path": "<DualShockGamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "L2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e47c9979-dd89-4b9c-934d-f61d479df093",
+                    "path": "<DualShockGamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "R2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

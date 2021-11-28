@@ -116,7 +116,7 @@ public class ShopDropInputHandler : GenericInputHandler
     /// When the player moves their controls (joystick or errors)
     /// </summary>
     /// <param name="ctx">The context of the movement</param>
-    public override void OnMove(InputAction.CallbackContext ctx)
+    public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
     {
         if (!ShopDropController.Instance.GameRunning()) return;
 

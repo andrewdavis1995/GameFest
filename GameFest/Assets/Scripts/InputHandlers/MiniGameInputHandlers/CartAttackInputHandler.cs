@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Input handler for Cart Attack mini-game
@@ -11,15 +12,6 @@ public class CartAttackInputHandler : GenericInputHandler
 
     bool _active = false;
     bool _vehicleSelected = false;
-
-    /// <summary>
-    /// Called once when the script begins
-    /// </summary>
-    private void Awake()
-    {
-        // TODO: remove once hooked up with proper controller and game system
-        _carController = GetComponent<CarControllerScript>();
-    }
 
     /// <summary>
     /// Sets whether the car can move
@@ -99,58 +91,121 @@ public class CartAttackInputHandler : GenericInputHandler
         return _vehicleSelected;
     }
 
-    // Update is called once per frame
-    void Update()
+    /// <summary>
+    /// Override controller for L1 button
+    /// </summary>
+    /// <param name="ctx">The input action</param>
+    public override void OnL1()
     {
-        // TODO: Move to inputsystem controls
-
         // if vehicle selection in progress, update UI
         if (CartAttackController.Instance.VehicleSelection.GetActiveState())
         {
-            var direction = 0;
+            CartAttackController.Instance.VehicleSelection.UpdateDisplay(GetPlayerIndex(), -1);
+        }
+    }
 
-            if (Input.GetKeyDown(KeyCode.A))
-                direction = -1;
-            if (Input.GetKeyDown(KeyCode.D))
-                direction = 1;
+    /// <summary>
+    /// Override controller for R1 button
+    /// </summary>
+    /// <param name="ctx">The input action</param>
+    public override void OnR1()
+    {
+        // if vehicle selection in progress, update UI
+        if (CartAttackController.Instance.VehicleSelection.GetActiveState())
+        {
+            CartAttackController.Instance.VehicleSelection.UpdateDisplay(GetPlayerIndex(), 1);
+        }
+    }
 
-            if (direction != 0)
-                CartAttackController.Instance.VehicleSelection.UpdateDisplay(GetPlayerIndex(), direction);
+    /// <summary>
+    /// Override controller for circle button
+    /// </summary>
+    /// <param name="ctx">The input action</param>
+    public override void OnCircle()
+    {
+        // if vehicle selection in progress, update UI
+        if (CartAttackController.Instance.VehicleSelection.GetActiveState())
+        {
+            _vehicleSelected = false;
+            CartAttackController.Instance.VehicleSelection.Incomplete(GetPlayerIndex());
+        }
+    }
 
-            if (Input.GetKeyDown(KeyCode.Return))
-            {
-                _vehicleSelected = true;
-                CartAttackController.Instance.VehicleSelection.Complete(GetPlayerIndex());
-                CartAttackController.Instance.CheckVehicleSelectionComplete();
-            }
-
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                _vehicleSelected = false;
-                CartAttackController.Instance.VehicleSelection.Incomplete(GetPlayerIndex());
-            }
-            }
-        else
+    /// <summary>
+    /// Override controller for L2 button
+    /// </summary>
+    /// <param name="ctx">The input action</param>
+    public override void OnL2(InputAction.CallbackContext ctx)
+    {
+        if (!CartAttackController.Instance.VehicleSelection.GetActiveState())
         {
             if (_active)
             {
-                var x = 0;
-                var y = 0;
+                var y = ctx.ReadValue<float>();
+                _carController.SetAccelerationValue(-y);
+            }
+        }
+    }
 
-                if (Input.GetKey(KeyCode.A))
-                    x = -1;
-                if (Input.GetKey(KeyCode.D))
-                    x = 1;
-                if (Input.GetKey(KeyCode.W))
-                    y = 1;
-                if (Input.GetKey(KeyCode.S))
-                    y = -1;
-
-                if (Input.GetKey(KeyCode.Space))
-                    _carController.ApplyPowerUp();
-
+    /// <summary>
+    /// Override controller for R2 button
+    /// </summary>
+    /// <param name="ctx">The input action</param>
+    public override void OnR2(InputAction.CallbackContext ctx)
+    {
+        if (!CartAttackController.Instance.VehicleSelection.GetActiveState())
+        {
+            if (_active)
+            {
+                var y = ctx.ReadValue<float>();
                 _carController.SetAccelerationValue(y);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Override controller for cross button
+    /// </summary>
+    /// <param name="ctx">The input action</param>
+    public override void OnCross()
+    {
+        // if vehicle selection in progress, update UI
+        if (CartAttackController.Instance.VehicleSelection.GetActiveState())
+        {
+            _vehicleSelected = true;
+            CartAttackController.Instance.VehicleSelection.Complete(GetPlayerIndex());
+            CartAttackController.Instance.CheckVehicleSelectionComplete();
+        }
+    }
+    /// <summary>
+    /// Override controller for triangle button
+    /// </summary>
+    /// <param name="ctx">The input action</param>
+    public override void OnTriangle()
+    {
+        _carController.ApplyPowerUp();
+    }
+
+    /// <summary>
+    /// Override controller for moving the left stick/arrows
+    /// </summary>
+    /// <param name="ctx">The input action</param>
+    public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
+    {
+        if (!CartAttackController.Instance.VehicleSelection.GetActiveState())
+        {
+            if (_active)
+            {
+                var x = ctx.ReadValue<Vector2>().x;
                 _carController.SetSteeringValue(x);
+
+                // can accelerate with arrows if on PC Keyboard
+                if (device is Keyboard)
+                {
+                    var y = ctx.ReadValue<Vector2>().y;
+                    _carController.SetAccelerationValue(y);
+                }
+
             }
         }
     }

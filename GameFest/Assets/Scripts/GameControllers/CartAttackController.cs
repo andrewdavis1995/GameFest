@@ -238,15 +238,21 @@ public class CartAttackController : MonoBehaviour
     {
         var list = new List<CartAttackInputHandler>();
 
-        int index = 0;
+        // loop through all players
+        var index = 0;
+        foreach (var player in PlayerManagerScript.Instance.GetPlayers())
+        {
+            // switch to use an input handler suitable for this scene
+            player.SetActiveScript(typeof(CartAttackInputHandler));
+            player.Spawn(null, Vector3.zero);
 
-        // TODO: replace with calls to create input handler
-        list = FindObjectsOfType<CartAttackInputHandler>().ToList();
-        list[index].SetCarController(Cars[index]);
-        list[index].SetPlayerName("DEMO");
-        CarStatuses[index].Initialise(list[index].GetPlayerName(), index);
+            var pl = player.GetComponent<CartAttackInputHandler>();
+            pl.SetCarController(Cars[index]);
+            CarStatuses[index].Initialise(pl.GetPlayerName(), index);
 
-        VehicleSelection.VehicleSelectionDisplays[index].TxtPlayerName.text = list[index].GetPlayerName();
+            VehicleSelection.VehicleSelectionDisplays[index].TxtPlayerName.text = pl.GetPlayerName();
+            list.Add(pl);
+        }
 
         return list;
     }
@@ -307,7 +313,6 @@ public class CartAttackController : MonoBehaviour
         // if faster than the current record, store this lap as the new record
         if (lapTime < _currentBestLap)
         {
-            Debug.Log("NEW best score! " + playerIndex);
             _currentBestLap = lapTime;
             _currentBestLapPlayer = playerIndex;
         }
@@ -351,8 +356,7 @@ public class CartAttackController : MonoBehaviour
     /// </summary>
     void ReturnToCentral_()
     {
-        // TODO: Add back once full menu system done
-        // PlayerManagerScript.Instance.CentralScene();
+        PlayerManagerScript.Instance.CentralScene();
     }
 
     /// <summary>
