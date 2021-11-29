@@ -8,7 +8,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Controls the flow of "Cart Attack"
 /// </summary>
-public class CartAttackController : MonoBehaviour
+public class CartAttackController : GenericController
 {
     const int FASTEST_LAP_BONUS = 50;
 
@@ -32,9 +32,9 @@ public class CartAttackController : MonoBehaviour
     List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
 
     public static CartAttackController Instance;
-    
+
     public ResultsPageScreen ResultsScreen;
-    public TransitionFader Fader;
+    public TransitionFader EndFader;
 
     TimeLimit _raceTimer;
 
@@ -56,18 +56,25 @@ public class CartAttackController : MonoBehaviour
 
         // spawn player objects
         _players = SpawnPlayers_();
-        
-        // setup pause functionality and pause
-        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
-        PauseGameHandler.Instance.Initialise(genericPlayers);        
-        PauseGameHandler.Instance.Pause(true, null);
 
         // hide unused items (not enough players to fill slots)
         HideUnusedElements_(_players.Count, Cars.Length);
-        
+
         // fade in
-        Fader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
-        Fader.StartFade(1, 0, null);
+        EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
+        EndFader.StartFade(1, 0, FadeInComplete_);
+
+        // setup pause functionality and pause
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers);
+    }
+
+    /// <summary>
+    /// Called once the fader has completed fading in
+    /// </summary>
+    void FadeInComplete_()
+    {
+        PauseGameHandler.Instance.Pause(true, () => VehicleSelection.VehicleSelectionUI.SetActive(true));
     }
 
     /// <summary>
@@ -103,7 +110,7 @@ public class CartAttackController : MonoBehaviour
         // start process of spawning power ups
         StartCoroutine(SpawnPowerups());
     }
-    
+
     /// <summary>
     /// Runs throughout the game, spawning power up bubbles every 7 seconds
     /// </summary>
@@ -151,7 +158,7 @@ public class CartAttackController : MonoBehaviour
 
         StartCoroutine(ShowResults_());
     }
-    
+
     /// <summary>
     /// Sets up gallery frames at start
     /// </summary>
@@ -177,7 +184,7 @@ public class CartAttackController : MonoBehaviour
 
         Leaderboard.SetActive(false);
         Gallery.SetActive(true);
-        
+
         // hide all frames at start
         InitialiseFrames_();
 
@@ -203,11 +210,11 @@ public class CartAttackController : MonoBehaviour
 
                 // set position of trail
                 TrailRenderers[i].transform.localPosition = new Vector3(tuples.Last().x + (100 * (i + 1)), tuples.Last().y, -0.1f);
-                
+
                 // set colour of trail
                 TrailRenderers[i].startColor = ColourFetcher.GetColour(player.GetPlayerIndex());
                 TrailRenderers[i].endColor = ColourFetcher.GetColour(player.GetPlayerIndex());
-                
+
                 // dsplay trail data
                 TrailRenderers[i].Clear();
                 TrailRenderers[i].AddPositions(tuples.ToArray());
@@ -230,7 +237,7 @@ public class CartAttackController : MonoBehaviour
                 GalleryFrames[i].TxtLapTime.text = lapTimeDisplay;
                 GalleryFrames[i].TxtLapPoints.text = i >= scores.Count ? "" : scores[i].ToString();
                 yield return new WaitForSeconds(1);
-                
+
                 // show gallery sign
                 GalleryFrames[i].PictureSign.gameObject.SetActive(true);
                 yield return new WaitForSeconds(1);
@@ -247,8 +254,8 @@ public class CartAttackController : MonoBehaviour
                     {
                         GalleryFrames[i].AccuracyBonusRosette.gameObject.SetActive(true);
                         yield return new WaitForSeconds(1);
-                    }                   
-                    
+                    }
+
                     // if this was the fastest lap of the game, show a rosette for this
                     if (_currentBestLap == times[i] && _currentBestLapPlayer == player.GetPlayerIndex())
                     {
@@ -299,8 +306,8 @@ public class CartAttackController : MonoBehaviour
             pl.SetCarController(Cars[index]);
             CarStatuses[index].Initialise(pl.GetPlayerName(), index);
             VehicleSelection.VehicleSelectionDisplays[index].TxtPlayerName.text = pl.GetPlayerName();
-            Cars[index].DriverRenderer.sprite = DriverSprites[player.GetCharacterIndex()];
-            
+            //Cars[index].DriverRenderer.sprite = DriverSprites[player.GetCharacterIndex()];
+
             // add to list
             list.Add(pl);
         }

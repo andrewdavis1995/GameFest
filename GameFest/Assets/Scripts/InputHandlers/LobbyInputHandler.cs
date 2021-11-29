@@ -36,7 +36,7 @@ public class LobbyInputHandler : GenericInputHandler
     /// When the movement event is triggered - change letter/character
     /// </summary>
     /// <param name="ctx">The context of the input</param>
-    public override void OnMove(InputAction.CallbackContext ctx)
+    public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
     {
         // only handle it once
         if (!ctx.performed) return;
