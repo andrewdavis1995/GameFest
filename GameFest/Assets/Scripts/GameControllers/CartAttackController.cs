@@ -31,6 +31,9 @@ public class CartAttackController : MonoBehaviour
     List<CartAttackInputHandler> _players = new List<CartAttackInputHandler>();
 
     public static CartAttackController Instance;
+    
+    public ResultsPageScreen ResultsScreen;
+    public TransitionFader Fader;
 
     TimeLimit _raceTimer;
 
@@ -41,17 +44,29 @@ public class CartAttackController : MonoBehaviour
     // Called once on startup
     private void Start()
     {
+        // initialise race timer (countdown)
         _raceTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _raceTimer.Initialise(90, raceTimerTick_, raceTimerComplete_, 1f);
 
         Instance = this;
 
+        // show vehicle selection UI
         VehicleSelection.SetActiveState(true);
 
+        // spawn player objects
         _players = SpawnPlayers_();
+        
+        // setup pause functionality and pause
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers);        
+        PauseGameHandler.Instance.Pause(true, null);
 
         // hide unused items (not enough players to fill slots)
         HideUnusedElements_(_players.Count, Cars.Length);
+        
+        // fade in
+        Fader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
+        Fader.StartFade(1, 0, null);
     }
 
     /// <summary>
@@ -87,7 +102,10 @@ public class CartAttackController : MonoBehaviour
         // start process of spawning power ups
         StartCoroutine(SpawnPowerups());
     }
-
+    
+    /// <summary>
+    /// Runs throughout the game, spawning power up bubbles every 7 seconds
+    /// </summary>
     private IEnumerator SpawnPowerups()
     {
         while (_running)
@@ -132,6 +150,21 @@ public class CartAttackController : MonoBehaviour
 
         StartCoroutine(ShowResults_());
     }
+    
+    /// <summary>
+    /// Sets up gallery frames at start
+    /// </summary>
+    void InitialiseFrames_()
+    {
+        // hide frames
+        for (int i = 0; i < GalleryFrames.Length; i++)
+        {
+            GalleryFrames[i].gameObject.SetActive(false);
+            GalleryFrames[i].PictureSign.gameObject.SetActive(false);
+            GalleryFrames[i].AccuracyBonusRosette.gameObject.SetActive(false);
+            GalleryFrames[i].Rosette.gameObject.SetActive(false);
+        }
+    }
 
     /// <summary>
     /// Show the canvases and scores for each players
@@ -142,15 +175,13 @@ public class CartAttackController : MonoBehaviour
 
         Leaderboard.SetActive(false);
         Gallery.SetActive(true);
-
-        // hide frames
-        for (int i = 0; i < GalleryFrames.Length; i++)
-        {
-            GalleryFrames[i].gameObject.SetActive(false);
-        }
+        
+        // hide all frames at start
+        InitialiseFrames_();
 
         foreach (var player in _players)
         {
+            // get data
             var laps = player.GetLaps();
             var scores = player.GetLapScores();
             var times = player.GetLapTimes();
@@ -158,24 +189,28 @@ public class CartAttackController : MonoBehaviour
 
             for (int i = 0; i < laps.Count; i++)
             {
-                GalleryFrames[i].PictureSign.gameObject.SetActive(false);
-                GalleryFrames[i].AccuracyBonusRosette.gameObject.SetActive(false);
-                GalleryFrames[i].Rosette.gameObject.SetActive(false);
+                // initialise frames
                 GalleryFrames[i].Rosette.color = ColourFetcher.GetColour(player.GetPlayerIndex());
                 GalleryFrames[i].gameObject.SetActive(true);
 
+                // get trail positions for this lap
                 var x = 100 * (i + 1) + 3;
                 var tuples = laps[i].Select(t => t.Item1 + new Vector3(-x, 0, 0)).ToList();
                 tuples.RemoveAt(0);
                 tuples.RemoveAt(tuples.Count - 1);
 
+                // set position of trail
                 TrailRenderers[i].transform.localPosition = new Vector3(tuples.Last().x + (100 * (i + 1)), tuples.Last().y, -0.1f);
-
+                
+                // set colour of trail
                 TrailRenderers[i].startColor = ColourFetcher.GetColour(player.GetPlayerIndex());
                 TrailRenderers[i].endColor = ColourFetcher.GetColour(player.GetPlayerIndex());
+                
+                // dsplay trail data
                 TrailRenderers[i].Clear();
                 TrailRenderers[i].AddPositions(tuples.ToArray());
 
+                // create lap time string
                 var lapTimeDisplay = "Not complete";
                 if (i < times.Count)
                 {
@@ -188,19 +223,23 @@ public class CartAttackController : MonoBehaviour
                     lapTimeDisplay = $"{seconds.ToString("00")}.{milliseconds.ToString("000")} seconds";
                 }
 
+                // display data on 
                 GalleryFrames[i].TxtLapAccuracy.text = i >= accuracies.Count ? "" : Math.Round(accuracies[i] * 100, 1) + "%";
                 GalleryFrames[i].TxtLapTime.text = lapTimeDisplay;
                 GalleryFrames[i].TxtLapPoints.text = i >= scores.Count ? "" : scores[i].ToString();
-
                 yield return new WaitForSeconds(1);
-
+                
+                // show gallery sign
                 GalleryFrames[i].PictureSign.gameObject.SetActive(true);
 
+                // check if there is data for this
                 if (i < scores.Count)
                 {
+                    // display points for this lap on a rosette
                     yield return new WaitForSeconds(1);
                     GalleryFrames[i].Rosette.gameObject.SetActive(true);
 
+                    // if accuracy bonus was earned, display a second rosette
                     if (accuracies[i] > CarControllerScript.ACCURACY_BONUS_THRESHOLD)
                     {
                         yield return new WaitForSeconds(1);
@@ -211,11 +250,12 @@ public class CartAttackController : MonoBehaviour
                 yield return new WaitForSeconds(1);
             }
 
+            // show total points
             TxtTotalPoints.text = "Total: " + player.GetPoints() + "  points";
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(3);
         }
 
-        // TODO: show canvases for each player
+        // wait before end
         yield return new WaitForSeconds(1);
 
         StartCoroutine(Complete_());
@@ -246,11 +286,13 @@ public class CartAttackController : MonoBehaviour
             player.SetActiveScript(typeof(CartAttackInputHandler));
             player.Spawn(null, Vector3.zero);
 
+            // set up the input handler
             var pl = player.GetComponent<CartAttackInputHandler>();
             pl.SetCarController(Cars[index]);
             CarStatuses[index].Initialise(pl.GetPlayerName(), index);
-
             VehicleSelection.VehicleSelectionDisplays[index].TxtPlayerName.text = pl.GetPlayerName();
+            
+            // add to list
             list.Add(pl);
         }
 
@@ -329,26 +371,23 @@ public class CartAttackController : MonoBehaviour
     /// </summary>
     IEnumerator Complete_()
     {
+        // assign points for winner
         AssignBonusPoints_();
-
         yield return new WaitForSeconds(3f);
 
-        // TODO: add this in
-        //ResultsScreen.Setup();
-
-        // TODO: add this in
+        // show results
+        ResultsScreen.Setup();
         GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
-        //ResultsScreen.SetPlayers(genericPlayers);
+        ResultsScreen.SetPlayers(genericPlayers);
 
         // store scores
         ScoreStoreHandler.StoreResults(Scene.CartAttack, genericPlayers);
 
+        // wait for a while to show results
         yield return new WaitForSeconds(4 + genericPlayers.Length);
 
         // fade out
-        //EndFader.StartFade(0, 1, ReturnToCentral_);
-        // TODO: replace this with the above
-        ReturnToCentral_();
+        EndFader.StartFade(0, 1, ReturnToCentral_);
     }
 
     /// <summary>
