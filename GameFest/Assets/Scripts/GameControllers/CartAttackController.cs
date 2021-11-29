@@ -164,6 +164,7 @@ public class CartAttackController : MonoBehaviour
             GalleryFrames[i].PictureSign.gameObject.SetActive(false);
             GalleryFrames[i].AccuracyBonusRosette.gameObject.SetActive(false);
             GalleryFrames[i].Rosette.gameObject.SetActive(false);
+            GalleryFrames[i].FastestLapRosette.gameObject.SetActive(false);
         }
     }
 
@@ -232,23 +233,29 @@ public class CartAttackController : MonoBehaviour
                 
                 // show gallery sign
                 GalleryFrames[i].PictureSign.gameObject.SetActive(true);
+                yield return new WaitForSeconds(1);
 
                 // check if there is data for this
                 if (i < scores.Count)
                 {
                     // display points for this lap on a rosette
-                    yield return new WaitForSeconds(1);
                     GalleryFrames[i].Rosette.gameObject.SetActive(true);
+                    yield return new WaitForSeconds(1);
 
                     // if accuracy bonus was earned, display a second rosette
                     if (accuracies[i] > CarControllerScript.ACCURACY_BONUS_THRESHOLD)
                     {
-                        yield return new WaitForSeconds(1);
                         GalleryFrames[i].AccuracyBonusRosette.gameObject.SetActive(true);
+                        yield return new WaitForSeconds(1);
+                    }                   
+                    
+                    // if this was the fastest lap of the game, show a rosette for this
+                    if (_currentBestLap == times[i] && _currentBestLapPlayer == player.GetPlayerIndex())
+                    {
+                        GalleryFrames[i].FastestLapRosette.gameObject.SetActive(true);
+                        yield return new WaitForSeconds(1);
                     }
                 }
-
-                yield return new WaitForSeconds(1);
             }
 
             // show total points
