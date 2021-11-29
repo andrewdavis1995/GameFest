@@ -54,6 +54,7 @@ public class CarControllerScript : MonoBehaviour
     public BoxCollider2D TriggerCollider;
     public Transform RocketBooster;
     public SpriteRenderer BodyRenderer;
+    public SpriteRenderer DriverRenderer;
     public SpriteRenderer BaseRenderer;
     public SpriteRenderer LeftWheelRenderer;
     public SpriteRenderer RightWheelRenderer;
