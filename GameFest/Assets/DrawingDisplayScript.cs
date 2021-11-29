@@ -10,4 +10,5 @@ public class DrawingDisplayScript : MonoBehaviour
     public Image Rosette;
     public Image PictureSign;
     public Image AccuracyBonusRosette;
+    public Image FastestLapRosette;
 }
