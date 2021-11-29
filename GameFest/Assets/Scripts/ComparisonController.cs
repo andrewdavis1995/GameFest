@@ -47,7 +47,7 @@ public class ComparisonController : MonoBehaviour
     public Image BackgroundImage;
     public Image LogoImage;
 
-    Scene[] _availableScenes = { Scene.PunchlineBling, Scene.ShopDrop, Scene.XTinguish, Scene.MarshLand, Scene.BeachBowles, Scene.MineGames, Scene.CashDash };
+    Scene[] _availableScenes = { Scene.PunchlineBling, Scene.ShopDrop, Scene.XTinguish, Scene.MarshLand, Scene.BeachBowles, Scene.MineGames, Scene.CashDash, Scene.CartAttack };
 
     int _gameIndex = 0;
     int _playerIndex = 0;
