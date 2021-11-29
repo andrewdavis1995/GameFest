@@ -16,6 +16,7 @@ public class CartAttackController : MonoBehaviour
     public CarControllerScript[] Cars;
     public SpriteRenderer StarterLights;
     public Sprite[] StarterLightSprites;
+    public Sprite[] DriverSprites;
     public Text TxtRemainingTime;
     public Text TxtTotalPoints;
     public CartAttackPlayerUiScript[] CarStatuses;
@@ -291,6 +292,7 @@ public class CartAttackController : MonoBehaviour
             pl.SetCarController(Cars[index]);
             CarStatuses[index].Initialise(pl.GetPlayerName(), index);
             VehicleSelection.VehicleSelectionDisplays[index].TxtPlayerName.text = pl.GetPlayerName();
+            Cars[index].DriverRenderer.sprite = DriverSprites[player.GetCharacterIndex()];
             
             // add to list
             list.Add(pl);
