@@ -83,6 +83,7 @@ public class PunchlineBlingInputHandler : GenericInputHandler
 
         // get the movement script attached to the visual player
         _movement = spawned.GetComponent<PlayerMovement>();
+
         // assign callbacks for when the item interacts with triggers
         _movement.AddTriggerCallbacks(TriggerEnter, TriggerExit);
 

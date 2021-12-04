@@ -180,16 +180,23 @@ public class CartAttackController : GenericController
     /// </summary>
     IEnumerator ShowResults_()
     {
+        // add bonus points for quickest lap
+        if (_currentBestLapPlayer > -1)
+        {
+            _players[_currentBestLapPlayer].AddPoints(FASTEST_LAP_BONUS);
+        }
+
         yield return new WaitForSeconds(2f);
 
         Leaderboard.SetActive(false);
         Gallery.SetActive(true);
 
-        // hide all frames at start
-        InitialiseFrames_();
-
         foreach (var player in _players)
         {
+            // hide all frames at start
+            InitialiseFrames_();
+            yield return new WaitForSeconds(1);
+
             // get data
             var laps = player.GetLaps();
             var scores = player.GetLapScores();
@@ -268,6 +275,7 @@ public class CartAttackController : GenericController
             // show total points
             TxtTotalPoints.text = "Total: " + player.GetPoints() + "  points";
             yield return new WaitForSeconds(3);
+            TxtTotalPoints.text = "";
         }
 
         // wait before end
@@ -306,10 +314,12 @@ public class CartAttackController : GenericController
             pl.SetCarController(Cars[index]);
             CarStatuses[index].Initialise(pl.GetPlayerName(), index);
             VehicleSelection.VehicleSelectionDisplays[index].TxtPlayerName.text = pl.GetPlayerName();
-            //Cars[index].DriverRenderer.sprite = DriverSprites[player.GetCharacterIndex()];
+            Cars[index].DriverRenderer.sprite = DriverSprites[player.GetCharacterIndex()];
 
             // add to list
             list.Add(pl);
+
+            index++;
         }
 
         return list;
@@ -337,12 +347,6 @@ public class CartAttackController : GenericController
     /// </summary>
     private void AssignBonusPoints_()
     {
-        // add bonus points for quickest lap
-        if (_currentBestLapPlayer > -1)
-        {
-            _players[_currentBestLapPlayer].AddPoints(FASTEST_LAP_BONUS);
-        }
-
         // sort the players by points scored
         var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
         int[] winnerPoints = new int[] { 150, 50, 20 };

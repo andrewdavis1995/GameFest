@@ -18,6 +18,7 @@ public class CarControllerScript : MonoBehaviour
     const float BOOST_FACTOR = 1.2f;
     const float BOOST_DURATION = 1.6f;
     const float ROCKET_BOOSTER_OFFSET = -0.9f;
+    const float FLIP_DURATION = 5f;
 
     List<List<Tuple<Vector3, bool>>> _lapDrawings = new List<List<Tuple<Vector3, bool>>>();
     List<int> _lapScores = new List<int>();
@@ -60,6 +61,7 @@ public class CarControllerScript : MonoBehaviour
     public SpriteRenderer RightWheelRenderer;
     public SpriteRenderer BackWheelsRenderer;
     public SpriteRenderer GlassRenderer;
+    public Transform ControlsFlippedIcon;
 
     Action<int> _addPointsCallback;
     PowerUp _activePowerUp = PowerUp.None;
@@ -207,7 +209,7 @@ public class CarControllerScript : MonoBehaviour
         CartAttackController.Instance.FlipSteering(_playerIndex);
 
         // enforce the boost for 2 seconds
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(FLIP_DURATION);
 
         // tell controller to stop flipping player steering
         CartAttackController.Instance.UnflipSteering(_playerIndex);
@@ -222,6 +224,9 @@ public class CarControllerScript : MonoBehaviour
         KillOrthogonalVelocity_();
         ApplySteering_();
         CheckNewTrail_();
+
+        if (_flipSteeringRequests > 0)
+            ControlsFlippedIcon.eulerAngles += new Vector3(0, 0, 2f);
     }
 
     /// <summary>
@@ -298,6 +303,7 @@ public class CarControllerScript : MonoBehaviour
     public void FlipSteeringStarted()
     {
         _flipSteeringRequests++;
+        ControlsFlippedIcon.gameObject.SetActive(true);
     }
 
     /// <summary>
@@ -306,6 +312,7 @@ public class CarControllerScript : MonoBehaviour
     public void FlipSteeringStopped()
     {
         _flipSteeringRequests--;
+        ControlsFlippedIcon.gameObject.SetActive(_flipSteeringRequests > 0);
     }
 
     /// <summary>

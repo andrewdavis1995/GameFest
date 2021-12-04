@@ -13,7 +13,9 @@ public abstract class GenericInputHandler : MonoBehaviour
 
     // status variables
     int _playerIndex;
+    [SerializeField]
     int _characterIndex;
+    [SerializeField]
     string _playerName;
     Guid _profileID;
 
