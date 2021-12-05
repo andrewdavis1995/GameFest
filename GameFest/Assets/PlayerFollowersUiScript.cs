@@ -5,6 +5,7 @@ public class PlayerFollowersUiScript : MonoBehaviour
 {
     public Image PlayerSprite;
     public Image PlayerSpriteBg;
+    public Image PlayerSpriteBgRing;
     public Text TxtPlayerName;
     public Text TxtNumFollowers;
 
@@ -14,10 +15,11 @@ public class PlayerFollowersUiScript : MonoBehaviour
     /// <param name="pl">The player info to display</param>
     internal void Initialise(FollowBackInputHandler pl)
     {
-        TxtNumFollowers.text = "0";
-        TxtPlayerName.text = pl.GetPlayerName();
+        TxtNumFollowers.text = pl.GetFollowerCount().ToString();
+        TxtPlayerName.text = "@" + pl.GetPlayerName();
         PlayerSprite.sprite = FollowBackController.Instance.CharacterSprites[pl.GetCharacterIndex()];
         PlayerSpriteBg.color = ColourFetcher.GetColour(pl.GetPlayerIndex());
+        PlayerSpriteBgRing.color = ColourFetcher.GetColour(pl.GetPlayerIndex());
     }
 
     /// <summary>

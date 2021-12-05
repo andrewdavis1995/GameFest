@@ -4,8 +4,13 @@ using UnityEngine;
 
 public class FollowBackInputHandler : GenericInputHandler
 {
+    const int STARTING_FOLLOWERS = 400;
+    const int OUT_OF_BOUNDS_FOLLOWERS_LOST = 250;
+
     PlayerMovement _movement;
     TimeLimit _roundLimit;
+    int _followers = 0;
+    int _roundFollowers = 0;
 
     private void Update()
     {
@@ -106,6 +111,8 @@ public class FollowBackInputHandler : GenericInputHandler
         // use the correct animation controller
         //SetAnimation(spawned, characterIndex);    // TODO
 
+        _followers = STARTING_FOLLOWERS;
+
         return spawned;
     }
 
@@ -125,10 +132,45 @@ public class FollowBackInputHandler : GenericInputHandler
     void TriggerEntered_(Collider2D collider)
     {
         // if it was the VIP zone, tell controller
-        if(collider.tag == "AreaTrigger")
+        if (collider.tag == "AreaTrigger")
         {
             FollowBackController.Instance.PlayerEnteredZone(this);
         }
+        else if (collider.tag == "KickBack")
+        {
+            // jump back to top
+            _movement.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            _movement.transform.localPosition = new Vector3(_movement.transform.localPosition.x, 6, _movement.transform.localPosition.z);
+
+            // lose points
+            LoseFollower(false, OUT_OF_BOUNDS_FOLLOWERS_LOST);
+            DisplayFollowersUpdate_($"fell out of relevance and lost {OUT_OF_BOUNDS_FOLLOWERS_LOST} followers");
+        }
+        else if (collider.tag == "PowerUp")
+        {
+            if (collider.gameObject.name == "Follower")
+            {
+                var numFollowers = UnityEngine.Random.Range(1, 20);
+                AddFollower(false, numFollowers);
+                DisplayFollowersUpdate_($" gained <color=#11ea11>{numFollowers}</color> followers");
+            }
+            else if (collider.gameObject.name == "Notification")
+            {
+                // TODO: generate messages and points for funny events
+            }
+
+            collider.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Updates UI after followers updated
+    /// </summary>
+    /// <param name="message">The message to display</param>
+    private void DisplayFollowersUpdate_(string message)
+    {
+        FollowBackController.Instance.AddVidiprinterItem(this, message);
+        FollowBackController.Instance.UpdatePlayerUIs(this);
     }
 
     /// <summary>
@@ -142,5 +184,61 @@ public class FollowBackInputHandler : GenericInputHandler
         {
             FollowBackController.Instance.PlayerLeftZone(this);
         }
+    }
+
+    /// <summary>
+    /// Adds the specified number of followers to the count
+    /// </summary>
+    /// <param name="roundSpecific">Whether to update the round followers count</param>
+    /// <param name="count">The number of followers to add (defaults to 1)</param>
+    public void AddFollower(bool roundSpecific, int count = 1)
+    {
+        _followers += count;
+
+        if (roundSpecific)
+            _roundFollowers += count;
+    }
+
+    /// <summary>
+    /// Removes the specified number of followers from the count
+    /// </summary>
+    /// <param name="roundSpecific">Whether to update the round followers count</param>
+    /// <param name="count">The number of followers to remove (defaults to 1)</param>
+    public void LoseFollower(bool roundSpecific, int count = 1)
+    {
+        _followers -= count;
+
+        // ensure we don't go under 0
+        if (_followers < 0)
+            _followers = 0;
+
+        if (roundSpecific)
+            _roundFollowers -= count;
+    }
+
+    /// <summary>
+    /// Gets the number of followers this player has
+    /// </summary>
+    /// <returns>The number of followers</returns>
+    public int GetFollowerCount()
+    {
+        return _followers;
+    }
+
+    /// <summary>
+    /// Gets the number of followers this player has gained this round
+    /// </summary>
+    /// <returns>The number of followers gained</returns>
+    public int GetFollowerCountRound()
+    {
+        return _roundFollowers;
+    }
+
+    /// <summary>
+    /// Resets followers gained this round
+    /// </summary>
+    public void NewRound()
+    {
+        _roundFollowers = 0;
     }
 }
