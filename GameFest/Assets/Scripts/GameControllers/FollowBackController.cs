@@ -121,10 +121,21 @@ public class FollowBackController : MonoBehaviour
     void EndGame_()
     {
         _gameActive = false;
-
-        // TODO: show polaroids
-        // TODO: show results
-        // TODO: return to lobby
+        StartCoroutine(ShowSelfies_());        
+    }
+    
+    /// <summary>
+    /// Shows selfies taken during the game
+    /// </summary>
+    IEnumerator ShowSelfies_()
+    {
+        // TODO: show loading page
+        yield return new WaitForSeconds(3);
+        // TODO: show polaroids        
+        yield return new WaitForSeconds(3);
+        // TODO: add followers for each
+        yield return new WaitForSeconds(1);
+        StartCoroutine(Complete_());
     }
 
     /// <summary>
@@ -147,6 +158,7 @@ public class FollowBackController : MonoBehaviour
     {
         while (_gameActive)
         {
+            // wait a period of time then create a notification
             var random = UnityEngine.Random.Range(30, 45);
             yield return new WaitForSeconds(random);
             NotificationAlert.SetActive(true);
@@ -161,6 +173,7 @@ public class FollowBackController : MonoBehaviour
     {
         while (_gameActive)
         {
+            // wait a period of time then create a follower notification
             var random = UnityEngine.Random.Range(15, 30);
             yield return new WaitForSeconds(random);
             FollowerAlert.SetActive(true);
@@ -391,5 +404,65 @@ public class FollowBackController : MonoBehaviour
     public void PlayerNotification(FollowBackInputHandler player)
     {
         _notificationHandler.GetNotificationContent();
+    }
+    
+    /// <summary>
+    /// Add points to the winner based on number of followers
+    /// </summary>
+    void AddPoints_()
+    {
+        foreach(var p in _players)
+        {
+            p.AddPoints(p.GetFollowerCount());
+        }
+    }    
+    
+    /// <summary>
+    /// Assigns bonus points to the winner
+    /// </summary>
+    private void AssignBonusPoints_()
+    {
+        // sort the players by points scored
+        var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
+        int[] winnerPoints = new int[] { 100, 35, 10 };
+
+        // add winning score points 
+        for (int i = 0; i < ordered.Count(); i++)
+        {
+            if (ordered[i].GetPoints() > 0)
+            {
+                ordered[i].AddPoints(winnerPoints[i]);
+                ordered[i].SetBonusPoints(winnerPoints[i]);
+            }
+        }
+
+        // set the winner
+        ordered.FirstOrDefault()?.Winner();
+    }
+    
+    /// <summary>
+    /// Completes the game and return to object
+    /// </summary>
+    IEnumerator Complete_()
+    {
+        AddPoints_();
+    
+        // assign points for winner
+        AssignBonusPoints_();
+        yield return new WaitForSeconds(3f);
+
+        // show results
+        // TODO: ResultsScreen.Setup();
+        GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
+        // TODO: ResultsScreen.SetPlayers(genericPlayers);
+
+        // store scores
+        // TODO: ScoreStoreHandler.StoreResults(Scene.FollowBack, genericPlayers);
+
+        // wait for a while to show results
+        yield return new WaitForSeconds(4 + genericPlayers.Length);
+
+        // fade out
+        // TODO: EndFader.StartFade(0, 1, ReturnToCentral_);
     }
 }
