@@ -18,8 +18,15 @@ public class VidiprintItemScript : MonoBehaviour
     public void Initialise(FollowBackInputHandler player, string message)
     {
         TxtDescription.text = message;
-        ImgPlayerImage.sprite = FollowBackController.Instance.CharacterSprites[player.GetCharacterIndex()];
-        ImgPlayerImageBG.color = ColourFetcher.GetColour(player.GetPlayerIndex());
+        if(player != null)
+        {
+            ImgPlayerImage.sprite = FollowBackController.Instance.CharacterSprites[player.GetCharacterIndex()];
+            ImgPlayerImageBG.color = ColourFetcher.GetColour(player.GetPlayerIndex());
+        }
+        else
+        {
+            ImgPlayerImageBG.gameObject.SetActive(false);
+        }
 
         gameObject.SetActive(true);
         Initialised = true;
@@ -37,7 +44,7 @@ public class VidiprintItemScript : MonoBehaviour
         Initialised = copyElement.Initialised;
 
         ImgBulletPoint.gameObject.SetActive(Initialised);
-        ImgPlayerImageBG.gameObject.SetActive(Initialised);
+        ImgPlayerImageBG.gameObject.SetActive(Initialised && copyElement.ImgPlayerImageBG.gameObject.activeInHierarchy);
         gameObject.SetActive(Initialised);
     }
 }
