@@ -13,6 +13,8 @@ public class FollowBackController : MonoBehaviour
     const float ZONE_SIZE = 1f;
     const float ZONE_GROWTH = 2f;
     const float ZONE_SIZE_POWERUP = 1.2f;
+    const string WEBPAGE_URL = "https://www.POPlr.co.uk";
+    const string WEBPAGE_URL_INCORRECT = "https://www.POoPlr.co.uk";
 
     public Transform InfluencerZone;
     public Transform PlayerPrefab;
@@ -56,10 +58,50 @@ public class FollowBackController : MonoBehaviour
         // spawn players
         SpawnPlayers_();
 
-        StartGame_();   // TODO: move to after fade in
+        var random = UnityEngine.Random.Range(0, 10);
+        
+        // sometimes do page not found fo a bit of fun
+        if(random == 0)
+            StartCoroutine(ShowUrl_(WEBPAGE_URL_INCORRECT, () => StartCoroutine(PageNotFound())));
+        else
+            StartCoroutine(ShowUrl_(WEBPAGE_URL, () => StartCoroutine(PageFound())));
 
         // some components will not be needed
         HideUnusedElements_();
+    }
+    
+    /// <summary>
+    /// Hide any elements that are assigned to unused players
+    /// </summary>
+    /// <param id="url">The url to display in the search bar</param>
+    /// <param id="nextAction">The action to do once the URL has been typed</param>
+    IEnumerator ShowUrl_(string url, Action nextAction)
+    {
+        // TODO: show URL in text
+        nextAction?.Invoke();
+    }
+    
+    /// <summary>
+    /// Hide any elements that are assigned to unused players
+    /// </summary>
+    IEnumerator PageNotFound_()
+    {
+        yield return new WaitForSeconds(1);
+    
+        // show real URL
+        StartCoroutine(ShowUrl_(WEBPAGE_URL, () => StartCoroutine(PageFound())));
+    }
+    
+    /// <summary>
+    /// Hide any elements that are assigned to unused players
+    /// </summary>
+    IEnumerator PageFound_()
+    {
+        yield return new WaitForSeconds(1);
+        
+        // TODO: hide search bar and border
+        
+        StartGame_();
     }
 
     /// <summary>
@@ -149,8 +191,17 @@ public class FollowBackController : MonoBehaviour
     void StartGame_()
     {
         _gameActive = true;
+        
+        // allow players to move
+        foreach(var player in _players)
+        {
+            player.EnableMovement();
+        }
 
+        // select first player
         StartCoroutine(SelectInfluencer_());
+        
+        // start spawning alerts
         StartCoroutine(FollowerNotifications_());
         StartCoroutine(OtherNotifications_());
     }
