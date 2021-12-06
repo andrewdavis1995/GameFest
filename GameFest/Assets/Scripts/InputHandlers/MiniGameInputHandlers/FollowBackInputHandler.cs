@@ -55,6 +55,14 @@ public class FollowBackInputHandler : GenericInputHandler
     {
         _canMove = true;    
     }
+    
+    /// <summary>
+    /// Player can no longer move
+    /// </summary>
+    public void DisableMovement()
+    {
+        _canMove = false;
+    }
 
     /// <summary>
     /// Set the height of the player based on the selected character
