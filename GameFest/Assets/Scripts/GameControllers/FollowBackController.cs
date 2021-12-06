@@ -29,6 +29,9 @@ public class FollowBackController : MonoBehaviour
     public GameObject NotificationAlert;
     public GameObject FollowerAlert;
     public Sprite SelfieIcon;
+    public Text TxtUrl;
+    public GameObject UrlArea;
+    public GameObject WebBrowserBackground;
 
     List<FollowBackInputHandler> _players = new List<FollowBackInputHandler>();
     public Vector3[] StartPositions;
@@ -60,7 +63,7 @@ public class FollowBackController : MonoBehaviour
 
         var random = UnityEngine.Random.Range(0, 10);
         
-        // sometimes do page not found fo a bit of fun
+        // sometimes do page not found for a bit of fun
         if(random == 0)
             StartCoroutine(ShowUrl_(WEBPAGE_URL_INCORRECT, () => StartCoroutine(PageNotFound())));
         else
@@ -77,7 +80,18 @@ public class FollowBackController : MonoBehaviour
     /// <param id="nextAction">The action to do once the URL has been typed</param>
     IEnumerator ShowUrl_(string url, Action nextAction)
     {
-        // TODO: show URL in text
+        TxtUrl.text = "";
+        
+        for(int i = 0; i < url.Length; i++)
+        {
+            TxtUrl.text += url[i];
+            yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 0.3f));
+        }
+        
+        yield return new WaitForSeconds(1f);
+        
+        // TODO: show loading wheel spinning
+        
         nextAction?.Invoke();
     }
     
@@ -86,7 +100,7 @@ public class FollowBackController : MonoBehaviour
     /// </summary>
     IEnumerator PageNotFound_()
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.1f);
     
         // show real URL
         StartCoroutine(ShowUrl_(WEBPAGE_URL, () => StartCoroutine(PageFound())));
@@ -97,9 +111,12 @@ public class FollowBackController : MonoBehaviour
     /// </summary>
     IEnumerator PageFound_()
     {
-        yield return new WaitForSeconds(1);
+        // hide background to reveal game
+        WebBrowserBackground.SetActive(false);
+        yield return new WaitForSeconds(2f);
         
-        // TODO: hide search bar and border
+        // hide URL bar
+        UrlArea.SetActive(false);
         
         StartGame_();
     }
@@ -166,7 +183,13 @@ public class FollowBackController : MonoBehaviour
     /// Ends the game
     /// </summary>
     void EndGame_()
-    {
+    {        
+        // don't allow players to move
+        foreach(var player in _players)
+        {
+            player.DisableMovement();
+        }
+        
         _gameActive = false;
         StartCoroutine(ShowSelfies_());        
     }
@@ -175,10 +198,12 @@ public class FollowBackController : MonoBehaviour
     /// Shows selfies taken during the game
     /// </summary>
     IEnumerator ShowSelfies_()
-    {
-        // TODO: show loading page
+    {    
+        WebBrowserBackground.SetActive(false);
+    
+        // TODO: show loading message
         yield return new WaitForSeconds(3);
-        // TODO: show polaroids        
+        // TODO: show posts        
         yield return new WaitForSeconds(3);
         // TODO: add followers for each
         yield return new WaitForSeconds(1);
