@@ -14,32 +14,46 @@ public class FollowBackInputHandler : GenericInputHandler
     int _roundFollowers = 0;
     bool _canTakeSelfie = false;
     bool _selfieTakenThisRound = false;
+    bool _canMove = true;
 
     private void Update()
-    {
+    {    
         // TODO: move all this to input system methods
         if (Input.GetKey(KeyCode.LeftArrow))
         {
+            if(!_canMove) return;
             _movement.Move(new Vector2(-1, 0));
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
+            if(!_canMove) return;
             _movement.Move(new Vector2(1, 0));
         }
         else
         {
+            if(!_canMove) return;
             _movement.Move(new Vector2(0, 0));
         }
 
         if (Input.GetKey(KeyCode.Space))
         {
+            if(!_canMove) return;
             _movement.Jump();
         }
 
         if (Input.GetKey(KeyCode.Enter))
         {
+            if(!_canMove) return;
             TakeSelfie_();
         }
+    }
+    
+    /// <summary>
+    /// Player can now move
+    /// </summary>
+    public void EnableMovement()
+    {
+        _canMove = true;    
     }
 
     /// <summary>
