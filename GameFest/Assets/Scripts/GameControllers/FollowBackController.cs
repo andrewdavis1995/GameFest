@@ -12,7 +12,7 @@ public class FollowBackController : MonoBehaviour
     const int TURNS_PER_PLAYER = 2;
     const float ZONE_SIZE = 1f;
     const float ZONE_GROWTH = 2f;
-    const float ZONE_SIZE_POWERUP = 1.2f;
+    const float ZONE_SIZE_POWERUP = 1.4f;
     const string WEBPAGE_URL = "https://www.POPlr.co.uk";
     const string WEBPAGE_URL_INCORRECT = "https://www.POoPlr.co.uk";
 
@@ -32,6 +32,8 @@ public class FollowBackController : MonoBehaviour
     public Text TxtUrl;
     public GameObject UrlArea;
     public GameObject WebBrowserBackground;
+    public GameObject ImgPageNotFound;
+    public GameObject ImgPageHome;
 
     List<FollowBackInputHandler> _players = new List<FollowBackInputHandler>();
     public Vector3[] StartPositions;
@@ -43,7 +45,6 @@ public class FollowBackController : MonoBehaviour
     bool _biggerZone = false;
     bool _smallerZone = false;
     List<FollowBackInputHandler> _playersInZone = new List<FollowBackInputHandler>();
-    NotificationContentHandler _notificationHandler = new NotificationContentHandler();
     List<Tuple<FollowBackInputHandler, FollowBackInputHandler>> _selfies = new List<Tuple<FollowBackInputHandler, FollowBackInputHandler>>();
 
     // Start is called before the first frame update
@@ -62,17 +63,17 @@ public class FollowBackController : MonoBehaviour
         SpawnPlayers_();
 
         var random = UnityEngine.Random.Range(0, 10);
-        
+
         // sometimes do page not found for a bit of fun
-        if(random == 0)
-            StartCoroutine(ShowUrl_(WEBPAGE_URL_INCORRECT, () => StartCoroutine(PageNotFound())));
+        if (random == 1)
+            StartCoroutine(ShowUrl_(WEBPAGE_URL_INCORRECT, () => StartCoroutine(PageNotFound_())));
         else
-            StartCoroutine(ShowUrl_(WEBPAGE_URL, () => StartCoroutine(PageFound())));
+            StartCoroutine(ShowUrl_(WEBPAGE_URL, () => StartCoroutine(PageFound_())));
 
         // some components will not be needed
         HideUnusedElements_();
     }
-    
+
     /// <summary>
     /// Hide any elements that are assigned to unused players
     /// </summary>
@@ -81,43 +82,43 @@ public class FollowBackController : MonoBehaviour
     IEnumerator ShowUrl_(string url, Action nextAction)
     {
         TxtUrl.text = "";
-        
-        for(int i = 0; i < url.Length; i++)
+
+        for (int i = 0; i < url.Length; i++)
         {
             TxtUrl.text += url[i];
-            yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 0.3f));
+            yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 0.4f));
         }
-        
         yield return new WaitForSeconds(1f);
-        
-        // TODO: show loading wheel spinning
-        
+
+        ImgPageHome.gameObject.SetActive(false);
         nextAction?.Invoke();
     }
-    
+
     /// <summary>
     /// Hide any elements that are assigned to unused players
     /// </summary>
     IEnumerator PageNotFound_()
     {
-        yield return new WaitForSeconds(0.1f);
-    
+        ImgPageNotFound.gameObject.SetActive(true);
+        yield return new WaitForSeconds(1f);
+
         // show real URL
-        StartCoroutine(ShowUrl_(WEBPAGE_URL, () => StartCoroutine(PageFound())));
+        StartCoroutine(ShowUrl_(WEBPAGE_URL, () => StartCoroutine(PageFound_())));
     }
-    
+
     /// <summary>
     /// Hide any elements that are assigned to unused players
     /// </summary>
     IEnumerator PageFound_()
     {
+        yield return new WaitForSeconds(1f);
+
         // hide background to reveal game
         WebBrowserBackground.SetActive(false);
-        yield return new WaitForSeconds(2f);
-        
+
         // hide URL bar
         UrlArea.SetActive(false);
-        
+
         StartGame_();
     }
 
@@ -183,24 +184,24 @@ public class FollowBackController : MonoBehaviour
     /// Ends the game
     /// </summary>
     void EndGame_()
-    {        
+    {
         // don't allow players to move
-        foreach(var player in _players)
+        foreach (var player in _players)
         {
             player.DisableMovement();
         }
-        
+
         _gameActive = false;
-        StartCoroutine(ShowSelfies_());        
+        StartCoroutine(ShowSelfies_());
     }
-    
+
     /// <summary>
     /// Shows selfies taken during the game
     /// </summary>
     IEnumerator ShowSelfies_()
-    {    
+    {
         WebBrowserBackground.SetActive(false);
-    
+
         // TODO: show loading message
         yield return new WaitForSeconds(3);
         // TODO: show posts        
@@ -216,16 +217,16 @@ public class FollowBackController : MonoBehaviour
     void StartGame_()
     {
         _gameActive = true;
-        
+
         // allow players to move
-        foreach(var player in _players)
+        foreach (var player in _players)
         {
             player.EnableMovement();
         }
 
         // select first player
         StartCoroutine(SelectInfluencer_());
-        
+
         // start spawning alerts
         StartCoroutine(FollowerNotifications_());
         StartCoroutine(OtherNotifications_());
@@ -242,10 +243,12 @@ public class FollowBackController : MonoBehaviour
             // wait a period of time then create a notification
             var random = UnityEngine.Random.Range(30, 45);
             yield return new WaitForSeconds(random);
-            NotificationAlert.SetActive(true);
+
+            if (_gameActive)
+                NotificationAlert.SetActive(true);
         }
     }
-    
+
     /// <summary>
     /// Generates one of three events
     /// </summary>
@@ -282,7 +285,8 @@ public class FollowBackController : MonoBehaviour
             // wait a period of time then create a follower notification
             var random = UnityEngine.Random.Range(15, 30);
             yield return new WaitForSeconds(random);
-            FollowerAlert.SetActive(true);
+            if (_gameActive)
+                FollowerAlert.SetActive(true);
         }
     }
 
@@ -381,16 +385,16 @@ public class FollowBackController : MonoBehaviour
         var parentScale = _currentInfluencer.MovementObject().localScale;
         var targetSizeX = ZONE_SIZE / parentScale.x;
         var targetSizeY = ZONE_SIZE / parentScale.y;
-        
+
         // if BIGGER ZONE power up triggered/pending, increase size
-        if(_biggerZone) 
+        if (_biggerZone)
         {
             targetSizeX *= ZONE_SIZE_POWERUP;
             targetSizeY *= ZONE_SIZE_POWERUP;
             _biggerZone = false;
         }
         // if SMALLER ZONE power up triggered/pending, decrease size
-        else if(_smallerZone) 
+        else if (_smallerZone)
         {
             targetSizeX /= ZONE_SIZE_POWERUP;
             targetSizeY /= ZONE_SIZE_POWERUP;
@@ -496,7 +500,7 @@ public class FollowBackController : MonoBehaviour
     /// <param name="player">The player to update</param>
     public void UpdatePlayerUIs(FollowBackInputHandler player)
     {
-       // update UIs
+        // update UIs
         PlayerUiDisplays[player.GetPlayerIndex()].SetFollowerCount(player.GetFollowerCount());
     }
 
@@ -523,25 +527,16 @@ public class FollowBackController : MonoBehaviour
     }
 
     /// <summary>
-    /// Report a notification for the specified player
-    /// </summary>
-    /// <param name="player">The player who has triggered the notification</param>
-    public void PlayerNotification(FollowBackInputHandler player)
-    {
-        _notificationHandler.GetNotificationContent();
-    }
-    
-    /// <summary>
     /// Add points to the winner based on number of followers
     /// </summary>
     void AddPoints_()
     {
-        foreach(var p in _players)
+        foreach (var p in _players)
         {
             p.AddPoints(p.GetFollowerCount());
         }
-    }    
-    
+    }
+
     /// <summary>
     /// Assigns bonus points to the winner
     /// </summary>
@@ -564,14 +559,14 @@ public class FollowBackController : MonoBehaviour
         // set the winner
         ordered.FirstOrDefault()?.Winner();
     }
-    
+
     /// <summary>
     /// Completes the game and return to object
     /// </summary>
     IEnumerator Complete_()
     {
         AddPoints_();
-    
+
         // assign points for winner
         AssignBonusPoints_();
         yield return new WaitForSeconds(3f);
@@ -590,14 +585,14 @@ public class FollowBackController : MonoBehaviour
         // fade out
         // TODO: EndFader.StartFade(0, 1, ReturnToCentral_);
     }
-    
+
     /// <summary>
     /// Stores a selfie for specified player
     /// </summary>
     /// <param name="player">The player who took the selfie</param>
     public void SelfieTaken(FollowBackInputHandler player)
     {
-        _selfies.Add(new Tuple<FollowBackInputHandler, FollowBackInputHandler>(player, _currentInfluencer);
+        _selfies.Add(new Tuple<FollowBackInputHandler, FollowBackInputHandler>(player, _currentInfluencer));
         AddVidiprinterItem(player, $" took a selfie");
     }
 }

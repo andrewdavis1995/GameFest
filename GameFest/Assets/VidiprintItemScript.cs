@@ -20,6 +20,7 @@ public class VidiprintItemScript : MonoBehaviour
         TxtDescription.text = message;
         if(player != null)
         {
+            ImgPlayerImageBG.gameObject.SetActive(true);
             ImgPlayerImage.sprite = FollowBackController.Instance.CharacterSprites[player.GetCharacterIndex()];
             ImgPlayerImageBG.color = ColourFetcher.GetColour(player.GetPlayerIndex());
         }
@@ -44,7 +45,7 @@ public class VidiprintItemScript : MonoBehaviour
         Initialised = copyElement.Initialised;
 
         ImgBulletPoint.gameObject.SetActive(Initialised);
-        ImgPlayerImageBG.gameObject.SetActive(Initialised && copyElement.ImgPlayerImageBG.gameObject.activeInHierarchy);
+        ImgPlayerImageBG.gameObject.SetActive(copyElement.ImgPlayerImageBG.gameObject.activeInHierarchy);
         gameObject.SetActive(Initialised);
     }
 }

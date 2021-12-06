@@ -41,7 +41,7 @@ public class FollowBackInputHandler : GenericInputHandler
             _movement.Jump();
         }
 
-        if (Input.GetKey(KeyCode.Enter))
+        if (Input.GetKey(KeyCode.KeypadEnter))
         {
             if(!_canMove) return;
             TakeSelfie_();
@@ -161,7 +161,7 @@ public class FollowBackInputHandler : GenericInputHandler
     IEnumerator SelfieCheck_()
     {
         yield return new WaitForSeconds(SELFIE_DELAY);
-        _canTakeSelfie = true;
+        SelfieAvailable_(true);
     }
 
     /// <summary>
@@ -197,7 +197,7 @@ public class FollowBackInputHandler : GenericInputHandler
             if (collider.gameObject.name == "Follower")
             {
                 // add a random number of followers
-                var numFollowers = UnityEngine.Random.Range(1, 20);
+                var numFollowers = UnityEngine.Random.Range(3, 20);
                 AddFollower(false, numFollowers);
                 DisplayFollowersUpdate_($" gained <color=#11ea11>{numFollowers}</color> followers");
             }
@@ -234,7 +234,7 @@ public class FollowBackInputHandler : GenericInputHandler
             
             // selfie check invalidated
             StopCoroutine(SelfieCheck_());
-            _canTakeSelfie = false;
+            SelfieAvailable_(false);
         }
     }
 
@@ -294,6 +294,7 @@ public class FollowBackInputHandler : GenericInputHandler
     {
         _roundFollowers = 0;
         _selfieTakenThisRound = false;
+        SelfieAvailable_(false);
     }
 
     /// <summary>
@@ -304,6 +305,7 @@ public class FollowBackInputHandler : GenericInputHandler
     {
         _canTakeSelfie = available;
         _movement.SetIcon(available ? FollowBackController.Instance.SelfieIcon : null);
+        _movement.ActivePlayerIcon.gameObject.SetActive(available);
     }
     
     /// <summary>
@@ -312,9 +314,9 @@ public class FollowBackInputHandler : GenericInputHandler
     void TakeSelfie_()
     {
         if(!_canTakeSelfie) return;
-        
-        _canTakeSelfie = false;
-        _selfieTakenThisRound = true;        
+
+        SelfieAvailable_(false);
+        _selfieTakenThisRound = true;
         FollowBackController.Instance.SelfieTaken(this);
     }
 }
