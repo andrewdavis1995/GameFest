@@ -361,9 +361,13 @@ public class FollowBackController : MonoBehaviour
         // show how many followers each player gained this round
         foreach (var pl in _players)
         {
-            var prefix = pl.GetFollowerCountRound() < 0 ? "lost" : "stole";
-            var col = pl.GetFollowerCountRound() < 0 ? "#ea1111" : "#11ea11";
-            AddVidiprinterItem(pl, $" {prefix} <color={col}>{pl.GetFollowerCountRound()}</color> followers");
+            // don't add a feed item if no change
+            if (pl.GetFollowerCountRound() != 0)
+            {
+                var prefix = pl.GetFollowerCountRound() < 0 ? "lost" : "stole";
+                var col = pl.GetFollowerCountRound() < 0 ? "#ea1111" : "#11ea11";
+                AddVidiprinterItem(pl, $" {prefix} <color={col}>{pl.GetFollowerCountRound()}</color> followers");
+            }
         }
 
         NextTurn_();
