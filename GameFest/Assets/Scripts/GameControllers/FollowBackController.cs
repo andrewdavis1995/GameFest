@@ -26,6 +26,7 @@ public class FollowBackController : MonoBehaviour
     public GameObject TrendingPanel;
     public GameObject NotificationAlert;
     public GameObject FollowerAlert;
+    public Sprite SelfieIcon;
 
     List<FollowBackInputHandler> _players = new List<FollowBackInputHandler>();
     public Vector3[] StartPositions;
