@@ -136,6 +136,7 @@ public class FollowBackInputHandler : GenericInputHandler
         {
             FollowBackController.Instance.PlayerEnteredZone(this);
         }
+        // fell off bottom
         else if (collider.tag == "KickBack")
         {
             // jump back to top
@@ -146,17 +147,21 @@ public class FollowBackInputHandler : GenericInputHandler
             LoseFollower(false, OUT_OF_BOUNDS_FOLLOWERS_LOST);
             DisplayFollowersUpdate_($"fell out of relevance and lost {OUT_OF_BOUNDS_FOLLOWERS_LOST} followers");
         }
+        // notification triggers
         else if (collider.tag == "PowerUp")
         {
+            // follower notification collected
             if (collider.gameObject.name == "Follower")
             {
+                // add a random number of followers
                 var numFollowers = UnityEngine.Random.Range(1, 20);
                 AddFollower(false, numFollowers);
                 DisplayFollowersUpdate_($" gained <color=#11ea11>{numFollowers}</color> followers");
             }
+            // alert notification
             else if (collider.gameObject.name == "Notification")
             {
-                // TODO: generate messages and points for funny events
+                FollowBackController.Instance.EventNotificationTriggered();
             }
 
             collider.gameObject.SetActive(false);
