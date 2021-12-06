@@ -12,6 +12,7 @@ public class FollowBackController : MonoBehaviour
     const int TURNS_PER_PLAYER = 2;
     const float ZONE_SIZE = 1f;
     const float ZONE_GROWTH = 2f;
+    const float ZONE_SIZE_POWERUP = 1.2f;
 
     public Transform InfluencerZone;
     public Transform PlayerPrefab;
@@ -33,6 +34,8 @@ public class FollowBackController : MonoBehaviour
     TimeLimit _turnLimit;
     bool _turnRunning = false;
     bool _gameActive = false;
+    bool _biggerZone = false;
+    bool _smallerZone = false;
     List<FollowBackInputHandler> _playersInZone = new List<FollowBackInputHandler>();
     NotificationContentHandler _notificationHandler = new NotificationContentHandler();
 
@@ -164,11 +167,36 @@ public class FollowBackController : MonoBehaviour
             NotificationAlert.SetActive(true);
         }
     }
+    
+    /// <summary>
+    /// Generates one of three events
+    /// </summary>
+    public void EventNotificationTriggered()
+    {
+        var rand = UnityEngine.Random.Range(0, 3);
+        switch (rand)
+        {
+            // trolls
+            case 0:
+                // TODO: spawn trolls
+                AddVidiprinterItem(null, "Watch out for trolls!");
+                break;
+            // bigger zone
+            case 1:
+                _biggerZone = true;
+                AddVidiprinterItem(null, "BIG ZONE will be active next turn!");
+                break;
+            // smaller zone
+            case 2:
+                _smallerZone = true;
+                AddVidiprinterItem(null, "LITTLE ZONE will be active next turn!");
+                break;
+        }
+    }
 
     /// <summary>
     /// Spawns a notification every so often
     /// </summary>
-    /// <returns></returns>
     private IEnumerator FollowerNotifications_()
     {
         while (_gameActive)
@@ -275,6 +303,21 @@ public class FollowBackController : MonoBehaviour
         var parentScale = _currentInfluencer.MovementObject().localScale;
         var targetSizeX = ZONE_SIZE / parentScale.x;
         var targetSizeY = ZONE_SIZE / parentScale.y;
+        
+        // if BIGGER ZONE power up triggered/pending, increase size
+        if(_biggerZone) 
+        {
+            targetSizeX *= ZONE_SIZE_POWERUP;
+            targetSizeY *= ZONE_SIZE_POWERUP;
+            _biggerZone = false;
+        }
+        // if SMALLER ZONE power up triggered/pending, decrease size
+        else if(_smallerZone) 
+        {
+            targetSizeX /= ZONE_SIZE_POWERUP;
+            targetSizeY /= ZONE_SIZE_POWERUP;
+            _smallerZone = false;
+        }
 
         // increase size until target reached
         while ((InfluencerZone.localScale.x < targetSizeX - 0.01f) && (InfluencerZone.localScale.y < targetSizeY - 0.01f))
