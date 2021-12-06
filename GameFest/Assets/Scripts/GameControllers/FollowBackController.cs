@@ -39,6 +39,7 @@ public class FollowBackController : MonoBehaviour
     bool _smallerZone = false;
     List<FollowBackInputHandler> _playersInZone = new List<FollowBackInputHandler>();
     NotificationContentHandler _notificationHandler = new NotificationContentHandler();
+    List<Tuple<FollowBackInputHandler, FollowBackInputHandler>> _selfies = new List<Tuple<FollowBackInputHandler, FollowBackInputHandler>>();
 
     // Start is called before the first frame update
     void Start()
@@ -508,5 +509,15 @@ public class FollowBackController : MonoBehaviour
 
         // fade out
         // TODO: EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+    
+    /// <summary>
+    /// Stores a selfie for specified player
+    /// </summary>
+    /// <param name="player">The player who took the selfie</param>
+    public void SelfieTaken(FollowBackInputHandler player)
+    {
+        _selfies.Add(new Tuple<FollowBackInputHandler, FollowBackInputHandler>(player, _currentInfluencer);
+        AddVidiprinterItem(player, $" took a selfie");
     }
 }
