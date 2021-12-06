@@ -105,12 +105,7 @@ public class PlayerMovement : MonoBehaviour
         foreach (var col in bvColliders)
             Physics2D.IgnoreCollision(_collider, col);
     }
-
-    internal void SetIcon(object keyIcon)
-    {
-        throw new NotImplementedException();
-    }
-
+    
     /// <summary>
     /// Sets the functions to call when the player collides with a trigger
     /// </summary>
