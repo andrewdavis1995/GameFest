@@ -6,11 +6,14 @@ public class FollowBackInputHandler : GenericInputHandler
 {
     const int STARTING_FOLLOWERS = 400;
     const int OUT_OF_BOUNDS_FOLLOWERS_LOST = 250;
+    const float SELFIE_DELAY = 4f;
 
     PlayerMovement _movement;
     TimeLimit _roundLimit;
     int _followers = 0;
     int _roundFollowers = 0;
+    bool _canTakeSelfie = false;
+    bool _selfieTakenThisRound = false;
 
     private void Update()
     {
@@ -31,6 +34,11 @@ public class FollowBackInputHandler : GenericInputHandler
         if (Input.GetKey(KeyCode.Space))
         {
             _movement.Jump();
+        }
+
+        if (Input.GetKey(KeyCode.Enter))
+        {
+            TakeSelfie_();
         }
     }
 
@@ -126,6 +134,15 @@ public class FollowBackInputHandler : GenericInputHandler
     }
 
     /// <summary>
+    /// Starts a check for if the player has been in the zone for X seconds - allow a selfie if so
+    /// </summary>
+    IEnumerator SelfieCheck_()
+    {
+        yield return new WaitForSeconds(SELFIE_DELAY);
+        _canTakeSelfie = true;
+    }
+
+    /// <summary>
     /// Event handler for when a trigger is entered
     /// </summary>
     /// <param name="collider">The object with the trigger</param>
@@ -135,6 +152,10 @@ public class FollowBackInputHandler : GenericInputHandler
         if (collider.tag == "AreaTrigger")
         {
             FollowBackController.Instance.PlayerEnteredZone(this);
+            
+            // start delay before selfie allowed
+            if(!_selfieTakenThisRound)
+                StartCoroutine(SelfieCheck_());
         }
         // fell off bottom
         else if (collider.tag == "KickBack")
@@ -188,6 +209,10 @@ public class FollowBackInputHandler : GenericInputHandler
         if (collider.tag == "AreaTrigger")
         {
             FollowBackController.Instance.PlayerLeftZone(this);
+            
+            // selfie check invalidated
+            StopCoroutine(SelfieCheck_());
+            _canTakeSelfie = false;
         }
     }
 
@@ -217,6 +242,7 @@ public class FollowBackInputHandler : GenericInputHandler
         if (_followers < 0)
             _followers = 0;
 
+        // add to round-specific stats if specified
         if (roundSpecific)
             _roundFollowers -= count;
     }
@@ -245,5 +271,28 @@ public class FollowBackInputHandler : GenericInputHandler
     public void NewRound()
     {
         _roundFollowers = 0;
+        _selfieTakenThisRound = false;
+    }
+
+    /// <summary>
+    /// Resets followers gained this round
+    /// </summary>
+    /// <param id="available">Can the player take a selfie</param>
+    void SelfieAvailable_(bool available)
+    {
+        _canTakeSelfie = available;
+        _movement.SetIcon(available ? FollowBackController.Instance.SelfieIcon : null);
+    }
+    
+    /// <summary>
+    /// Takes a selfie (if allowed)
+    /// </summary>
+    void TakeSelfie_()
+    {
+        if(!_canTakeSelfie) return;
+        
+        _canTakeSelfie = false;
+        _selfieTakenThisRound = true;        
+        FollowBackController.Instance.SelfieTaken(this);
     }
 }
