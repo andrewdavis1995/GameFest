@@ -36,7 +36,8 @@ public class FollowBackController : MonoBehaviour
     public GameObject ImgPageHome;
     public GameObject SelfiePage;
     public GameObject LoadingMessage;
-    
+    public GameObject TxtMoreSelfies;
+
     // selfies
     public SelfieDisplayScript[] SelfieDisplays;
 
@@ -207,33 +208,40 @@ public class FollowBackController : MonoBehaviour
     {
         // show page and loading message
         SelfiePage.SetActive(true);
+        UrlArea.SetActive(true);
         LoadingMessage.SetActive(true);
-        
+        WebBrowserBackground.SetActive(true);
+
         yield return new WaitForSeconds(2);
-        
+
         // hide loading message
         LoadingMessage.SetActive(false);
-        
+
         // show each selfie
         int index = 0;
-        foreach(var selfie in _selfies)
+        foreach (var selfie in _selfies)
         {
             SelfieDisplays[index].Setup(selfie);
             index++;
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(1.2f);
+
+            if (index >= SelfieDisplays.Length)
+            {
+                TxtMoreSelfies.gameObject.SetActive(true);
+            }
         }
-        
+
         // pause to show all selfies
         yield return new WaitForSeconds(2);
-        
+
         // add points for each selfie
-        for(int i = 0; i < index; i++)
+        for (int i = 0; i < index; i++)
         {
             SelfieDisplays[index].AllocatePoints();
         }
-                
+
         yield return new WaitForSeconds(3);
-        
+
         // go to results page
         StartCoroutine(Complete_());
     }
