@@ -34,6 +34,11 @@ public class FollowBackController : MonoBehaviour
     public GameObject WebBrowserBackground;
     public GameObject ImgPageNotFound;
     public GameObject ImgPageHome;
+    public GameObject SelfiePage;
+    public GameObject LoadingMessage;
+    
+    // selfies
+    public SelfieDisplayScript[] SelfieDisplays;
 
     List<FollowBackInputHandler> _players = new List<FollowBackInputHandler>();
     public Vector3[] StartPositions;
@@ -200,14 +205,36 @@ public class FollowBackController : MonoBehaviour
     /// </summary>
     IEnumerator ShowSelfies_()
     {
-        WebBrowserBackground.SetActive(false);
-
-        // TODO: show loading message
+        // show page and loading message
+        SelfiePage.SetActive(true);
+        LoadingMessage.SetActive(true);
+        
+        yield return new WaitForSeconds(2);
+        
+        // hide loading message
+        LoadingMessage.SetActive(false);
+        
+        // show each selfie
+        int index = 0;
+        foreach(var selfie in _selfies)
+        {
+            SelfieDisplays[index].Setup(selfie);
+            index++;
+            yield return new WaitForSeconds(0.5f);
+        }
+        
+        // pause to show all selfies
+        yield return new WaitForSeconds(2);
+        
+        // add points for each selfie
+        for(int i = 0; i < index; i++)
+        {
+            SelfieDisplays[index].AllocatePoints();
+        }
+                
         yield return new WaitForSeconds(3);
-        // TODO: show posts        
-        yield return new WaitForSeconds(3);
-        // TODO: add followers for each
-        yield return new WaitForSeconds(1);
+        
+        // go to results page
         StartCoroutine(Complete_());
     }
 
