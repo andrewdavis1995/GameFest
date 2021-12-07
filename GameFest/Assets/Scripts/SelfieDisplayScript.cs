@@ -1,0 +1,95 @@
+using System.Collections;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class SelfieDisplayScript : MonoBehaviour
+{
+    public Text TxtUsername;
+    public Text TxtCaption;
+    public Image ImgBackground;
+    public Image ImgTaker;
+    public Image ImgSubject;
+    
+    public Sprite[] TakerSprites;
+    public Sprite[] SubjectSprites;
+    public Sprite[] BackgroundSprites;
+    
+    FollowBackInputHandler _owner;
+    
+    string[] HashtagOptions = new string[] { "friends", "bffs", "fun", "family", "happiness", "joy", "summervibez"
+                                            "poppop", "fasterthanthehogwartsexpress", "ladsladslads", "tbt", "lol"
+                                            "wayhayyy", "anawasliketha", "ohright", "wellwellwell", "goodtimes", "vibin" };
+    
+    string[] CaptionOptions = new string[] { "Chillin' with my homie", "Spot the", "Who's that hiding back there?", "Too school for cool", "Don't be shy"
+                                            "Got you", "Following", "My fave", "Love ya" };
+    
+    /// <summary>
+    /// Sets the content of the selfie
+    /// </summary>
+    /// <param id="players">The players in the selfie</param>
+    public void Setup(Tuple<FollowBackInputHandler, FollowBackInputHandler> players)
+    {
+        _owner = players.Item1;
+        
+        // set background image
+        var randomBackground = UnityEngine.Random.Range(0, BackgroundSprites.Count);
+        ImgBackground.sprite = BackgroundSprites[randomBackground];
+        
+        // set player images
+        ImgTaker.sprite = TakerSprites[_owner.GetCharacterIndex()];
+        ImgSubject.sprite = SubjectSprites[players.Item2.GetCharacterIndex()];
+        
+        // set text diplays
+        TxtUsername.Text = "@" + _owner.GetPlayerName();
+        TxtCaption.Text = GetCaption_() + " <b>@" + players.Item2.GetPlayerName() + " </b><color=#4062B7>" + GetHashtags_() + "</color>";
+    }    
+    
+    /// <summary>
+    /// Generates a string of captions to use for the post
+    /// </summary>
+    /// <returns>String of the caption</returns>
+    string GetHashtags_()
+    {
+        string output = "";
+        
+        var cIndex = UnityEngine.Random.Range(0, CaptionOptions.Count);
+        output = CaptionOptions[cIndex];
+        
+        return output;
+    }    
+    
+    /// <summary>
+    /// Generates a string of hashtags to add to the end of the post
+    /// </summary>
+    /// <returns>String containing hashtags</returns>
+    string GetHashtags_()
+    {
+        string output = "\n";
+    
+        var numHashtags = UnityEngine.Random.Range(1, 3);
+        for(int i = 0; i < numHashtags; i++)
+        {
+            var htIndex = UnityEngine.Random.Range(0, HashtagOptions.Count);
+            output += "#" + HashtagOptions[htIndex] + " ";
+            
+            // do not go longer than 45 characters
+            if(output.Length > 45)
+                break;
+        }
+        
+        return output;
+    }    
+    
+    /// <summary>
+    /// Allocates a random number of followers to the taker of the selfie
+    /// </summary>
+    public void AllocatePoints()
+    {
+        // generate number of followers and add to the player
+        var r = UnityEngine.Random.Range(15, 25);
+        _owner.AddFollower(false, r);
+        
+        // TODO: display in UI
+    }
+    
+}
