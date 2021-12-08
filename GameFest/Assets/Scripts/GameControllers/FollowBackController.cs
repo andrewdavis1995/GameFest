@@ -195,6 +195,7 @@ public class FollowBackController : MonoBehaviour
         foreach (var player in _players)
         {
             player.DisableMovement();
+            player.DestroyAllTrolls();
         }
 
         _gameActive = false;
