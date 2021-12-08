@@ -116,6 +116,15 @@ public class PlayerMovement : MonoBehaviour
         _triggerEnterCallback = triggerEnter;
         _triggerExitCallback = triggerExit;
     }
+    
+    /// <summary>
+    /// Returns whether the player is on an element tagged as ground
+    /// </summary>
+    /// <returns>Whether the player is on the ground</returns>
+    public bool OnGround()
+    {
+        return _onGround;
+    }
 
     /// <summary>
     /// Sets the visibilty of the active icon
@@ -382,11 +391,19 @@ public class PlayerMovement : MonoBehaviour
             anim.enabled = state;
     }
 
+    /// <summary>
+    /// Adds "bling" sprites to the player
+    /// </summary>
+    /// <param name="count">The index of the bling to add</param>
     internal void AddBling(int count)
     {
         Flash.Go(CreateBling_, null, count);
     }
 
+    /// <summary>
+    /// Adds "bling" sprites to the player
+    /// </summary>
+    /// <param name="index">The index of the bling to add</param>
     void CreateBling_(int index)
     {
         // create bling
