@@ -23,7 +23,7 @@ public class TrollAttackScript : MonoBehaviour
     void Start()
     {
         _movement = GetComponent<PlayerMovement>();
-        // TODO: ignore collisions between player and left and right bounds
+        // TODO: ignore collisions between player and left and right bounds (controller.instance.left...)
     }
     
     /// <summary>
@@ -34,9 +34,11 @@ public class TrollAttackScript : MonoBehaviour
     {
         _victim = vic;
     
-        // TODO: puff of smoke
+        // TODO: puff of smoke as they appear
     
-        // TODO: set position and start attacking
+        // randomly adjust position, so that they are not all in front of each other
+        var offset = UnityEngine.Random.Range(-0.2f, 0.2f);
+        transform.Translate(new Vector3(offset, offset, -0.1f));
         
         // start attacking
         _active = true;
@@ -46,14 +48,18 @@ public class TrollAttackScript : MonoBehaviour
     /// <summary>
     /// The player has damaged this troll
     /// <summary>
-    public void Damaged()
+    /// <returns>Whether the troll was destroyed</returns>
+    public bool ApplyDamage()
     {
+        bool destroyed = false;
+    
         // decrease health
         _health--;
         
         // if dead, destroy
         if(_health <= 0)
         {
+            destroyed = true;
             StartCoroutine(Destroy_());
         }
     }
@@ -61,7 +67,7 @@ public class TrollAttackScript : MonoBehaviour
     /// <summary>
     /// The player has run out of followers - make the troll run off
     /// <summary>
-    public void PlayerReachedZero()
+    void PlayerReachedZero_()
     {
         _active = false;
         _movement.Move(1, 0);
@@ -74,7 +80,7 @@ public class TrollAttackScript : MonoBehaviour
     {
         _active = false;
         
-        // TODO: add message to say "BLOCKED"
+        // TODO: add message to say "BLOCKED" (instantiate)
     
         // fade out gradually
         var colour = 1f;
@@ -94,11 +100,17 @@ public class TrollAttackScript : MonoBehaviour
     /// <summary>
     IEnumerator Attack_()
     {
-        while(_active)
+        while(_active && _victim.GetFollowerCount() > 0)
         {
             // remove a follower every so often
             _victim.LoseFollower(true, 1);
             yield return new WaitForSeconds(ATTACK_RATE);
+        }
+        
+        // if the player ran out of followers, trolls just run off
+        if(_victim.GetFollowerCount() == 0)
+        {
+            PlayerReachedZero_();
         }
     }
 }
