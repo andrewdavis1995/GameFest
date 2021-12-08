@@ -26,6 +26,15 @@ public class TrollAttackScript : MonoBehaviour
         // TODO: ignore collisions between player and left and right bounds (controller.instance.left...)
     }
     
+    void Update()
+    {
+        // destroy if too far off side
+        if(transform.localPosition.x < -15 || transform.localPosition.x > 15)
+        {
+            Destroy(gameObject);
+        }
+    }
+    
     /// <summary>
     /// Sets the player to attack and position
     /// <summary>
@@ -70,7 +79,14 @@ public class TrollAttackScript : MonoBehaviour
     void PlayerReachedZero_()
     {
         _active = false;
-        _movement.Move(1, 0);
+        
+        // run off to closest side
+        if(transform.localPosition.x < 2)
+            _movement.Move(-1, 0);
+        else
+            _movement.Move(1, 0);
+            
+        _victim.TrollsDone();
     }
     
     /// <summary>
