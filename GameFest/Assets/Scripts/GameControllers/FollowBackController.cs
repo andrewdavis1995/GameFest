@@ -37,6 +37,7 @@ public class FollowBackController : MonoBehaviour
     public GameObject SelfiePage;
     public GameObject LoadingMessage;
     public GameObject TxtMoreSelfies;
+    public Transform TrollPrefab;
 
     // selfies
     public SelfieDisplayScript[] SelfieDisplays;
@@ -68,9 +69,8 @@ public class FollowBackController : MonoBehaviour
         // spawn players
         SpawnPlayers_();
 
+        // sometimes do page not found (for a bit of fun)
         var random = UnityEngine.Random.Range(0, 10);
-
-        // sometimes do page not found for a bit of fun
         if (random == 1)
             StartCoroutine(ShowUrl_(WEBPAGE_URL_INCORRECT, () => StartCoroutine(PageNotFound_())));
         else
@@ -225,6 +225,7 @@ public class FollowBackController : MonoBehaviour
             index++;
             yield return new WaitForSeconds(1.2f);
 
+            // display message if more than the maximum number
             if (index >= SelfieDisplays.Length)
             {
                 TxtMoreSelfies.gameObject.SetActive(true);
@@ -294,7 +295,11 @@ public class FollowBackController : MonoBehaviour
         {
             // trolls
             case 0:
-                // TODO: spawn trolls
+                // spawn trolls
+                foreach(var player in _players)
+                {
+                    player.TrollAttack(TrollPrefab);
+                }
                 AddVidiprinterItem(null, "Watch out for trolls!");
                 break;
             // bigger zone
