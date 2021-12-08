@@ -178,7 +178,7 @@ public class PlayerMovement : MonoBehaviour
     /// Stop movement
     /// </summary>
     /// <param name="disabledImage">Image to use when disabled</param>
-    public IEnumerator Disable(Sprite disabledImage)
+    public void Disable(Sprite disabledImage)
     {
         _disabled = true;
         _renderer.sprite = disabledImage;
