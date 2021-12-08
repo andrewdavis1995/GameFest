@@ -134,6 +134,8 @@ public class FollowBackInputHandler : GenericInputHandler
 
         // assign callbacks for when the item interacts with triggers
         _movement.AddTriggerCallbacks(TriggerEntered_, TriggerExited_);
+        
+        // TODO: set collision callbacks (to check landing for spawning trolls)
 
         // set the height of the object
         SetHeight(spawned, characterIndex);
