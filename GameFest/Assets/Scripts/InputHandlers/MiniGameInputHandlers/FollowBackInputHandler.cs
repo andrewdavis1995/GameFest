@@ -7,6 +7,7 @@ public class FollowBackInputHandler : GenericInputHandler
     const int STARTING_FOLLOWERS = 400;
     const int OUT_OF_BOUNDS_FOLLOWERS_LOST = 250;
     const float SELFIE_DELAY = 4f;
+    const int NUM_TROLLS = 5;
 
     PlayerMovement _movement;
     TimeLimit _roundLimit;
@@ -15,6 +16,9 @@ public class FollowBackInputHandler : GenericInputHandler
     bool _canTakeSelfie = false;
     bool _selfieTakenThisRound = false;
     bool _canMove = true;
+    Transform _trollPrefab;
+    bool _trollsPending = false;
+    List<TrollAttackScript> _activeTrolls = new List<TrollAttackScript>();
 
     private void Update()
     {    
@@ -22,29 +26,45 @@ public class FollowBackInputHandler : GenericInputHandler
         if (Input.GetKey(KeyCode.LeftArrow))
         {
             if(!_canMove) return;
+            if(_activeTrolls.Count > 0) return;
             _movement.Move(new Vector2(-1, 0));
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
             if(!_canMove) return;
+            if(_activeTrolls.Count > 0) return;
             _movement.Move(new Vector2(1, 0));
         }
         else
         {
             if(!_canMove) return;
+            if(_activeTrolls.Count > 0) return;
             _movement.Move(new Vector2(0, 0));
         }
 
         if (Input.GetKey(KeyCode.Space))
         {
             if(!_canMove) return;
+            if(_activeTrolls.Count > 0) return;
             _movement.Jump();
         }
 
         if (Input.GetKey(KeyCode.KeypadEnter))
         {
             if(!_canMove) return;
+            if(_activeTrolls.Count > 0) return;
             TakeSelfie_();
+        }
+
+        if (Input.GetKey(KeyCode.A))
+        {
+            if(!_canMove) return;
+            if(_activeTrolls.Count > 0)
+            {
+                bool destroyed = _activeTrolls[0].ApplyDamage();
+                if(destroyed) 
+                    _activeTrolls.RemoveAt(0);
+            }
         }
     }
     
@@ -135,7 +155,8 @@ public class FollowBackInputHandler : GenericInputHandler
         // assign callbacks for when the item interacts with triggers
         _movement.AddTriggerCallbacks(TriggerEntered_, TriggerExited_);
         
-        // TODO: set collision callbacks (to check landing for spawning trolls)
+        // set collision callbacks (to check landing for spawning trolls)
+        _movement.AddMovementCallbacks(ColliderHit_, null);
 
         // set the height of the object
         SetHeight(spawned, characterIndex);
@@ -146,6 +167,18 @@ public class FollowBackInputHandler : GenericInputHandler
         _followers = STARTING_FOLLOWERS;
 
         return spawned;
+    }
+    
+    /// <summary>
+    /// Callback for when the player collides with an object
+    /// </summary>
+    /// <param name="collider">The item that was collided with</param>
+    void ColliderHit_(Collision2D collider)
+    {
+        if(collider.gameObject.tag == "Ground" && _trollsPending)
+        {
+            StartCoroutine(SpawnTrolls());
+        }
     }
 
     /// <summary>
@@ -320,5 +353,45 @@ public class FollowBackInputHandler : GenericInputHandler
         SelfieAvailable_(false);
         _selfieTakenThisRound = true;
         FollowBackController.Instance.SelfieTaken(this);
+    }
+    
+    /// <summary>
+    /// Need to spawn trolls
+    /// </summary>
+    /// <param id="trollPrefab"/>The prefab to spawn for each troll</param>
+    public void TrollAttack(Transform trollPrefab)
+    {
+        _trollPrefab = trollPrefab;
+        
+        // spawn if on ground, or wait until landed if in the air
+        if(_movement.OnGround())
+        {
+            StartCoroutine(SpawnTrolls_());
+        }
+        else
+        {
+            _trollsPending = true;
+        }
+    }
+    
+    /// <summary>
+    /// Spawns trolls
+    /// </summary>
+    IEnumerator SpawnTrolls_()
+    {
+        _trollsPending = false;
+            
+        for(int i = 0; i < NUM_TROLLS; i++)
+        {
+            // spawn a troll
+            var spawned = Instantiate(_trollPrefab, transform.localPosition, Quaternion.identity);
+    
+            // keep track of the troll
+            var trollScript = spawned.GetComponent<TrollAttackScript>();
+            trollScript.Setup(this);
+            _activeTrolls.Add(trollScript);
+            
+            yield return new WaitForSeconds(0.3f);
+        }
     }
 }
