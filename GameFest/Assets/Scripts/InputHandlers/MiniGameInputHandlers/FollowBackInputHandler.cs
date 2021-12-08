@@ -101,6 +101,21 @@ public class FollowBackInputHandler : GenericInputHandler
     public void DisableMovement()
     {
         _canMove = false;
+    }    
+    
+    /// <summary>
+    /// Game has ended, so destroy all
+    /// </summary>
+    public void DestroyAllTrolls()
+    {
+        // destroy object
+        foreach(var troll in _activeTrolls)
+        {
+            Destroy(troll.gameObject);
+        }
+        
+        // clear list
+        _activeTrolls.Clear();
     }
 
     /// <summary>
