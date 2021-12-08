@@ -164,15 +164,24 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="disabledImage">Image to use when disabled</param>
     public IEnumerator Disable(float duration, Sprite disabledImage)
     {
-        _disabled = true;
-        _renderer.sprite = disabledImage;
-
+        Disabled(disabledImage);
+        
         // disable animations
         foreach (var anim in _animators)
             anim.enabled = false;
 
         yield return new WaitForSeconds(duration);
         Reenable();
+    }
+    
+    /// <summary>
+    /// Stop movement
+    /// </summary>
+    /// <param name="disabledImage">Image to use when disabled</param>
+    public IEnumerator Disable(Sprite disabledImage)
+    {
+        _disabled = true;
+        _renderer.sprite = disabledImage;
     }
 
     /// <summary>
