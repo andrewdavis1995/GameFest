@@ -61,11 +61,30 @@ public class FollowBackInputHandler : GenericInputHandler
             if(!_canMove) return;
             if(_activeTrolls.Count > 0)
             {
+                // attack the first troll
                 bool destroyed = _activeTrolls[0].ApplyDamage();
                 if(destroyed) 
                     _activeTrolls.RemoveAt(0);
+                    
+                // if that was the last one, reenable movement
+                if(_activeTrolls.Count == 0)
+                {
+                    _movement.Reenable();
+                }
             }
         }
+    }
+    
+    /// <summary>
+    /// Trolls have removed all followers
+    /// <summary>
+    public void TrollsDone()
+    {
+        // free trolls
+        _activeTrolls.Clear();
+        
+        // start movement again
+        _movement.Reenable();
     }
     
     /// <summary>
@@ -380,6 +399,7 @@ public class FollowBackInputHandler : GenericInputHandler
     IEnumerator SpawnTrolls_()
     {
         _trollsPending = false;
+        _movement.Disable(FollowBackController.Instance.DisabledImages[GetCharacterIndex()]);
             
         for(int i = 0; i < NUM_TROLLS; i++)
         {
