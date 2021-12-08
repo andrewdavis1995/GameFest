@@ -124,7 +124,7 @@ public class TrollAttackScript : MonoBehaviour
         }
         
         // if the player ran out of followers, trolls just run off
-        if(_victim.GetFollowerCount() == 0)
+        if(_victim.GetFollowerCount() <= 0)
         {
             PlayerReachedZero_();
         }
