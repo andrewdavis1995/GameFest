@@ -7,9 +7,11 @@ public class SelfieDisplayScript : MonoBehaviour
 {
     public Text TxtUsername;
     public Text TxtCaption;
+    public Text TxtFollowers;
     public Image ImgBackground;
     public Image ImgTaker;
     public Image ImgSubject;
+    public RectTransform PointsLabel;
 
     public Sprite[] TakerSprites;
     public Sprite[] SubjectSprites;
@@ -88,13 +90,29 @@ public class SelfieDisplayScript : MonoBehaviour
     /// </summary>
     public void AllocatePoints()
     {
+        Debug.Log(_owner);
         if (_owner == null) return;
 
         // generate number of followers and add to the player
         var r = UnityEngine.Random.Range(15, 25);
         _owner.AddFollower(false, r);
 
-        // TODO: display in UI
+        TxtFollowers.text = "+" + r;
+
+        StartCoroutine(ZoomUp_());
     }
 
+    /// <summary>
+    /// Increases the size of the points label
+    /// </summary>
+    private IEnumerator ZoomUp_()
+    {
+        PointsLabel.eulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(-25, 25));
+
+        while (PointsLabel.localScale.x < 0.8f)
+        {
+            PointsLabel.localScale += new Vector3(0.075f, 0.075f, 0);
+            yield return new WaitForSeconds(0.01f);
+        }
+    }
 }

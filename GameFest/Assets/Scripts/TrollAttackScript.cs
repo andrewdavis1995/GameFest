@@ -1,8 +1,5 @@
-using UnityEngine.UI;
 using UnityEngine;
-using System.Collections.Generic;
-using System.Linq;
-using System;
+using System.Collections;
 
 /// <summary>
 /// Class for controlling trolls
@@ -14,18 +11,12 @@ public class TrollAttackScript : MonoBehaviour
 
     public SpriteRenderer Renderer;
     public ParticleSystem SmokePuff;
-    
+    public GameObject BlockedImage;
+
     FollowBackInputHandler _victim;
-    PlayerMovement _movement;
     bool _active = false;
     int _health = START_HEALTH;
-    
-    void Start()
-    {
-        _movement = GetComponent<PlayerMovement>();
-        // TODO: ignore collisions between player and left and right bounds (controller.instance.left...)
-    }
-    
+
     void Update()
     {
         // destroy if too far off side
@@ -34,20 +25,21 @@ public class TrollAttackScript : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    
+
     /// <summary>
     /// Sets the player to attack and position
     /// <summary>
     /// <param id="vic">The player to attack</param>
-    public void Setup(FollowBackInputHandler vic)
+    /// <param id="index">The index of the player</param>
+    public void Setup(FollowBackInputHandler vic, int index)
     {
         _victim = vic;
     
         // TODO: puff of smoke as they appear
     
         // randomly adjust position, so that they are not all in front of each other
-        var offset = UnityEngine.Random.Range(-0.2f, 0.2f);
-        transform.Translate(new Vector3(offset, offset, -0.1f));
+        var offset = Random.Range(-0.2f, 0.2f);
+        transform.Translate(new Vector3(offset, offset, -1 +(0.1f * index)));
         
         // start attacking
         _active = true;
@@ -71,6 +63,8 @@ public class TrollAttackScript : MonoBehaviour
             destroyed = true;
             StartCoroutine(Destroy_());
         }
+
+        return destroyed;
     }
     
     /// <summary>
@@ -79,29 +73,31 @@ public class TrollAttackScript : MonoBehaviour
     void PlayerReachedZero_()
     {
         _active = false;
-        
-        // run off to closest side
-        if(transform.localPosition.x < 2)
-            _movement.Move(-1, 0);
-        else
-            _movement.Move(1, 0);
-            
+        Destroy();
         _victim.TrollsDone();
     }
-    
+
     /// <summary>
     /// The troll has run out of health
     /// <summary>
-    IEnumerator Destroy()
+    public void Destroy()
+    {
+        StartCoroutine(Destroy_());
+    }
+
+    /// <summary>
+    /// The troll has run out of health
+    /// <summary>
+    IEnumerator Destroy_()
     {
         _active = false;
-        
-        // TODO: add message to say "BLOCKED" (instantiate)
-    
+        BlockedImage.SetActive(true);
+
         // fade out gradually
         var colour = 1f;
         while(colour >= 0)
         {
+            Debug.Log(colour);
             Renderer.color = new Color(1, 1, 1, colour);
             colour -= 0.1f;
             yield return new WaitForSeconds(0.1f);
@@ -110,7 +106,7 @@ public class TrollAttackScript : MonoBehaviour
         // remove entirely
         Destroy(gameObject);
     }
-    
+
     /// <summary>
     /// Attack the player
     /// <summary>
@@ -120,6 +116,7 @@ public class TrollAttackScript : MonoBehaviour
         {
             // remove a follower every so often
             _victim.LoseFollower(true, 1);
+            FollowBackController.Instance.UpdatePlayerUIs(_victim);
             yield return new WaitForSeconds(ATTACK_RATE);
         }
         

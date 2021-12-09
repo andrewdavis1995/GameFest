@@ -13,8 +13,8 @@ public class FollowBackController : MonoBehaviour
     const float ZONE_SIZE = 1f;
     const float ZONE_GROWTH = 2f;
     const float ZONE_SIZE_POWERUP = 1.4f;
-    const string WEBPAGE_URL = "https://www.POPlr.co.uk";
-    const string WEBPAGE_URL_INCORRECT = "https://www.POoPlr.co.uk";
+    const string WEBPAGE_URL = "https://www.popster.co.uk";
+    const string WEBPAGE_URL_INCORRECT = "https://www.poopster.co.uk";
 
     public Transform InfluencerZone;
     public Transform PlayerPrefab;
@@ -38,6 +38,7 @@ public class FollowBackController : MonoBehaviour
     public GameObject LoadingMessage;
     public GameObject TxtMoreSelfies;
     public Transform TrollPrefab;
+    public Sprite[] DisabledImages;
 
     // selfies
     public SelfieDisplayScript[] SelfieDisplays;
@@ -78,6 +79,16 @@ public class FollowBackController : MonoBehaviour
 
         // some components will not be needed
         HideUnusedElements_();
+    }
+
+    /// <summary>
+    /// Check if a player is in the active zone
+    /// </summary>
+    /// <param name="player">The player to check</param>
+    /// <returns>Whether the player is in the zone</returns>
+    public bool PlayerInZone(FollowBackInputHandler player)
+    {
+        return _playersInZone.Any(p => p == player);
     }
 
     /// <summary>
@@ -239,7 +250,8 @@ public class FollowBackController : MonoBehaviour
         // add points for each selfie
         for (int i = 0; i < index; i++)
         {
-            SelfieDisplays[index].AllocatePoints();
+            SelfieDisplays[i].AllocatePoints();
+            yield return new WaitForSeconds(0.8f);
         }
 
         yield return new WaitForSeconds(3);
@@ -278,11 +290,14 @@ public class FollowBackController : MonoBehaviour
         while (_gameActive)
         {
             // wait a period of time then create a notification
-            var random = UnityEngine.Random.Range(30, 45);
+            //var random = UnityEngine.Random.Range(30, 45);
+            var random = UnityEngine.Random.Range(5, 10);
             yield return new WaitForSeconds(random);
 
             if (_gameActive)
                 NotificationAlert.SetActive(true);
+
+            yield return new WaitForSeconds(30);
         }
     }
 
@@ -297,7 +312,7 @@ public class FollowBackController : MonoBehaviour
             // trolls
             case 0:
                 // spawn trolls
-                foreach(var player in _players)
+                foreach (var player in _players)
                 {
                     player.TrollAttack(TrollPrefab);
                 }
@@ -525,10 +540,13 @@ public class FollowBackController : MonoBehaviour
                 if (_currentInfluencer.GetFollowerCount() > 0)
                 {
                     // move a follower from the influencer to the player
-                    player.AddFollower(true);
-                    _currentInfluencer.LoseFollower(true);
-                    UpdatePlayerUIs(player);
-                    UpdatePlayerUIs(_currentInfluencer);
+                    if (!player.TrollsActive())
+                    {
+                        player.AddFollower(true);
+                        _currentInfluencer.LoseFollower(true);
+                        UpdatePlayerUIs(player);
+                        UpdatePlayerUIs(_currentInfluencer);
+                    }
                 }
             }
             yield return new WaitForSeconds(0.1f);
