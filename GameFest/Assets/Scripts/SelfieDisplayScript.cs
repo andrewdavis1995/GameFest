@@ -21,10 +21,11 @@ public class SelfieDisplayScript : MonoBehaviour
 
     string[] HashtagOptions = new string[] { "friends", "bffs", "fun", "family", "happiness", "joy", "summervibez",
                                             "poppop", "fasterthanthehogwartsexpress", "ladsladslads", "tbt", "lol",
-                                            "wayhayyy", "anawasliketha", "ohright", "wellwellwell", "goodtimes", "vibin" };
+                                            "wayhayyy", "anawasliketha", "ohright", "wellwellwell", "goodtimes", "vibin",
+                                            "livingitup", "herewego", "vavavoom", "absoultesavage", "livelaughlove", "mirandir" };
 
     string[] CaptionOptions = new string[] { "Chillin' with my homie", "Spot the", "Who's that hiding back there?", "Too school for cool", "Don't be shy",
-                                            "Got you", "Following", "My fave", "Love ya" };
+                                            "Got you", "Following", "My fave", "Love ya", "When in Rome..." };
 
     /// <summary>
     /// Sets the content of the selfie
