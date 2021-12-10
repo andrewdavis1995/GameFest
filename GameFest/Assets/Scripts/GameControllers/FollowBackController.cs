@@ -290,8 +290,7 @@ public class FollowBackController : MonoBehaviour
         while (_gameActive)
         {
             // wait a period of time then create a notification
-            //var random = UnityEngine.Random.Range(30, 45);
-            var random = UnityEngine.Random.Range(5, 10);
+            var random = UnityEngine.Random.Range(30, 45);
             yield return new WaitForSeconds(random);
 
             if (_gameActive)

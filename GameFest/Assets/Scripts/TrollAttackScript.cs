@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System;
 
 /// <summary>
 /// Class for controlling trolls
@@ -20,7 +21,7 @@ public class TrollAttackScript : MonoBehaviour
     void Update()
     {
         // destroy if too far off side
-        if(transform.localPosition.x < -15 || transform.localPosition.x > 15)
+        if (transform.localPosition.x < -15 || transform.localPosition.x > 15)
         {
             Destroy(gameObject);
         }
@@ -33,19 +34,32 @@ public class TrollAttackScript : MonoBehaviour
     /// <param id="index">The index of the player</param>
     public void Setup(FollowBackInputHandler vic, int index)
     {
+        Renderer.enabled = false;
         _victim = vic;
-    
-        // TODO: puff of smoke as they appear
-    
+
         // randomly adjust position, so that they are not all in front of each other
-        var offset = Random.Range(-0.2f, 0.2f);
-        transform.Translate(new Vector3(offset, offset, -1 +(0.1f * index)));
-        
+        var offset = UnityEngine.Random.Range(-0.2f, 0.2f);
+        transform.Translate(new Vector3(offset, offset, -1 + (0.1f * index)));
+
+        // appear in a puff of smoke
+        StartCoroutine(Appear_());
+    }
+
+    /// <summary>
+    /// Makes the troll appear in a puff of smoke
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator Appear_()
+    {
+        SmokePuff.Play();
+        yield return new WaitForSeconds(0.4f);
+        Renderer.enabled = true;
+
         // start attacking
         _active = true;
         StartCoroutine(Attack_());
     }
-    
+
     /// <summary>
     /// The player has damaged this troll
     /// <summary>
@@ -53,12 +67,12 @@ public class TrollAttackScript : MonoBehaviour
     public bool ApplyDamage()
     {
         bool destroyed = false;
-    
+
         // decrease health
         _health--;
-        
+
         // if dead, destroy
-        if(_health <= 0)
+        if (_health <= 0)
         {
             destroyed = true;
             StartCoroutine(Destroy_());
@@ -66,7 +80,7 @@ public class TrollAttackScript : MonoBehaviour
 
         return destroyed;
     }
-    
+
     /// <summary>
     /// The player has run out of followers - make the troll run off
     /// <summary>
@@ -95,14 +109,14 @@ public class TrollAttackScript : MonoBehaviour
 
         // fade out gradually
         var colour = 1f;
-        while(colour >= 0)
+        while (colour >= 0)
         {
             Debug.Log(colour);
             Renderer.color = new Color(1, 1, 1, colour);
             colour -= 0.1f;
             yield return new WaitForSeconds(0.1f);
         }
-        
+
         // remove entirely
         Destroy(gameObject);
     }
@@ -112,16 +126,16 @@ public class TrollAttackScript : MonoBehaviour
     /// <summary>
     IEnumerator Attack_()
     {
-        while(_active && _victim.GetFollowerCount() > 0)
+        while (_active && _victim.GetFollowerCount() > 0)
         {
             // remove a follower every so often
             _victim.LoseFollower(true, 1);
             FollowBackController.Instance.UpdatePlayerUIs(_victim);
             yield return new WaitForSeconds(ATTACK_RATE);
         }
-        
+
         // if the player ran out of followers, trolls just run off
-        if(_victim.GetFollowerCount() <= 0)
+        if (_victim.GetFollowerCount() <= 0)
         {
             PlayerReachedZero_();
         }

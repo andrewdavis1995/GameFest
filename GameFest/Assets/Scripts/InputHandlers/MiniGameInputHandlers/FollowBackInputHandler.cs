@@ -23,37 +23,37 @@ public class FollowBackInputHandler : GenericInputHandler
     List<TrollAttackScript> _activeTrolls = new List<TrollAttackScript>();
 
     private void Update()
-    {    
+    {
         // TODO: move all this to input system methods
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            if(!_canMove) return;
-            if(_activeTrolls.Count > 0) return;
+            if (!_canMove) return;
+            if (_activeTrolls.Count > 0) return;
             _movement.Move(new Vector2(-1, 0));
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
-            if(!_canMove) return;
-            if(_activeTrolls.Count > 0) return;
+            if (!_canMove) return;
+            if (_activeTrolls.Count > 0) return;
             _movement.Move(new Vector2(1, 0));
         }
         else
         {
-            if(!_canMove) return;
+            if (!_canMove) return;
             _movement.Move(new Vector2(0, 0));
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if(!_canMove) return;
-            if(_activeTrolls.Count > 0) return;
+            if (!_canMove) return;
+            if (_activeTrolls.Count > 0) return;
             _movement.Jump();
         }
 
         if (Input.GetKeyDown(KeyCode.KeypadEnter))
         {
-            if(!_canMove) return;
-            if(_activeTrolls.Count > 0) return;
+            if (!_canMove) return;
+            if (_activeTrolls.Count > 0) return;
             TakeSelfie_();
         }
 
@@ -65,11 +65,11 @@ public class FollowBackInputHandler : GenericInputHandler
             {
                 // attack the first troll
                 bool destroyed = _activeTrolls[0].ApplyDamage();
-                if(destroyed) 
+                if (destroyed)
                     _activeTrolls.RemoveAt(0);
-                    
+
                 // if that was the last one, reenable movement
-                if(_activeTrolls.Count == 0)
+                if (_activeTrolls.Count == 0)
                 {
                     // if in zone, start checking for selfies
                     if (FollowBackController.Instance.PlayerInZone(this) && !_selfieTakenThisRound)
@@ -80,25 +80,25 @@ public class FollowBackInputHandler : GenericInputHandler
             }
         }
     }
-    
+
     /// <summary>
     /// Trolls have removed all followers
     /// <summary>
     public void TrollsDone()
     {
         // destroy all
-        foreach(var t in _activeTrolls)
+        foreach (var t in _activeTrolls)
         {
             t.Destroy();
         }
-        
+
         // free trolls
         _activeTrolls.Clear();
 
         // start movement again
         _movement.Reenable();
     }
-    
+
     /// <summary>
     /// Player can now move
     /// </summary>
@@ -106,15 +106,15 @@ public class FollowBackInputHandler : GenericInputHandler
     {
         _canMove = true;
     }
-    
+
     /// <summary>
     /// Player can no longer move
     /// </summary>
     public void DisableMovement()
     {
         _canMove = false;
-    }    
-    
+    }
+
     /// <summary>
     /// Game has ended, so destroy all
     /// </summary>
@@ -125,7 +125,7 @@ public class FollowBackInputHandler : GenericInputHandler
         {
             Destroy(troll.gameObject);
         }
-        
+
         // clear list
         _activeTrolls.Clear();
     }
@@ -200,7 +200,7 @@ public class FollowBackInputHandler : GenericInputHandler
 
         // assign callbacks for when the item interacts with triggers
         _movement.AddTriggerCallbacks(TriggerEntered_, TriggerExited_);
-        
+
         // set collision callbacks (to check landing for spawning trolls)
         _movement.AddMovementCallbacks(ColliderHit_, null);
 
@@ -214,14 +214,14 @@ public class FollowBackInputHandler : GenericInputHandler
 
         return spawned;
     }
-    
+
     /// <summary>
     /// Callback for when the player collides with an object
     /// </summary>
     /// <param name="collider">The item that was collided with</param>
     void ColliderHit_(Collision2D collider)
     {
-        if(collider.gameObject.tag == "Ground" && _trollsPending)
+        if (collider.gameObject.tag == "Ground" && _trollsPending)
         {
             StartCoroutine(SpawnTrolls_());
         }
@@ -242,7 +242,8 @@ public class FollowBackInputHandler : GenericInputHandler
     IEnumerator SelfieCheck_()
     {
         yield return new WaitForSeconds(SELFIE_DELAY);
-        SelfieAvailable_(_activeTrolls.Count == 0);
+        if (FollowBackController.Instance.PlayerInZone(this) && !TrollsActive())
+            SelfieAvailable_(_activeTrolls.Count == 0);
     }
 
     /// <summary>
@@ -264,9 +265,9 @@ public class FollowBackInputHandler : GenericInputHandler
         if (collider.tag == "AreaTrigger")
         {
             FollowBackController.Instance.PlayerEnteredZone(this);
-            
+
             // start delay before selfie allowed
-            if(!_selfieTakenThisRound)
+            if (!_selfieTakenThisRound)
                 StartCoroutine(SelfieCheck_());
         }
         // fell off bottom
@@ -321,7 +322,7 @@ public class FollowBackInputHandler : GenericInputHandler
         if (collider.tag == "AreaTrigger")
         {
             FollowBackController.Instance.PlayerLeftZone(this);
-            
+
             // selfie check invalidated
             StopCoroutine(SelfieCheck_());
             SelfieAvailable_(false);
@@ -397,19 +398,19 @@ public class FollowBackInputHandler : GenericInputHandler
         _movement.SetIcon(available ? FollowBackController.Instance.SelfieIcon : null);
         _movement.ActivePlayerIcon.gameObject.SetActive(available);
     }
-    
+
     /// <summary>
     /// Takes a selfie (if allowed)
     /// </summary>
     void TakeSelfie_()
     {
-        if(!_canTakeSelfie) return;
+        if (!_canTakeSelfie) return;
 
         SelfieAvailable_(false);
         _selfieTakenThisRound = true;
         FollowBackController.Instance.SelfieTaken(this);
     }
-    
+
     /// <summary>
     /// Need to spawn trolls
     /// </summary>
@@ -432,7 +433,7 @@ public class FollowBackInputHandler : GenericInputHandler
             }
         }
     }
-    
+
     /// <summary>
     /// Spawns trolls
     /// </summary>
@@ -449,10 +450,10 @@ public class FollowBackInputHandler : GenericInputHandler
         {
             // spawn a troll
             var spawned = Instantiate(_trollPrefab, _movement.transform.localPosition, Quaternion.identity);
-    
+
             // keep track of the troll
             var trollScript = spawned.GetComponent<TrollAttackScript>();
-            trollScript.Setup(this, _activeTrolls.Count+1);
+            trollScript.Setup(this, _activeTrolls.Count + 1);
             _activeTrolls.Add(trollScript);
 
             yield return new WaitForSeconds(0.3f);
