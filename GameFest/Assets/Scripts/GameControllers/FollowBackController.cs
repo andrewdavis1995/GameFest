@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class FollowBackController : MonoBehaviour
+public class FollowBackController : GenericController
 {
     public static FollowBackController Instance;
 
@@ -40,6 +40,9 @@ public class FollowBackController : MonoBehaviour
     public Transform TrollPrefab;
     public Sprite[] DisabledImages;
 
+    public TransitionFader EndFader;
+    public ResultsPageScreen ResultsScreen;
+
     // selfies
     public SelfieDisplayScript[] SelfieDisplays;
 
@@ -70,15 +73,37 @@ public class FollowBackController : MonoBehaviour
         // spawn players
         SpawnPlayers_();
 
+        // some components will not be needed
+        HideUnusedElements_();
+
+        // fade in
+        EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
+        EndFader.StartFade(1, 0, FadeInComplete);
+
+        // initialise pause
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers);
+    }
+
+    /// <summary>
+    /// Called once fully faded in
+    /// </summary>
+    private void FadeInComplete()
+    {
+        PauseGameHandler.Instance.Pause(true, ShowWebLoading);
+    }
+
+    /// <summary>
+    /// Shows the web page loading
+    /// </summary>
+    void ShowWebLoading()
+    {
         // sometimes do page not found (for a bit of fun)
         var random = UnityEngine.Random.Range(0, 10);
         if (random == 1)
             StartCoroutine(ShowUrl_(WEBPAGE_URL_INCORRECT, () => StartCoroutine(PageNotFound_())));
         else
             StartCoroutine(ShowUrl_(WEBPAGE_URL, () => StartCoroutine(PageFound_())));
-
-        // some components will not be needed
-        HideUnusedElements_();
     }
 
     /// <summary>
@@ -350,25 +375,24 @@ public class FollowBackController : MonoBehaviour
     /// </summary>
     void SpawnPlayers_()
     {
-        // TODO: replace this with lobby stuff
-        _players = FindObjectsOfType<FollowBackInputHandler>().ToList();
         int index = 0;
 
-        // loop through players
-        foreach (var pl in _players)
+        foreach (var player in PlayerManagerScript.Instance.GetPlayers())
         {
-            // TODO: remove this - just temp to test spawning
-            pl.SetCharacterIndex(index);
+            // switch to use an input handler suitable for this scene
+            player.SetActiveScript(typeof(FollowBackInputHandler));
+            var ih = player.GetComponent<FollowBackInputHandler>();
+            _players.Add(ih);
 
             // spawn movement object
-            pl.Spawn(PlayerPrefab, StartPositions[index], pl.GetCharacterIndex(), "player name", index, new System.Guid());
+            ih.Spawn(PlayerPrefab, StartPositions[index], player.GetCharacterIndex(), player.GetPlayerName(), index, player.GetGuid());
 
             // each player gets 2 turns
             for (int i = 0; i < TURNS_PER_PLAYER; i++)
                 _remainingTurns.Add(index);
 
             // display in UI
-            PlayerUiDisplays[index].Initialise(pl);
+            PlayerUiDisplays[index].Initialise(ih);
 
             index++;
         }
@@ -630,18 +654,18 @@ public class FollowBackController : MonoBehaviour
         yield return new WaitForSeconds(3f);
 
         // show results
-        // TODO: ResultsScreen.Setup();
+        ResultsScreen.Setup();
         GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
-        // TODO: ResultsScreen.SetPlayers(genericPlayers);
+        ResultsScreen.SetPlayers(genericPlayers);
 
         // store scores
-        // TODO: ScoreStoreHandler.StoreResults(Scene.FollowBack, genericPlayers);
+        ScoreStoreHandler.StoreResults(Scene.FollowBack, genericPlayers);
 
         // wait for a while to show results
         yield return new WaitForSeconds(4 + genericPlayers.Length);
 
         // fade out
-        // TODO: EndFader.StartFade(0, 1, ReturnToCentral_);
+        EndFader.StartFade(0, 1, ReturnToCentral_);
     }
 
     /// <summary>
@@ -652,5 +676,14 @@ public class FollowBackController : MonoBehaviour
     {
         _selfies.Add(new Tuple<FollowBackInputHandler, FollowBackInputHandler>(player, _currentInfluencer));
         AddVidiprinterItem(player, $" took a selfie");
+    }
+
+    /// <summary>
+    /// Moves back to the central screen
+    /// </summary>
+    void ReturnToCentral_()
+    {
+        // when no more players, move to the central page
+        PlayerManagerScript.Instance.CentralScene();
     }
 }

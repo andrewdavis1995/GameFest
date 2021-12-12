@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class FollowBackInputHandler : GenericInputHandler
 {
@@ -22,62 +23,86 @@ public class FollowBackInputHandler : GenericInputHandler
     bool _trollsPending = false;
     List<TrollAttackScript> _activeTrolls = new List<TrollAttackScript>();
 
-    private void Update()
+    /// <summary>
+    /// Left joystick event handler
+    /// </summary>
+    public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
     {
-        // TODO: move all this to input system methods
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            if (!_canMove) return;
-            if (_activeTrolls.Count > 0) return;
-            _movement.Move(new Vector2(-1, 0));
-        }
-        else if (Input.GetKey(KeyCode.RightArrow))
-        {
-            if (!_canMove) return;
-            if (_activeTrolls.Count > 0) return;
-            _movement.Move(new Vector2(1, 0));
-        }
-        else
-        {
-            if (!_canMove) return;
-            _movement.Move(new Vector2(0, 0));
-        }
+        // can't move if not enabled, or trolls are active
+        if (!_canMove) return;
+        if (_activeTrolls.Count > 0) return;
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if (!_canMove) return;
-            if (_activeTrolls.Count > 0) return;
-            _movement.Jump();
-        }
+        _movement.Move(ctx.ReadValue<Vector2>());
+    }
 
-        if (Input.GetKeyDown(KeyCode.KeypadEnter))
-        {
-            if (!_canMove) return;
-            if (_activeTrolls.Count > 0) return;
-            TakeSelfie_();
-        }
+    /// <summary>
+    /// Cross event handler
+    /// </summary>
+    public override void OnCross()
+    {
+        if (!_canMove) return;
+        if (_activeTrolls.Count > 0) return;
+        _movement.Jump();
+    }
 
-        if (Input.GetKeyDown(KeyCode.Backspace))
-        {
-            if (!_canMove) return;
+    /// <summary>
+    /// Square event handler
+    /// </summary>
+    public override void OnSquare()
+    {
+        if (!_canMove) return;
 
-            if (_activeTrolls.Count > 0)
+        if (_activeTrolls.Count > 0)
+        {
+            // attack the first troll
+            bool destroyed = _activeTrolls[0].ApplyDamage();
+            if (destroyed)
+                _activeTrolls.RemoveAt(0);
+
+            // if that was the last one, reenable movement
+            if (_activeTrolls.Count == 0)
             {
-                // attack the first troll
-                bool destroyed = _activeTrolls[0].ApplyDamage();
-                if (destroyed)
-                    _activeTrolls.RemoveAt(0);
+                // if in zone, start checking for selfies
+                if (FollowBackController.Instance.PlayerInZone(this) && !_selfieTakenThisRound)
+                    StartCoroutine(SelfieCheck_());
 
-                // if that was the last one, reenable movement
-                if (_activeTrolls.Count == 0)
-                {
-                    // if in zone, start checking for selfies
-                    if (FollowBackController.Instance.PlayerInZone(this) && !_selfieTakenThisRound)
-                        StartCoroutine(SelfieCheck_());
-
-                    _movement.Reenable();
-                }
+                _movement.Reenable();
             }
+        }
+    }
+
+    /// <summary>
+    /// Triangle event handler
+    /// </summary>
+    public override void OnTriangle()
+    {
+        // no selfies if not enabled or trolls are active
+        if (!_canMove) return;
+        if (_activeTrolls.Count > 0) return;
+
+        TakeSelfie_();
+    }
+
+    /// <summary>
+    /// L1 event handler
+    /// </summary>
+    public override void OnL1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.PreviousPage();
+        }
+    }
+
+
+    /// <summary>
+    /// Triangle event handler
+    /// </summary>
+    public override void OnR1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.NextPage();
         }
     }
 
@@ -208,7 +233,7 @@ public class FollowBackInputHandler : GenericInputHandler
         SetHeight(spawned, characterIndex);
 
         // use the correct animation controller
-        //SetAnimation(spawned, characterIndex);    // TODO
+        SetAnimation(spawned, characterIndex);
 
         _followers = STARTING_FOLLOWERS;
 
@@ -241,9 +266,23 @@ public class FollowBackInputHandler : GenericInputHandler
     /// </summary>
     IEnumerator SelfieCheck_()
     {
-        yield return new WaitForSeconds(SELFIE_DELAY);
-        if (FollowBackController.Instance.PlayerInZone(this) && !TrollsActive())
+        for (float f = 0; f < SELFIE_DELAY && SelfiePossible_(); f += 0.1f)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+
+        if (SelfiePossible_())
             SelfieAvailable_(_activeTrolls.Count == 0);
+    }
+
+    /// <summary>
+    /// Checks if the player is in the correct zone, and there are no trolls active
+    /// </summary>
+    /// <returns></returns>
+    bool SelfiePossible_()
+    {
+        return FollowBackController.Instance.PlayerInZone(this) && !TrollsActive();
     }
 
     /// <summary>
