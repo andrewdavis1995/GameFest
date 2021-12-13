@@ -310,7 +310,7 @@ public class FollowBackInputHandler : GenericInputHandler
                 StartCoroutine(SelfieCheck_());
         }
         // fell off bottom
-        else if (collider.tag == "KickBack")
+        else if (collider.tag == "KickBack" && _canMove)
         {
             // jump back to top
             _movement.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
