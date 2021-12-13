@@ -30,6 +30,7 @@ public class FollowBackController : GenericController
     public GameObject FollowerAlert;
     public Sprite SelfieIcon;
     public Text TxtUrl;
+    public Text TxtNoSelfies;
     public GameObject UrlArea;
     public GameObject WebBrowserBackground;
     public GameObject ImgPageNotFound;
@@ -254,19 +255,27 @@ public class FollowBackController : GenericController
         // hide loading message
         LoadingMessage.SetActive(false);
 
-        // show each selfie
-        int index = 0;
-        foreach (var selfie in _selfies)
+        if(_selfies.Length > 0)
         {
-            SelfieDisplays[index].Setup(selfie);
-            index++;
-            yield return new WaitForSeconds(1.2f);
-
-            // display message if more than the maximum number
-            if (index >= SelfieDisplays.Length)
+            // show each selfie
+            int index = 0;
+            foreach (var selfie in _selfies)
             {
-                TxtMoreSelfies.gameObject.SetActive(true);
+                SelfieDisplays[index].Setup(selfie);
+                index++;
+                yield return new WaitForSeconds(1.2f);
+
+                // display message if more than the maximum number
+                if (index >= SelfieDisplays.Length)
+                {
+                    TxtMoreSelfies.gameObject.SetActive(true);
+                }
             }
+        }
+        else
+        {
+            // nothing to show
+            TxtNoSelfies.gameObject.SetActive(true);
         }
 
         // pause to show all selfies
