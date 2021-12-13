@@ -21,8 +21,6 @@ public class TransitionFader : MonoBehaviour
     /// <param name="completionCallback">The function to call when fading is complete</param>
     public void StartFade(float startAlpha, float targetAlpha, Action completionCallback)
     {
-        Debug.Log("Fade start from " + startAlpha + " to " + targetAlpha);
-
         _imageColour = FadeImage.color;
         _completionCallback = completionCallback;
 

@@ -175,6 +175,8 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="disabledImage">Image to use when disabled</param>
     public void Disable(Sprite disabledImage)
     {
+        Move(Vector2.zero);
+
         _disabled = true;
         
         // disable animations

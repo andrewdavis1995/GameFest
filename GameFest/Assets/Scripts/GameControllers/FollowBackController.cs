@@ -255,10 +255,10 @@ public class FollowBackController : GenericController
         // hide loading message
         LoadingMessage.SetActive(false);
 
-        if(_selfies.Length > 0)
+        int index = 0;
+        if(_selfies.Count > 0)
         {
             // show each selfie
-            int index = 0;
             foreach (var selfie in _selfies)
             {
                 SelfieDisplays[index].Setup(selfie);

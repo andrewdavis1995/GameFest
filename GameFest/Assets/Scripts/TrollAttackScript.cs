@@ -111,7 +111,6 @@ public class TrollAttackScript : MonoBehaviour
         var colour = 1f;
         while (colour >= 0)
         {
-            Debug.Log(colour);
             Renderer.color = new Color(1, 1, 1, colour);
             colour -= 0.1f;
             yield return new WaitForSeconds(0.1f);

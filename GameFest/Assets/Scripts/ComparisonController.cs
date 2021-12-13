@@ -60,7 +60,6 @@ public class ComparisonController : MonoBehaviour
     /// </summary>
     private void Start()
     {
-
         EndFader.StartFade(1, 0, () => { _closing = false; });
 
         Instance = this;

@@ -192,7 +192,6 @@ public class CarControllerScript : MonoBehaviour
         // drop pin at current point
         var created = Instantiate(PinPrefab, transform.position, Quaternion.identity);
         created.GetComponentsInChildren<SpriteRenderer>()[1].color = ColourFetcher.GetColour(_playerIndex);
-        Debug.Log(created.GetComponent<Collider2D>().gameObject.name + " ignored");
 
         // can pass through briefly (gives time for car to drive away)
         created.GetComponent<Collider2D>().isTrigger = true;

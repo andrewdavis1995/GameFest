@@ -91,7 +91,6 @@ public class SelfieDisplayScript : MonoBehaviour
     /// </summary>
     public void AllocatePoints()
     {
-        Debug.Log(_owner);
         if (_owner == null) return;
 
         // generate number of followers and add to the player
