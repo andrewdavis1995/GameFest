@@ -554,7 +554,7 @@ public class FollowBackController : GenericController
     IEnumerator CheckZone_()
     {
         // stop when turn ends
-        while (_turnRunning)
+        while (_turnRunning && _gameActive)
         {
             // loop through all players in the zone
             foreach (var player in _playersInZone)
