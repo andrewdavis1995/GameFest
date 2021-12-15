@@ -40,6 +40,7 @@ public class FollowBackController : GenericController
     public GameObject TxtMoreSelfies;
     public Transform TrollPrefab;
     public Sprite[] DisabledImages;
+    public Text TxtNumPosts;
 
     public TransitionFader EndFader;
     public ResultsPageScreen ResultsScreen;
@@ -255,6 +256,9 @@ public class FollowBackController : GenericController
         // hide loading message
         LoadingMessage.SetActive(false);
 
+        var postfix = _selfies.Count > 1 ? "s" : "";
+        TxtNumPosts.text = "<b>" + _selfies.Count + "</b> post" + postfix;
+
         int index = 0;
         if(_selfies.Count > 0)
         {
@@ -328,7 +332,9 @@ public class FollowBackController : GenericController
             yield return new WaitForSeconds(random);
 
             if (_gameActive)
+            {
                 NotificationAlert.SetActive(true);
+            }
 
             yield return new WaitForSeconds(30);
         }

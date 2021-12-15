@@ -41,6 +41,8 @@ public class TrollAttackScript : MonoBehaviour
         var offset = UnityEngine.Random.Range(-0.2f, 0.2f);
         transform.Translate(new Vector3(offset, offset, -1 + (0.1f * index)));
 
+        Renderer.flipX = offset > 0;
+
         // appear in a puff of smoke
         StartCoroutine(Appear_());
     }
