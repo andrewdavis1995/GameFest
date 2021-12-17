@@ -94,7 +94,7 @@ public class SelfieDisplayScript : MonoBehaviour
         if (_owner == null) return;
 
         // generate number of followers and add to the player
-        var r = UnityEngine.Random.Range(15, 25);
+        var r = UnityEngine.Random.Range(15, 40);
         _owner.AddFollower(false, r);
 
         TxtFollowers.text = "+" + r;

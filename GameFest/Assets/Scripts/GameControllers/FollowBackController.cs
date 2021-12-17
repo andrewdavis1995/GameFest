@@ -21,6 +21,7 @@ public class FollowBackController : GenericController
     public Sprite[] CharacterSprites;
     public Image ImgInfluencer;
     public Image ImgInfluencerBG;
+    public Image ImgTrollAttack;
     public Text TxtTrendingMessage;
     public Text TxtRefreshing;
     public PlayerFollowersUiScript[] PlayerUiDisplays;
@@ -260,7 +261,7 @@ public class FollowBackController : GenericController
         TxtNumPosts.text = "<b>" + _selfies.Count + "</b> post" + postfix;
 
         int index = 0;
-        if(_selfies.Count > 0)
+        if (_selfies.Count > 0)
         {
             // show each selfie
             foreach (var selfie in _selfies)
@@ -328,7 +329,7 @@ public class FollowBackController : GenericController
         while (_gameActive)
         {
             // wait a period of time then create a notification
-            var random = UnityEngine.Random.Range(30, 45);
+            var random = UnityEngine.Random.Range(20, 40);
             yield return new WaitForSeconds(random);
 
             if (_gameActive)
@@ -355,6 +356,7 @@ public class FollowBackController : GenericController
                 {
                     player.TrollAttack(TrollPrefab);
                 }
+                StartCoroutine(ShowTrollIcon());
                 AddVidiprinterItem(null, "Watch out for trolls!");
                 break;
             // bigger zone
@@ -368,6 +370,20 @@ public class FollowBackController : GenericController
                 AddVidiprinterItem(null, "LITTLE ZONE will be active next turn!");
                 break;
         }
+    }
+
+    IEnumerator ShowTrollIcon()
+    {
+        ImgTrollAttack.color = new Color(1, 1, 1, 1);
+
+        yield return new WaitForSeconds(3f);
+
+        for (float f = 1f; f >= 0; f -= 0.1f)
+        {
+            ImgTrollAttack.color = new Color(1, 1, 1, f);
+            yield return new WaitForSeconds(0.1f);
+        }
+        ImgTrollAttack.color = new Color(1, 1, 1, 0);
     }
 
     /// <summary>
@@ -391,6 +407,7 @@ public class FollowBackController : GenericController
     void SpawnPlayers_()
     {
         int index = 0;
+        int[] startingFollowers = { 400, 350, 300 };
 
         foreach (var player in PlayerManagerScript.Instance.GetPlayers())
         {
@@ -398,6 +415,9 @@ public class FollowBackController : GenericController
             player.SetActiveScript(typeof(FollowBackInputHandler));
             var ih = player.GetComponent<FollowBackInputHandler>();
             _players.Add(ih);
+
+            // set starting players
+            ih.STARTING_FOLLOWERS = startingFollowers[PlayerManagerScript.Instance.GetPlayerCount() - 2];
 
             // spawn movement object
             ih.Spawn(PlayerPrefab, StartPositions[index], player.GetCharacterIndex(), player.GetPlayerName(), index, player.GetGuid());

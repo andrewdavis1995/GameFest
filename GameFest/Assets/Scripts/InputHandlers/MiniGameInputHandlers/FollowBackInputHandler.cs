@@ -6,8 +6,8 @@ using UnityEngine.InputSystem;
 
 public class FollowBackInputHandler : GenericInputHandler
 {
-    const int STARTING_FOLLOWERS = 400;
-    const int OUT_OF_BOUNDS_FOLLOWERS_LOST = 250;
+    public int STARTING_FOLLOWERS = 400;
+    const int OUT_OF_BOUNDS_FOLLOWERS_LOST = 175;
     const float SELFIE_DELAY = 4f;
     const int NUM_TROLLS = 5;
 
@@ -327,7 +327,7 @@ public class FollowBackInputHandler : GenericInputHandler
             if (collider.gameObject.name == "Follower")
             {
                 // add a random number of followers
-                var numFollowers = UnityEngine.Random.Range(3, 20);
+                var numFollowers = UnityEngine.Random.Range(7, 30);
                 AddFollower(false, numFollowers);
                 DisplayFollowersUpdate_($" gained <color=#11ea11>{numFollowers}</color> followers");
             }
