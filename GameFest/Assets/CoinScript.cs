@@ -9,6 +9,9 @@ public class CoinScript : MonoBehaviour
 {
     public int Points;
     public UnityEvent Callback;
+    public AudioSource CollectedNoise;
+    public SpriteRenderer Renderer;
+    public Collider2D Collider;
 
     bool _active = true;
 
@@ -23,8 +26,11 @@ public class CoinScript : MonoBehaviour
     /// </summary>
     public void Disable()
     {
+        CollectedNoise.Play();
+
         _active = false;
-        gameObject.SetActive(false);
+        Collider.enabled = false;
+        Renderer.enabled = false;
 
         Callback?.Invoke();
     }

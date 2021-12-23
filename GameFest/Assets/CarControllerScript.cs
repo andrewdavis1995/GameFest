@@ -62,6 +62,9 @@ public class CarControllerScript : MonoBehaviour
     public SpriteRenderer BackWheelsRenderer;
     public SpriteRenderer GlassRenderer;
     public Transform ControlsFlippedIcon;
+    public TextMesh TxtFlipCountdown;
+    public AudioSource LapSound;
+    public AudioSource PowerUpSound;
 
     Action<int> _addPointsCallback;
     PowerUp _activePowerUp = PowerUp.None;
@@ -207,8 +210,10 @@ public class CarControllerScript : MonoBehaviour
         // tell controller to flip player steering
         CartAttackController.Instance.FlipSteering(_playerIndex);
 
-        // enforce the boost for 2 seconds
-        yield return new WaitForSeconds(FLIP_DURATION);
+        for (int i = 0; i < FLIP_DURATION; i++)
+        {
+            yield return new WaitForSeconds(1);
+        }
 
         // tell controller to stop flipping player steering
         CartAttackController.Instance.UnflipSteering(_playerIndex);
@@ -303,6 +308,7 @@ public class CarControllerScript : MonoBehaviour
     {
         _flipSteeringRequests++;
         ControlsFlippedIcon.gameObject.SetActive(true);
+        TxtFlipCountdown.gameObject.SetActive(true);
     }
 
     /// <summary>
@@ -312,6 +318,9 @@ public class CarControllerScript : MonoBehaviour
     {
         _flipSteeringRequests--;
         ControlsFlippedIcon.gameObject.SetActive(_flipSteeringRequests > 0);
+        TxtFlipCountdown.gameObject.SetActive(_flipSteeringRequests > 0);
+        if (_flipSteeringRequests == 0)
+            TxtFlipCountdown.text = "0";
     }
 
     /// <summary>
@@ -425,6 +434,9 @@ public class CarControllerScript : MonoBehaviour
     /// </summary>
     internal void LapComplete_()
     {
+        LapSound.pitch += 0.1f;
+        LapSound.Play();
+
         // add points based on time and accuracy of _lapDrawings
         var onTrack = _lapDrawings.Last().Count(p => p.Item2);
         var offTrack = _lapDrawings.Last().Count(p => !p.Item2);
@@ -504,6 +516,8 @@ public class CarControllerScript : MonoBehaviour
         // if collided with power up, pick it up
         if (collider.gameObject.tag == "PowerUp")
         {
+            PowerUpSound.Play();
+
             if (_activePowerUp == PowerUp.None)
             {
                 // start selecting a power up

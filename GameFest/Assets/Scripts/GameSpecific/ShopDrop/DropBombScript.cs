@@ -7,6 +7,7 @@ public class DropBombScript : MonoBehaviour
     public Transform Explosion;
     bool _active = false;
     public CircleCollider2D Trigger;
+    public AudioSource BombNoise;
 
     /// <summary>
     /// Waits, then detonates
@@ -17,6 +18,8 @@ public class DropBombScript : MonoBehaviour
         yield return new WaitForSeconds(2);
 
         StartCoroutine(ExpandBoom_());
+
+        BombNoise.Play();
 
         // stop it moving
         GetComponent<Rigidbody2D>().isKinematic = true;
@@ -33,6 +36,9 @@ public class DropBombScript : MonoBehaviour
         yield return new WaitForSeconds(0.44f);
 
         _active = false;
+
+        trigger.radius = 0f;
+        yield return new WaitForSeconds(0.5f);
 
         // remove boom
         Destroy(gameObject);

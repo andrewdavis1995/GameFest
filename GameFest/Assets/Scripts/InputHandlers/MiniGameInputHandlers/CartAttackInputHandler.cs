@@ -241,4 +241,15 @@ public class CartAttackInputHandler : GenericInputHandler
     {
         _carController.FlipSteeringStopped();
     }
+
+    /// <summary>
+    /// Updates the flip countdown
+    /// </summary>
+    /// <param name="time">The time left</param>
+    internal void UpdateFlipCount(int time)
+    {
+        var current = int.Parse(_carController.TxtFlipCountdown.text);
+        if (time > current)
+            _carController.TxtFlipCountdown.text = time.ToString();
+    }
 }

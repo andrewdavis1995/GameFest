@@ -10,6 +10,7 @@ public class CardScript : MonoBehaviour
     public GameObject CardSelected;
     public TextMesh JokeText;
     public ItemFlash Flash;
+    public AudioSource FlipSound;
 
     // content of this card
     Joke _joke;
@@ -55,6 +56,8 @@ public class CardScript : MonoBehaviour
     /// </summary>
     private IEnumerator SpinReveal()
     {
+        FlipSound.Play();
+
         CardSelected.SetActive(false);
         _flipped = true;
 

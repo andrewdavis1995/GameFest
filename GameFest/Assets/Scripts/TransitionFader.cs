@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 public class TransitionFader : MonoBehaviour
 {
+    // Audio link
+    public AudioSource Music;
+
     // Unity configurable
     public Image FadeImage;
     public float FadeSpeed;
@@ -52,6 +55,12 @@ public class TransitionFader : MonoBehaviour
         // increase alpha value until we reach the end point
         for (; alpha < target; alpha += FadeSpeed)
         {
+            // adjust music volume
+            if (Music != null && Music.volume > 0)
+            {
+                Music.volume -= FadeSpeed / 2;
+            }
+
             // set colour of image
             SetImageColour(alpha);
             yield return new WaitForSeconds(0.01f);
@@ -77,9 +86,18 @@ public class TransitionFader : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
+        if (Music != null)
+            Music.volume = 0;
+
         // increase alpha value until we reach the end point
         for (; alpha > target; alpha -= FadeSpeed)
         {
+            // adjust music volume
+            if (Music != null && Music.volume < 0.1f)
+            {
+                Music.volume += FadeSpeed / 2;
+            }
+
             // set colour of image
             SetImageColour(alpha);
             yield return new WaitForSeconds(0.01f);

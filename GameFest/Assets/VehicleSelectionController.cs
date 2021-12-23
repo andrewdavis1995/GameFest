@@ -100,6 +100,8 @@ public class VehicleSelectionController : MonoBehaviour
         // propulsion
         car.RocketBooster.localScale = PropulsionSize[index];
 
+        car.transform.localScale = CarSize[index];
+
         // update UI
         VehicleSelectionDisplays[playerIndex].AttributeImages[0].fillAmount = (MaxSpeeds[index] / Mathf.Max(MaxSpeeds));
         VehicleSelectionDisplays[playerIndex].AttributeImages[1].fillAmount = (Acceleration[index] / Mathf.Max(Acceleration));

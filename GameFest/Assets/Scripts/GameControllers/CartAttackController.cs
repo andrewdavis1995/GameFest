@@ -19,6 +19,7 @@ public class CartAttackController : GenericController
     public Sprite[] DriverSprites;
     public Text TxtRemainingTime;
     public Text TxtTotalPoints;
+    public Text TxtGalleryPlayerName;
     public CartAttackPlayerUiScript[] CarStatuses;
     public GameObject[] PowerUps;
     public VehicleSelectionController VehicleSelection;
@@ -196,6 +197,8 @@ public class CartAttackController : GenericController
             // hide all frames at start
             InitialiseFrames_();
             yield return new WaitForSeconds(1);
+
+            TxtGalleryPlayerName.text = player.GetPlayerName();
 
             // get data
             var laps = player.GetLaps();
@@ -429,6 +432,21 @@ public class CartAttackController : GenericController
             // don't flip direction of player who triggered the behaviour
             if (i != plTrigger)
                 _players[i].FlipSteeringStarted();
+        }
+    }
+
+    /// <summary>
+    /// Flips all players steering direction (other than the player that triggered it)
+    /// </summary>
+    /// <param id="plTrigger">The index of the player who triggered the power up</param>
+    /// <param id="time">The time remaining</param>
+    public void UpdateFlipCount(int plTrigger, int time)
+    {
+        for (int i = 0; i < _players.Count; i++)
+        {
+            // don't flip direction of player who triggered the behaviour
+            if (i != plTrigger)
+                _players[i].UpdateFlipCount(time);
         }
     }
 

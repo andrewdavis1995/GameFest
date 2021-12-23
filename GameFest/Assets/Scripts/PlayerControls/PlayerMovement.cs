@@ -28,6 +28,7 @@ public class PlayerMovement : MonoBehaviour
     public List<SpriteRenderer> _blingRenderers;
     public Transform BlingHolder;
     public ItemFlash Flash;
+    public AudioSource JumpAudio;
 
     // player state
     Vector2 _movementInput;
@@ -327,6 +328,8 @@ public class PlayerMovement : MonoBehaviour
         // might as well JUMP!
         _rigidBody.AddForce(new Vector2(0, _jumpForce));
         _onGround = false;
+
+        JumpAudio.Play();
     }
 
     /// <summary>

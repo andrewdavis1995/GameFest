@@ -35,6 +35,8 @@ public class ZeroGravityMovement : MonoBehaviour
     GameObject _inZoneIndicator;
     [SerializeField]
     Sprite[] _spacemanImages;
+    [SerializeField]
+    AudioSource _powerUpSound;
 
     public Sprite[] IdleImages;
 
@@ -418,6 +420,8 @@ public class ZeroGravityMovement : MonoBehaviour
         // was it a battery?
         if (collision.tag == "PowerUp")
         {
+            _powerUpSound.Play();
+
             // store the value of the battery
             var value = collision.GetComponent<BatteryScript>().GetValue();
             collision.GetComponent<BatteryScript>().StopAllCoroutines();

@@ -71,8 +71,6 @@ public class MineGamesController : GenericController
 
     private void Start()
     {
-        PauseGameHandler.Instance.Pause(true, StartGame_);
-
         Instance = this;
 
         SpawnPlayers_();
@@ -97,9 +95,9 @@ public class MineGamesController : GenericController
 
         // fade in
         EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
-        EndFader.StartFade(1, 0, null);
+        EndFader.StartFade(1, 0, () => { PauseGameHandler.Instance.Pause(true, StartGame_);});
     }
-
+     
     /// <summary>
     /// Callback for the zone selection timer - called once per second
     /// </summary>

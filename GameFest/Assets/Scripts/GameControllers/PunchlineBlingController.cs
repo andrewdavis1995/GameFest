@@ -30,6 +30,8 @@ public class PunchlineBlingController : GenericController
     public TransitionFader EndFader;            // Fader for the end of game
     public Text TxtLaterMsg;                    // Displays the "later that day" message
     public Transform BlingPrefab;               // Prefab for bling
+    public AudioSource CorrectAudio;            // When the correct pair is matched
+    public AudioSource IncorrectAudio;          // When an incorrect pair is selected
 
     // config
     public Vector3[] StartPositions;         // Where the players should spawn
@@ -322,6 +324,8 @@ public class PunchlineBlingController : GenericController
         // if the answer is correct...
         if (_selectedCards[0] != null && _selectedCards[1] != null && _selectedCards[0].GetJoke() == _selectedCards[1].GetJoke())
         {
+            CorrectAudio.Play();
+
             // disable both cards
             foreach (var card in _selectedCards)
                 card.Remove();
@@ -346,6 +350,8 @@ public class PunchlineBlingController : GenericController
             // if wrong, flip cards back
             foreach (var card in _selectedCards)
                 card?.FlipBack();
+
+            IncorrectAudio.Play();
 
             yield return new WaitForSeconds(1);
 
