@@ -42,6 +42,8 @@ public class FollowBackController : GenericController
     public Transform TrollPrefab;
     public Sprite[] DisabledImages;
     public Text TxtNumPosts;
+    public AudioClip FollowerSound;
+    public AudioClip SelfieSound;
 
     public TransitionFader EndFader;
     public ResultsPageScreen ResultsScreen;

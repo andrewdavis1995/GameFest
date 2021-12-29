@@ -22,6 +22,8 @@ public class FollowBackInputHandler : GenericInputHandler
     Transform _trollPrefab;
     bool _trollsPending = false;
     List<TrollAttackScript> _activeTrolls = new List<TrollAttackScript>();
+    AudioSource _followerSound;
+    AudioSource _selfieSound;
 
     /// <summary>
     /// Left joystick event handler
@@ -237,6 +239,16 @@ public class FollowBackInputHandler : GenericInputHandler
 
         _followers = STARTING_FOLLOWERS;
 
+        // follower
+        _followerSound = (AudioSource)gameObject.AddComponent(typeof(AudioSource));
+        _followerSound.clip = FollowBackController.Instance.FollowerSound;
+        _followerSound.volume = 0.35f;
+
+        // selfie
+        _selfieSound = (AudioSource)gameObject.AddComponent(typeof(AudioSource));
+        _selfieSound.clip = FollowBackController.Instance.SelfieSound;
+        _selfieSound.volume = 0.5f;
+
         return spawned;
     }
 
@@ -379,6 +391,14 @@ public class FollowBackInputHandler : GenericInputHandler
 
         if (roundSpecific)
             _roundFollowers += count;
+        
+        // add noise for sound
+        if (count == 1)
+        {
+            var pitch = 1f - (((300f - _followers) / 500f) / 3f);
+            _followerSound.pitch = pitch;
+            _followerSound.Play();
+        }
     }
 
     /// <summary>
@@ -448,6 +468,7 @@ public class FollowBackInputHandler : GenericInputHandler
         SelfieAvailable_(false);
         _selfieTakenThisRound = true;
         FollowBackController.Instance.SelfieTaken(this);
+        _selfieSound.Play();
     }
 
     /// <summary>

@@ -8,7 +8,7 @@ public class MediaJamWheel : MonoBehaviour
 {
     public Transform Platform;
     public SpriteRenderer Wheel;
-    public SpriteRenderer WheelIcon;
+    public AudioSource CogAudio;
 
     public float LeftPositionX;
     public float RightPositionX;
@@ -75,6 +75,9 @@ public class MediaJamWheel : MonoBehaviour
         {
             hit = true;
             _spinPositionIndex++;
+
+            CogAudio.Play();
+
             if(_spinPositionIndex >= _spinPositions.Length)
             {
                 _spinPositionIndex = 0;

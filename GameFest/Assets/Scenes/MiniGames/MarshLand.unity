@@ -2915,6 +2915,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a38d13785154e145a02228219f2a083, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Music: {fileID: 0}
   FadeImage: {fileID: 1227748348}
   FadeSpeed: 0.015
 --- !u!114 &185971464
@@ -10374,7 +10375,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FollowY: 0
+  FollowX: 1
   XOffset: 5.4
+  YOffset: 0
 --- !u!114 &808354087
 MonoBehaviour:
   m_ObjectHideFlags: 0

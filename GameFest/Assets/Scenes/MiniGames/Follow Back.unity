@@ -18712,6 +18712,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 235ed7cf693859048a8c6f52d34fe157, type: 3}
   - {fileID: 21300000, guid: 7330af2b85d467e44ab7dda19ce78d3b, type: 3}
   TxtNumPosts: {fileID: 1349889938}
+  FollowerSound: {fileID: 8300000, guid: b15cd0a525aadda4584326375e4e249d, type: 3}
   EndFader: {fileID: 579542698}
   ResultsScreen: {fileID: 402242332}
   SelfieDisplays:
@@ -23597,6 +23598,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a38d13785154e145a02228219f2a083, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Music: {fileID: 0}
   FadeImage: {fileID: 1859463610}
   FadeSpeed: 0.015
 --- !u!114 &579542699
@@ -78925,7 +78927,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1650188767
 RectTransform:
   m_ObjectHideFlags: 0

@@ -37,6 +37,8 @@ public class ZeroGravityMovement : MonoBehaviour
     Sprite[] _spacemanImages;
     [SerializeField]
     AudioSource _powerUpSound;
+    [SerializeField]
+    AudioSource _extinguisherSound;
 
     public Sprite[] IdleImages;
 
@@ -151,6 +153,8 @@ public class ZeroGravityMovement : MonoBehaviour
             // adjust emission rate
             var emission = _particles.emission;
             emission.rateOverTime = 750f * _lastYInput;
+
+            _extinguisherSound.volume = _lastYInput;
         }
         else if (_isDead)
         {
