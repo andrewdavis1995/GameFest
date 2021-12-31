@@ -29,6 +29,8 @@ public class MineGamesController : GenericController
     public float RockDropY;                    // Height to drop rocks from
     public Transform RockPrefab;               // Prefab of rocks to drop
     public CameraShakeScript CameraShake;      // Camera shake
+    public AudioSource CartNoise;              // Audio for carts moving on
+    public AudioSource RockNoise;              // Audio for rocks falling
 
     // UI
     public Text TxtActivePlayer;               // The text that displays the active player name
@@ -178,6 +180,8 @@ public class MineGamesController : GenericController
             cart.SetContents(MineItemDrop.None);
 
         TxtCommentary.text = _players[_activePlayerIndex].GetPlayerName() + " to the platform please!";
+
+        CartNoise.Play();
 
         // move carts off
         foreach (var cart in Carts)
@@ -331,6 +335,8 @@ public class MineGamesController : GenericController
     /// <returns></returns>
     private IEnumerator MoveCartsOn()
     {
+        CartNoise.Play();
+
         StartCoroutine(RockFall_());
 
         StartCoroutine(CameraShake_());
@@ -437,8 +443,11 @@ public class MineGamesController : GenericController
             cart.TipCart();
         }
 
+        yield return new WaitForSeconds(0.6f);
+        RockNoise.Play();
+
         // wait for carts to tip
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(2.4f);
 
         StartCoroutine(RoundResults_());
     }

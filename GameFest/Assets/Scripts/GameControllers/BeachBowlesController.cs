@@ -69,6 +69,9 @@ public class BeachBowlesController : GenericController
     public Animator[] PodiumAnimators;
     public Animator[] PodiumShadowAnimators;
 
+    public AudioSource CrowdNoise;
+    public AudioClip[] CrowdNoises;
+
     // score controls
     public BeachScoreDisplayScript[] RoundControls;
     public BeachScoreDisplayScript RoundTotalScore;
@@ -466,12 +469,57 @@ public class BeachBowlesController : GenericController
         if ((_roundIndex == 0 || _roundIndex == 2) && (points == 2 || points == 3))
             points = 1;
 
+        // final round - double points
         if (_throwIndex == 2 && _roundIndex == 2 && points > 0)
             points *= 2;
 
         // add points and display them
         _pointsThisThrow += points;
         StartCoroutine(ShowPoints_());
+
+        // play noise
+        PlayCrowdNoise_();
+    }
+
+    /// <summary>
+    /// Plays the noise of the crowd, based on the number of points scored
+    /// </summary>
+    private void PlayCrowdNoise_()
+    {
+        AudioClip clip = null;
+        if (_pointsThisThrow < 1)
+        {
+            // boo
+            clip = CrowdNoises[0];
+        }
+        else if (_pointsThisThrow <= 5)
+        {
+            // weak clap
+            clip = CrowdNoises[1];
+        }
+        else if (_pointsThisThrow <= 10)
+        {
+            // light clap
+            clip = CrowdNoises[2];
+        }
+        else if (_pointsThisThrow <= 25)
+        {
+            // mid clap
+            clip = CrowdNoises[3];
+        }
+        else if (_pointsThisThrow < 80)
+        {
+            // big clap
+            clip = CrowdNoises[4];
+        }
+        else
+        {
+            // yaaaaassss
+            clip = CrowdNoises[5];
+        }
+
+        CrowdNoise.clip = clip;
+        CrowdNoise.Play();
     }
 
     /// <summary>

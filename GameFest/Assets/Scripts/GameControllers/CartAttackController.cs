@@ -294,6 +294,10 @@ public class CartAttackController : GenericController
     {
         // show remaining time
         TxtRemainingTime.text = time.ToString();
+        if(time == 10)
+        {
+            EndFader.Music.pitch = 1.05f;
+        }
     }
 
     /// <summary>

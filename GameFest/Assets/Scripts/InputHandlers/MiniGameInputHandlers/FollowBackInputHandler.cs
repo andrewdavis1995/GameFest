@@ -253,6 +253,15 @@ public class FollowBackInputHandler : GenericInputHandler
     }
 
     /// <summary>
+    /// Removes the sound components from the player
+    /// </summary>
+    public void RemoveSound()
+    {
+        Destroy(_selfieSound);
+        Destroy(_followerSound);
+    }
+
+    /// <summary>
     /// Callback for when the player collides with an object
     /// </summary>
     /// <param name="collider">The item that was collided with</param>

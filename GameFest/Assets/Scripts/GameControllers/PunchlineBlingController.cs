@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,9 @@ public class PunchlineBlingController : GenericController
     public Transform BlingPrefab;               // Prefab for bling
     public AudioSource CorrectAudio;            // When the correct pair is matched
     public AudioSource IncorrectAudio;          // When an incorrect pair is selected
+    public AudioSource CrowdAudio;              // Crowd reactions to joke
+    public AudioClip[] CrowdAudioOptions;       // Laugh tracks
+    public AudioClip[] CrowdAudioOptionsEnd;    // End tracks
 
     // config
     public Vector3[] StartPositions;         // Where the players should spawn
@@ -566,7 +570,7 @@ public class PunchlineBlingController : GenericController
             {
                 // setup
                 Speak(joke.Setup);
-                yield return new WaitForSeconds(4*_endSpeed);
+                yield return new WaitForSeconds(4 * _endSpeed);
 
                 // Pause
                 HideSpeech();
@@ -576,12 +580,14 @@ public class PunchlineBlingController : GenericController
                 Speak(joke.Punchline);
 
                 // add points
-                var newPoints = Random.Range(90, 110);
+                var newPoints = UnityEngine.Random.Range(80, 120);
                 _players[_resultsPlayerIndex].AddPoints(newPoints);
 
                 yield return new WaitForSeconds(2 * _endSpeed);
 
+                // laugh
                 StartCoroutine(DisplayLaughter());
+                CrowdReact_(newPoints);
 
                 _targetScore = _players[_resultsPlayerIndex].GetPoints();
                 StartCoroutine(ShowNewPointsFlashUp(newPoints));
@@ -610,6 +616,8 @@ public class PunchlineBlingController : GenericController
             yield return new WaitForSeconds(3 * _endSpeed);
         }
 
+        CrowdReactEnd_(_players[_resultsPlayerIndex].GetPoints());
+
         // walk off
         HideSpeech();
         yield return new WaitForSeconds(1 * _endSpeed);
@@ -622,13 +630,87 @@ public class PunchlineBlingController : GenericController
     }
 
     /// <summary>
+    /// Make the crowd react to a joke
+    /// </summary>
+    /// <param name="newPoints">The points earned from the joke</param>
+    private void CrowdReact_(int newPoints)
+    {
+        AudioClip clip = null;
+
+        if (newPoints < 90)
+        {
+            // slight laugh
+            clip = CrowdAudioOptions[0];
+        }
+        else if (newPoints < 100)
+        {
+            // laugh
+            clip = CrowdAudioOptions[1];
+        }
+        else if (newPoints < 110)
+        {
+            // big laugh
+            clip = CrowdAudioOptions[2];
+        }
+        else
+        {
+            // clap and laugh
+            clip = CrowdAudioOptions[3];
+        }
+
+        PlayCrowdNoise_(clip);
+    }
+
+    /// <summary>
+    /// Make the crowd react to a joke
+    /// </summary>
+    /// <param name="newPoints">The points earned from the joke</param>
+    private void CrowdReactEnd_(int newPoints)
+    {
+        AudioClip clip = null;
+
+        if (newPoints < 80)
+        {
+            // boo
+            clip = CrowdAudioOptionsEnd[0];
+        }
+        else if (newPoints < 200)
+        {
+            // claps
+            clip = CrowdAudioOptionsEnd[1];
+        }
+        else if (newPoints < 500)
+        {
+            // mid-level applause
+            clip = CrowdAudioOptionsEnd[2];
+        }
+        else
+        {
+            // big applause
+            clip = CrowdAudioOptionsEnd[3];
+        }
+
+        PlayCrowdNoise_(clip);
+    }
+
+    /// <summary>
+    /// Plays noise from the crowd
+    /// </summary>
+    /// <param name="clip">The noise to play</param>
+    private void PlayCrowdNoise_(AudioClip clip)
+    {
+        CrowdAudio.clip = clip;
+        CrowdAudio.Play();
+    }
+
+    /// <summary>
     /// Displays some laughter
     /// </summary>
     private IEnumerator DisplayLaughter()
     {
-        for(int i = 0; i < 15; i++)
+        for (int i = 0; i < 15; i++)
         {
-            var x = ResultScreenPosition.x + UnityEngine.Random.Range(-Camera.main.orthographicSize * Camera.main.aspect/2, Camera.main.orthographicSize * Camera.main.aspect/2);
+            var x = ResultScreenPosition.x + UnityEngine.Random.Range(-Camera.main.orthographicSize * Camera.main.aspect / 2, Camera.main.orthographicSize * Camera.main.aspect / 2);
             var y = ResultScreenPosition.y + UnityEngine.Random.Range(-Camera.main.orthographicSize, Camera.main.orthographicSize);
             Instantiate(LaughterAnimation, new Vector3(x, y, -4), Quaternion.identity);
             yield return new WaitForSeconds(0.15f);
@@ -642,7 +724,7 @@ public class PunchlineBlingController : GenericController
     public void SpeedUp(int index)
     {
         // only do it if the requester was the current player
-        if(index == _resultsPlayerIndex && _endSpeed > 0.4f)
+        if (index == _resultsPlayerIndex && _endSpeed > 0.4f)
         {
             _endSpeed /= 1.5f;
         }

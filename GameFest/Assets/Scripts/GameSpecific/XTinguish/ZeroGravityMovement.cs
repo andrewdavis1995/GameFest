@@ -39,6 +39,8 @@ public class ZeroGravityMovement : MonoBehaviour
     AudioSource _powerUpSound;
     [SerializeField]
     AudioSource _extinguisherSound;
+    [SerializeField]
+    AudioSource _teleportSound;
 
     public Sprite[] IdleImages;
 
@@ -188,6 +190,8 @@ public class ZeroGravityMovement : MonoBehaviour
     /// </summary>
     private IEnumerator Teleport()
     {
+        _teleportSound.Play();
+
         LockPlayer_();
 
         // find all sprite renderers

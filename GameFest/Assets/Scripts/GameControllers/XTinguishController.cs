@@ -31,6 +31,7 @@ public class XTinguishController : GenericController
     public SpriteRenderer AlarmOverlay;
     public TransitionFader Fader;
     public ResultsPageScreen ResultsScreen;
+    public AudioSource AlarmNoise;
 
     // fire encroachment
     private float _fireMoveX = 0.0015f;
@@ -169,9 +170,11 @@ public class XTinguishController : GenericController
         // display the countdown
         TxtCountdown.text = seconds.ToString();
 
+        // start alarm
         if (seconds == 25)
         {
             StartCoroutine(FlashWarning_());
+            AlarmNoise.Play();
         }
     }
 
@@ -294,6 +297,7 @@ public class XTinguishController : GenericController
         if (!_ended)
         {
             _ended = true;
+            AlarmNoise.Stop();
 
             // fire closes in more quickly
             _fireMoveX *= 10f;
@@ -341,15 +345,19 @@ public class XTinguishController : GenericController
     // makes the rockets fly upwards
     private IEnumerator RocketsFly_()
     {
+        foreach (var r in Rockets)
+        {
+            // only do this for active rockets
+            if (!r.gameObject.activeInHierarchy) continue;
+
+            var script = r.GetComponentInChildren<BackgroundRocketScript>();
+            if (script != null)
+                script.TakeOff();
+        }
+
         while (_fastFireMove)
         {
             _rocketSpeed *= 1.01f;
-            foreach (var r in Rockets)
-            {
-                var script = r.GetComponentInChildren<BackgroundRocketScript>();
-                if (script != null)
-                    script.TakeOff();
-            }
 
             for (int i = 0; i < _players.Count; i++)
             {

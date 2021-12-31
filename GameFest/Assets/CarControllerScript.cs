@@ -65,6 +65,8 @@ public class CarControllerScript : MonoBehaviour
     public TextMesh TxtFlipCountdown;
     public AudioSource LapSound;
     public AudioSource PowerUpSound;
+    public AudioSource MotorSound;
+    public AudioSource SkidSound;
 
     Action<int> _addPointsCallback;
     PowerUp _activePowerUp = PowerUp.None;
@@ -279,6 +281,8 @@ public class CarControllerScript : MonoBehaviour
     /// </summary>
     void ApplyEngineForce_()
     {
+        MotorSound.volume = _accelerationInput / 3f;
+
         // get the forward speed
         float velocityVsUp = Vector2.Dot(transform.up, _carRigidBody.velocity);
 
@@ -387,6 +391,7 @@ public class CarControllerScript : MonoBehaviour
         // if steering, turn skid marks on
         var emit = (Math.Abs(_steeringInput) > 0.5f) && (_accelerationInput > 0.5f);
         ToggleTrail(emit);
+        SkidSound.volume = emit ? 0.2f : 0f;
     }
 
     /// <summary>

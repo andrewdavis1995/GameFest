@@ -186,22 +186,31 @@ public class RocketResultScript : MonoBehaviour
     /// </summary>
     private IEnumerator KillPower_()
     {
+        var rocket = XTinguishController.Instance.Rockets[_playerIndex].GetComponentInChildren<BackgroundRocketScript>();
+
         foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.4f);
+        rocket.TakeOffNoise.volume = 0.4f;
         yield return new WaitForSeconds(0.1f);
         foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.9f);
+        rocket.TakeOffNoise.volume = 0.8f;
         yield return new WaitForSeconds(0.2f);
         foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.1f);
+        rocket.TakeOffNoise.volume = 0.1f;
         yield return new WaitForSeconds(0.1f);
         foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.7f);
+        rocket.TakeOffNoise.volume = 0.65f;
         yield return new WaitForSeconds(0.2f);
         foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.2f);
+        rocket.TakeOffNoise.volume = 0.175f;
         yield return new WaitForSeconds(0.1f);
         foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, 0.8f);
+        rocket.TakeOffNoise.volume = 0.75f;
         yield return new WaitForSeconds(0.2f);
 
         while(Propulsion[0].color.a > 0)
         {
             foreach (var p in Propulsion) p.color = new Color(p.color.r, p.color.g, p.color.b, p.color.a - 0.1f);
+            rocket.TakeOffNoise.volume -= 0.1f;
             yield return new WaitForSeconds(0.1f);
         }
     }

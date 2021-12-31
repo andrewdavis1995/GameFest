@@ -12,6 +12,7 @@ public class MarshLandInputDisplay : MonoBehaviour
     public Sprite[] KeyboardImages;
     public Sprite MashImage;
     public Sprite UnknownIconImage;
+    public AudioSource _splashNoise;
     public Text TxtName;
 
     Color _normalColour;
@@ -28,6 +29,11 @@ public class MarshLandInputDisplay : MonoBehaviour
         _normalColour  = ColourFetcher.GetColour(playerIndex);
         ColourPanel.color = _normalColour;
         TxtName.text = plName;
+
+        // selfie noise setup
+        _splashNoise = (AudioSource)gameObject.AddComponent(typeof(AudioSource));
+        _splashNoise.clip = MarshLandController.Instance.SplashSound;
+        _splashNoise.volume = 1f;
     }
 
     /// <summary>
@@ -54,6 +60,8 @@ public class MarshLandInputDisplay : MonoBehaviour
     /// </summary>
     IEnumerator FallInWater_()
     {
+        _splashNoise.Play();
+
         ActionInput.sprite = MashImage;
 
         while(_inWater)
