@@ -14,7 +14,13 @@ public class BurgerScript : MonoBehaviour
     Color[] _smokeColours = { new Color(1, 1, 1, 0), new Color(1, 1, 1, 0) };
 
     // components
+    [SerializeField]
     SpriteRenderer _renderer;
+    [SerializeField]
+    SpriteRenderer _grillMark;
+    [SerializeField]
+    SpriteRenderer _rendererUnder;
+    Rigidbody2D _rigidBody;
     ParticleSystem _particles;
 
     // status variables
@@ -22,31 +28,37 @@ public class BurgerScript : MonoBehaviour
     float _smokeRate = 0.15f;
     int _sideIndex = 0;
     Coroutine _smokeCoroutine;
+    Coroutine _rCoroutine;
+    Coroutine _gCoroutine;
+    Coroutine _bCoroutine;
 
     // Start is called before the first frame update
     void Start()
     {
         // get components
-        _renderer = GetComponent<SpriteRenderer>();
+        _rigidBody = GetComponent<Rigidbody2D>();
         _particles = GetComponentInChildren<ParticleSystem>();
 
         // start changing the colour of the burger
-        StartCoroutine(ColourRed_());
-        StartCoroutine(ColourGreen_());
-        StartCoroutine(ColourBlue_());
+        _rCoroutine = StartCoroutine(ColourRed_());
+        _gCoroutine = StartCoroutine(ColourGreen_());
+        _bCoroutine = StartCoroutine(ColourBlue_());
     }
 
     /// <summary>
-    /// Flips the burger
+    /// Starts the colour/smoke changing on the new side after a flip
     /// </summary>
-    IEnumerator Flip_()
+    /// <returns></returns>
+    public IEnumerator StartNewSide()
     {
-        // stop smoking
-        if (_smokeCoroutine != null)
-            StopCoroutine(_smokeCoroutine);
+        yield return new WaitForSeconds(0.5f);
+
+        _rigidBody.isKinematic = false;
 
         // flip the side index
         _sideIndex = (_sideIndex == 0) ? 1 : 0;
+
+        yield return new WaitForSeconds(1);
 
         // carry on with the smoke
         if (r[_sideIndex] < SMOKE_THRESHOLD)
@@ -60,7 +72,51 @@ public class BurgerScript : MonoBehaviour
             main.startColor = _smokeColours[_sideIndex];
         }
 
-        yield return new WaitForSeconds(1);
+        _rCoroutine = StartCoroutine(ColourRed_());
+        _gCoroutine = StartCoroutine(ColourGreen_());
+        _bCoroutine = StartCoroutine(ColourBlue_());
+
+    }
+
+    /// <summary>
+    /// Flips the burger
+    /// </summary>
+    void Flip_(Action callback)
+    {
+        // stop smoking
+        if (_smokeCoroutine != null)
+            StopCoroutine(_smokeCoroutine);
+
+        // stop coroutines
+        if (_rCoroutine != null) StopCoroutine(_rCoroutine);
+        if (_gCoroutine != null) StopCoroutine(_gCoroutine);
+        if (_bCoroutine != null) StopCoroutine(_bCoroutine);
+
+        StartCoroutine(MoveUp_(transform.localPosition + new Vector3(0, 10), callback));
+        _rigidBody.isKinematic = true;
+        _smoking = false;
+    }
+
+    /// <summary>
+    /// Moves the burger up - i.e. does the flipping motion
+    /// </summary>
+    /// <param name="targetPosition"></param>
+    /// <returns></returns>
+    private IEnumerator MoveUp_(Vector3 targetPosition, Action callback)
+    {
+        var startX = transform.localPosition.x;
+
+        // continue until reached the top
+        while (transform.localPosition.y < targetPosition.y)
+        {
+            yield return new WaitForSeconds(0.001f);
+            transform.Translate(new Vector3(0, 0.6f, 0));
+        }
+
+        transform.eulerAngles = new Vector3(0, 0, 0);
+        transform.localPosition = new Vector3(startX, transform.localPosition.y, transform.localPosition.z);
+
+        callback?.Invoke();
     }
 
     /// <summary>
@@ -119,9 +175,32 @@ public class BurgerScript : MonoBehaviour
     /// <summary>
     /// Starts flipping the burger
     /// </summary>
-    internal void Flip()
+    internal void Flip(Action action)
     {
-        StartCoroutine(Flip_());
+        Flip_(action);
+    }
+
+    /// <summary>
+    /// Resets the state of the burger for use next time
+    /// </summary>
+    internal void ResetBurger()
+    {
+        StopAllCoroutines();
+
+        // reset smoke
+        _smoking = false;
+        _smokeRate = 0.15f;
+
+        // reset colour
+        r = new float[] { 1f, 1f };
+        g = new float[] { 1f, 1f };
+        b = new float[] { 1f, 1f };
+        _smokeColours = new Color[] { new Color(1, 1, 1, 0), new Color(1, 1, 1, 0) };
+        _renderer.color = new Color(1, 1, 1);
+
+        // if not smoking, we return to invisible smoke
+        var main = _particles.main;
+        main.startColor = _smokeColours[_sideIndex];
     }
 
     /// <summary>
@@ -129,8 +208,6 @@ public class BurgerScript : MonoBehaviour
     /// </summary>
     IEnumerator Smoke_()
     {
-        Debug.Log("Starting: " + _sideIndex);
-
         // we are now smoking
         _smoking = true;
 
@@ -154,11 +231,42 @@ public class BurgerScript : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the colour of the burger
+    /// </summary>
+    /// <returns>What colour the burger is (how well done)</returns>
+    internal Color GetBurgerColour()
+    {
+        return _renderer.color;
+    }
+
+    /// <summary>
+    /// Returns the colour of the back of the burger
+    /// </summary>
+    /// <returns>What colour the burger is (how well done)</returns>
+    internal Color GetBurgerColourBack()
+    {
+        return _rendererUnder.color;
+    }
+
+    /// <summary>
+    /// Returns the colour of the grill marks
+    /// </summary>
+    /// <returns>What colour the burger is (how well done)</returns>
+    internal Color GetBurgerColourGrill()
+    {
+        return _grillMark.color;
+    }
+
+    /// <summary>
     /// Called once per frame
     /// </summary>
     private void Update()
     {
         // update the colour of the burger
-        _renderer.color = new Color(r[_sideIndex], g[_sideIndex], b[_sideIndex]);
+        _rendererUnder.color = new Color(r[_sideIndex], g[_sideIndex], b[_sideIndex]);
+        _renderer.color = new Color(r[1 - _sideIndex], g[1 - _sideIndex], b[1 - _sideIndex]);
+
+        var a = (r[1 - _sideIndex] < 0.8f) ? 1 - r[1 - _sideIndex] : 0f;
+        _grillMark.color = new Color(0, 0, 0, a);
     }
 }

@@ -1,18 +1,18 @@
 using UnityEngine;
 
-public enum SelectionType { BreadBin, Sauce, Lettuce, Tomato }
+public enum SelectionType { BreadBin, BriocheBun, BriocheBunTop, SesameBun, SesameBunTop, Toast, ToastTop, Sauce, Lettuce, Tomato, GrillZone, None }
 
 /// <summary>
 /// Object that can be selected by a chef
 /// </summary>
 public class CookingSelectionObject : MonoBehaviour
 {
-    // sprites
-    public Sprite SelectedImage;
-    public Sprite NotSelectedImage;
-
     // components
     public SpriteRenderer Renderer;
+    public SpriteRenderer RendererGlow;
+
+    // configuration
+    public int Index;
 
     // configuration
     public SelectionType ObjectType;
@@ -22,7 +22,7 @@ public class CookingSelectionObject : MonoBehaviour
     /// </summary>
     public void Selected()
     {
-        Renderer.sprite = SelectedImage;
+        RendererGlow.gameObject.SetActive(true);
     }
 
     /// <summary>
@@ -30,6 +30,6 @@ public class CookingSelectionObject : MonoBehaviour
     /// </summary>
     public void Unselected()
     {
-        Renderer.sprite = NotSelectedImage;
+        RendererGlow.gameObject.SetActive(false);
     }
 }

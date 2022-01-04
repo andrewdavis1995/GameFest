@@ -11,6 +11,7 @@ public class LicenseToGrillController : GenericController
     // components
     public ChefScript[] Chefs;
     public Transform FoodPlateItemPrefab;
+    public Transform FoodPlateBurgerPrefab;
 
     // sprites
     public Sprite[] BreadBottoms;
