@@ -8,7 +8,6 @@ public class TopDownMovement : MonoBehaviour
     public float Speed;
 
     Vector2 _movementInput;
-    float _rotation = 0f;
     Rigidbody2D m_Rigidbody;
     Animator _animator;
     string _currentAnimation = "Idle";

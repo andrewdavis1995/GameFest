@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 enum ChefAction { FacingBoard, FacingGrill, SelectingBread, ChoppingBread };
@@ -17,7 +18,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     uint _burgerItemIndex = 0;
     int _selectedPattyIndex = -1;
     List<Transform> _burgerElements = new List<Transform>();
-    CookingSelectionObject _currentItem = null;
+    List<CookingSelectionObject> _currentItem = new List<CookingSelectionObject>();
     ChefAction _action = ChefAction.FacingBoard;
     int _knifeTarget = 0;
     SelectionType _selectedBread;
@@ -40,12 +41,12 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// <param name="cso">The selection object that was collided with</param>
     void TriggerEntered_(CookingSelectionObject cso)
     {
-        _currentItem = cso;
+        _currentItem.Add(cso);
 
         // if entered a grill zone, keep track of it
-        if (_currentItem.ObjectType == SelectionType.GrillZone)
+        if (_currentItem[0].ObjectType == SelectionType.GrillZone)
         {
-            _selectedPattyIndex = _currentItem.Index;
+            _selectedPattyIndex = _currentItem[0].Index;
         }
     }
 
@@ -55,10 +56,10 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// <param name="cso">The selection object that was collided with</param>
     void TriggerExited_(CookingSelectionObject cso)
     {
-        _currentItem = null;
+        _currentItem.Remove(cso);
 
         // if left the grill zone, we are no longer in that zone
-        if (cso.ObjectType == SelectionType.GrillZone)
+        if ((cso.ObjectType == SelectionType.GrillZone) && (_currentItem.Count == 0))
         {
             _selectedPattyIndex = -1;
         }
@@ -100,14 +101,14 @@ public class LicenseToGrillInputHandler : GenericInputHandler
             switch (_action)
             {
                 case ChefAction.FacingGrill:
-                    if (_selectedPattyIndex > -1)
+                    if (_selectedPattyIndex > -1 && !(Chef.Burgers.Any(b => b.Flipping())))
                         Chef.Burgers[_selectedPattyIndex].Flip(() => { StartCoroutine(Chef.Burgers[_selectedPattyIndex].StartNewSide()); });
                     break;
                 case ChefAction.FacingBoard:
                 {
-                    if (_currentItem != null)
+                    if (_currentItem.Count > 0)
                     {
-                        switch (_currentItem.ObjectType)
+                        switch (_currentItem[0].ObjectType)
                         {
                             case SelectionType.Lettuce:
                             case SelectionType.Tomato:
@@ -128,14 +129,17 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                 }
                 case ChefAction.SelectingBread:
                 {
-                    if (_currentItem != null)
+                    if (_currentItem.Count > 0)
                     {
-                        switch (_currentItem.ObjectType)
+                        if (_currentItem != null)
                         {
-                            case SelectionType.BriocheBun:
-                            case SelectionType.SesameBun:
-                                ChopBread_();
-                                break;
+                            switch (_currentItem[0].ObjectType)
+                            {
+                                case SelectionType.BriocheBun:
+                                case SelectionType.SesameBun:
+                                    ChopBread_();
+                                    break;
+                            }
                         }
                     }
                     break;
@@ -173,21 +177,24 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// </summary>
     private void ChopBread_()
     {
-        _selectedBread = _currentItem.ObjectType;
+        if (_currentItem.Count > 0)
+        {
+            _selectedBread = _currentItem[0].ObjectType;
 
-        Chef.Knife.gameObject.SetActive(true);
-        Chef.Knife.localPosition = new Vector3(3f, -1.25f, -0.14f);
-        ShowBreadOptions_(false);
+            Chef.Knife.gameObject.SetActive(true);
+            Chef.Knife.localPosition = new Vector3(3f, -1.25f, -0.14f);
+            ShowBreadOptions_(false);
 
-        // show big bread
-        Chef.ChopBunRendererBottom.gameObject.SetActive(true);
+            // show big bread
+            Chef.ChopBunRendererBottom.gameObject.SetActive(true);
 
-        // set bread image
-        SetBunChopImage_();
+            // set bread image
+            SetBunChopImage_();
 
-        Chef.SelectionHand.gameObject.SetActive(false);
-        _action = ChefAction.ChoppingBread;
-        _knifeTarget = -1;
+            Chef.SelectionHand.gameObject.SetActive(false);
+            _action = ChefAction.ChoppingBread;
+            _knifeTarget = -1;
+        }
     }
 
     private void SetBunChopImage_()
@@ -262,16 +269,19 @@ public class LicenseToGrillInputHandler : GenericInputHandler
 
         Sprite sprite = null;
 
-        switch (_currentItem.ObjectType)
+        if (_currentItem.Count > 0)
         {
-            // spawn tomato
-            case SelectionType.Tomato:
-                sprite = LicenseToGrillController.Instance.TomatoSlices;
-                break;
-            // spawn lettuce
-            case SelectionType.Lettuce:
-                sprite = LicenseToGrillController.Instance.LettuceSlice;
-                break;
+            switch (_currentItem[0].ObjectType)
+            {
+                // spawn tomato
+                case SelectionType.Tomato:
+                    sprite = LicenseToGrillController.Instance.TomatoSlices;
+                    break;
+                // spawn lettuce
+                case SelectionType.Lettuce:
+                    sprite = LicenseToGrillController.Instance.LettuceSlice;
+                    break;
+            }
         }
 
         // spawn an item

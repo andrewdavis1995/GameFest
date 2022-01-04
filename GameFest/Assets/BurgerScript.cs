@@ -25,6 +25,7 @@ public class BurgerScript : MonoBehaviour
 
     // status variables
     bool _smoking = false;
+    bool _flipping = false;
     float _smokeRate = 0.15f;
     int _sideIndex = 0;
     Coroutine _smokeCoroutine;
@@ -51,8 +52,6 @@ public class BurgerScript : MonoBehaviour
     /// <returns></returns>
     public IEnumerator StartNewSide()
     {
-        yield return new WaitForSeconds(0.5f);
-
         _rigidBody.isKinematic = false;
 
         // flip the side index
@@ -83,16 +82,20 @@ public class BurgerScript : MonoBehaviour
     /// </summary>
     void Flip_(Action callback)
     {
+        if (_flipping) return;
+
         // stop smoking
         if (_smokeCoroutine != null)
             StopCoroutine(_smokeCoroutine);
+
+        _flipping = true;
 
         // stop coroutines
         if (_rCoroutine != null) StopCoroutine(_rCoroutine);
         if (_gCoroutine != null) StopCoroutine(_gCoroutine);
         if (_bCoroutine != null) StopCoroutine(_bCoroutine);
 
-        StartCoroutine(MoveUp_(transform.localPosition + new Vector3(0, 10), callback));
+        StartCoroutine(MoveUp_(transform.localPosition + new Vector3(0, 10f), callback));
         _rigidBody.isKinematic = true;
         _smoking = false;
     }
@@ -117,6 +120,15 @@ public class BurgerScript : MonoBehaviour
         transform.localPosition = new Vector3(startX, transform.localPosition.y, transform.localPosition.z);
 
         callback?.Invoke();
+    }
+
+    /// <summary>
+    /// Is the burger currently flipping?
+    /// </summary>
+    /// <returns>Whether the burger is in the process of being flipped</returns>
+    internal bool Flipping()
+    {
+        return _flipping;
     }
 
     /// <summary>
@@ -181,6 +193,15 @@ public class BurgerScript : MonoBehaviour
     }
 
     /// <summary>
+    /// When the burger collides with another collider
+    /// </summary>
+    /// <param name="collision">The collider it hit</param>
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        _flipping = false;
+    }
+
+    /// <summary>
     /// Resets the state of the burger for use next time
     /// </summary>
     internal void ResetBurger()
@@ -190,6 +211,7 @@ public class BurgerScript : MonoBehaviour
         // reset smoke
         _smoking = false;
         _smokeRate = 0.15f;
+        _flipping = false;
 
         // reset colour
         r = new float[] { 1f, 1f };
