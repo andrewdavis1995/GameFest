@@ -40,6 +40,7 @@ class BurgerPatty
     {
         float value = 1f;
 
+        // get the correct threshold based on the type
         switch (type)
         {
             case BurgerType.Beef: value = MIN_COOKED_LEVEL_BEEF; break;
@@ -60,6 +61,7 @@ class BurgerPatty
     {
         float value = 1f;
 
+        // get the correct threshold based on the type
         switch (type)
         {
             case BurgerType.Beef: value = MAX_COOKED_LEVEL_BEEF; break;
@@ -159,6 +161,7 @@ public class BurgerComplaint
   /// </summary>
   public class CustomerOrder
   {
+      // fields
       BurgerConstruction _request;
       BurgerConstruction _given;
       string _customerName;
