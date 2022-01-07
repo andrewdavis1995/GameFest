@@ -5,7 +5,10 @@ using System.Collections.Generic;
 /// </summary>
 class CustomerHandler
 {
+    // constants
     const int CUSTOMER_COUNT = 30;
+    
+    // fields
     List<CustomerOrder> _customers = new List<CustomerOrder>();
 
     /// <summary>
@@ -24,7 +27,7 @@ class CustomerHandler
     /// <summary>
     /// Returns a list of orders from customers
     /// </summary>
-    /// <returns></returns>
+    /// <returns>List of customers orders</returns>
     public List<CustomerOrder> GetOrders()
     {
         return _customers;
