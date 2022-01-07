@@ -91,6 +91,7 @@ public static class BurgerValidation
                 found = CompareSauces_(item as BurgerSauce, ref itemsServed, ref complaints);
             }
 
+            // if found, remove from the list of "remaining" requested items
             if (found)
             {
                 itemsRequested.RemoveAt(i);
