@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class BurgerScript : MonoBehaviour
 {
-    // constants
-    const float SMOKE_THRESHOLD = .6f;
-
     // colours
     float[] r = { 1f, 1f };
     float[] g = { 1f, 1f };
@@ -14,24 +11,26 @@ public class BurgerScript : MonoBehaviour
     Color[] _smokeColours = { new Color(1, 1, 1, 0), new Color(1, 1, 1, 0) };
 
     // components
-    [SerializeField]
-    SpriteRenderer _renderer;
+    public SpriteRenderer Renderer;
+    public SpriteRenderer RendererUnder;
+    public Transform[] CookedSliders;
+    public Transform PerfectlyCooked;
+    public GameObject CookedBar;
     [SerializeField]
     SpriteRenderer _grillMark;
-    [SerializeField]
-    SpriteRenderer _rendererUnder;
     Rigidbody2D _rigidBody;
     ParticleSystem _particles;
 
     // status variables
     bool _smoking = false;
     bool _flipping = false;
-    float _smokeRate = 0.15f;
+    float _smokeRate = 0.1f;
     int _sideIndex = 0;
     Coroutine _smokeCoroutine;
     Coroutine _rCoroutine;
     Coroutine _gCoroutine;
     Coroutine _bCoroutine;
+    BurgerType _type;
 
     // Start is called before the first frame update
     void Start()
@@ -39,17 +38,20 @@ public class BurgerScript : MonoBehaviour
         // get components
         _rigidBody = GetComponent<Rigidbody2D>();
         _particles = GetComponentInChildren<ParticleSystem>();
+    }
 
+    /// <summary>
+    /// When the item becomes active
+    /// </summary>
+    private void OnEnable()
+    {
         // start changing the colour of the burger
-        _rCoroutine = StartCoroutine(ColourRed_());
-        _gCoroutine = StartCoroutine(ColourGreen_());
-        _bCoroutine = StartCoroutine(ColourBlue_());
+        StartCooking_();
     }
 
     /// <summary>
     /// Starts the colour/smoke changing on the new side after a flip
     /// </summary>
-    /// <returns></returns>
     public IEnumerator StartNewSide()
     {
         _rigidBody.isKinematic = false;
@@ -58,23 +60,41 @@ public class BurgerScript : MonoBehaviour
         _sideIndex = (_sideIndex == 0) ? 1 : 0;
 
         yield return new WaitForSeconds(1);
+        var threshold = BurgerPatty.MaxCookedLevel(_type);
 
-        // carry on with the smoke
-        if (r[_sideIndex] < SMOKE_THRESHOLD)
+        // check if a burger exists
+        if (gameObject.activeInHierarchy)
         {
-            _smokeCoroutine = StartCoroutine(Smoke_());
-        }
-        else
-        {
-            // if not smoking, we return to invisible smoke
-            var main = _particles.main;
-            main.startColor = _smokeColours[_sideIndex];
-        }
+            // carry on with the smoke
+            if (r[_sideIndex] < threshold)
+            {
+                _smokeCoroutine = StartCoroutine(Smoke_());
 
+                _smokeRate = 0.1f * 2.5f;
+            }
+            else
+            {
+                // if not smoking, we return to invisible smoke
+                var main = _particles.main;
+                main.startColor = _smokeColours[_sideIndex];
+
+                _smokeRate = 0.1f;
+            }
+
+            StartCooking_();
+        }
+    }
+
+    /// <summary>
+    /// Starts the coroutines that changes the colour of the burger
+    /// </summary>
+    void StartCooking_()
+    {
         _rCoroutine = StartCoroutine(ColourRed_());
         _gCoroutine = StartCoroutine(ColourGreen_());
         _bCoroutine = StartCoroutine(ColourBlue_());
 
+        CookedBar.SetActive(true);
     }
 
     /// <summary>
@@ -83,6 +103,8 @@ public class BurgerScript : MonoBehaviour
     void Flip_(Action callback)
     {
         if (_flipping) return;
+
+        CookedBar.SetActive(false);
 
         // stop smoking
         if (_smokeCoroutine != null)
@@ -95,6 +117,7 @@ public class BurgerScript : MonoBehaviour
         if (_gCoroutine != null) StopCoroutine(_gCoroutine);
         if (_bCoroutine != null) StopCoroutine(_bCoroutine);
 
+        // move the burger up (flip it)
         StartCoroutine(MoveUp_(transform.localPosition + new Vector3(0, 10f), callback));
         _rigidBody.isKinematic = true;
         _smoking = false;
@@ -116,9 +139,9 @@ public class BurgerScript : MonoBehaviour
             transform.Translate(new Vector3(0, 0.6f, 0));
         }
 
-        transform.eulerAngles = new Vector3(0, 0, 0);
         transform.localPosition = new Vector3(startX, transform.localPosition.y, transform.localPosition.z);
 
+        // execute callbaack
         callback?.Invoke();
     }
 
@@ -139,16 +162,21 @@ public class BurgerScript : MonoBehaviour
         // wait briefly
         yield return new WaitForSeconds(1);
 
+        var threshold = BurgerPatty.MaxCookedLevel(_type);
+
         // loop until zero
         while (r[_sideIndex] > 0)
         {
-            r[_sideIndex] -= 0.01f;
+            r[_sideIndex] -= 0.0075f;
+
+            CookedSliders[_sideIndex].localPosition = new Vector3(CookedSliders[_sideIndex].localPosition.x, 0.5f + (0 - r[_sideIndex]), CookedSliders[_sideIndex].localPosition.z);
+
             yield return new WaitForSeconds(_smokeRate * 2f);
 
             // when reaches a certain point, start smoking
-            if (r[_sideIndex] < SMOKE_THRESHOLD && !_smoking)
+            if (r[_sideIndex] < threshold && !_smoking)
             {
-                _smokeRate *= 2;
+                _smokeRate *= 2.5f;
                 _smokeCoroutine = StartCoroutine(Smoke_());
             }
         }
@@ -164,7 +192,7 @@ public class BurgerScript : MonoBehaviour
         // loop until zero
         while (g[_sideIndex] > 0)
         {
-            g[_sideIndex] -= 0.01f;
+            g[_sideIndex] -= 0.0075f;
             yield return new WaitForSeconds(_smokeRate * 1.17f);
         }
     }
@@ -179,7 +207,7 @@ public class BurgerScript : MonoBehaviour
         // loop until zero
         while (b[_sideIndex] > 0)
         {
-            b[_sideIndex] -= 0.01f;
+            b[_sideIndex] -= 0.0075f;
             yield return new WaitForSeconds(_smokeRate);
         }
     }
@@ -189,6 +217,9 @@ public class BurgerScript : MonoBehaviour
     /// </summary>
     internal void Flip(Action action)
     {
+        // can only flip if active
+        if (!gameObject.activeInHierarchy) return;
+
         Flip_(action);
     }
 
@@ -208,9 +239,14 @@ public class BurgerScript : MonoBehaviour
     {
         StopAllCoroutines();
 
+        // stop movement
+        transform.localPosition = new Vector3(transform.localPosition.x, 6f, transform.localPosition.z);
+        GetComponent<BoxCollider2D>().enabled = true;
+        _rigidBody.velocity = Vector3.zero;
+
         // reset smoke
         _smoking = false;
-        _smokeRate = 0.15f;
+        _smokeRate = 0.1f;
         _flipping = false;
 
         // reset colour
@@ -218,11 +254,22 @@ public class BurgerScript : MonoBehaviour
         g = new float[] { 1f, 1f };
         b = new float[] { 1f, 1f };
         _smokeColours = new Color[] { new Color(1, 1, 1, 0), new Color(1, 1, 1, 0) };
-        _renderer.color = new Color(1, 1, 1);
+        Renderer.color = new Color(1, 1, 1);
+
+        // reset indicator
+        _sideIndex = 0;
+        CookedSliders[0].localPosition = new Vector3(CookedSliders[0].localPosition.x, -0.5f, CookedSliders[0].localPosition.z);
+        CookedSliders[1].localPosition = new Vector3(CookedSliders[1].localPosition.x, -0.5f, CookedSliders[1].localPosition.z);
+        CookedBar.SetActive(false);
 
         // if not smoking, we return to invisible smoke
         var main = _particles.main;
         main.startColor = _smokeColours[_sideIndex];
+
+        // hide unused elements
+        _rigidBody.isKinematic = false;
+        gameObject.SetActive(false);
+        CookedBar.SetActive(false);
     }
 
     /// <summary>
@@ -233,7 +280,7 @@ public class BurgerScript : MonoBehaviour
         // we are now smoking
         _smoking = true;
 
-        // get particles and ser colour
+        // get particles and set colour
         var main = _particles.main;
 
         // loop while the burger is smoking
@@ -258,7 +305,7 @@ public class BurgerScript : MonoBehaviour
     /// <returns>What colour the burger is (how well done)</returns>
     internal Color GetBurgerColour()
     {
-        return _renderer.color;
+        return Renderer.color;
     }
 
     /// <summary>
@@ -267,7 +314,7 @@ public class BurgerScript : MonoBehaviour
     /// <returns>What colour the burger is (how well done)</returns>
     internal Color GetBurgerColourBack()
     {
-        return _rendererUnder.color;
+        return RendererUnder.color;
     }
 
     /// <summary>
@@ -285,10 +332,57 @@ public class BurgerScript : MonoBehaviour
     private void Update()
     {
         // update the colour of the burger
-        _rendererUnder.color = new Color(r[_sideIndex], g[_sideIndex], b[_sideIndex]);
-        _renderer.color = new Color(r[1 - _sideIndex], g[1 - _sideIndex], b[1 - _sideIndex]);
+        RendererUnder.color = new Color(r[_sideIndex], g[_sideIndex], b[_sideIndex]);
+        Renderer.color = new Color(r[1 - _sideIndex], g[1 - _sideIndex], b[1 - _sideIndex]);
 
         var a = (r[1 - _sideIndex] < 0.8f) ? 1 - r[1 - _sideIndex] : 0f;
         _grillMark.color = new Color(0, 0, 0, a);
+    }
+
+    /// <summary>
+    /// Sets the type of the burger in use
+    /// </summary>
+    /// <param name="burgerIndex">Index of the burger</param>
+    internal void SetBurgerType(int burgerIndex)
+    {
+        _type = (BurgerType)Enum.Parse(typeof(BurgerType), burgerIndex.ToString());
+
+        var max = 0f;
+        var min = 0f;
+        switch (_type)
+        {
+            // beef
+            case BurgerType.Beef:
+                min = BurgerPatty.MIN_COOKED_LEVEL_BEEF;
+                max = BurgerPatty.MAX_COOKED_LEVEL_BEEF;
+                break;
+            // chicken
+            case BurgerType.Chicken:
+                min = BurgerPatty.MIN_COOKED_LEVEL_CHICKEN;
+                max = BurgerPatty.MAX_COOKED_LEVEL_CHICKEN;
+                break;
+            // veggie
+            case BurgerType.Veggie:
+                min = BurgerPatty.MIN_COOKED_LEVEL_VEGGIE;
+                max = BurgerPatty.MAX_COOKED_LEVEL_VEGGIE;
+                break;
+        }
+
+        // get perfectly cooked area position
+        var size = max - min;
+        var middle = (max + min) / 2;
+
+        // set perfectly cooked area position
+        PerfectlyCooked.localPosition = new Vector3(PerfectlyCooked.localPosition.x, 0.5f + (0 - middle), PerfectlyCooked.localPosition.z);
+        PerfectlyCooked.localScale = new Vector3(1, size, 1);
+    }
+
+    /// <summary>
+    /// Get the type of burger this is
+    /// </summary>
+    /// <returns>The type of burger</returns>
+    public BurgerType GetBurgerType()
+    {
+        return _type;
     }
 }

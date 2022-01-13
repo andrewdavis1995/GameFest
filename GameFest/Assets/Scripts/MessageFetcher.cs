@@ -36,6 +36,22 @@ public static class MessageFetcher
     }
 
     /// <summary>
+    /// Get a string to display when a burger was perfect (LTG)
+    /// </summary>
+    /// <returns>The message to display on the review</returns>
+    public static string GetPerfectBurgerMessage()
+    {
+        string[] possibleResponses = new string[]
+        {
+            "Everything was perfect!",
+            "The perfect burger!",
+            "Cooked to perfection!",
+            "The bun and only! So good!",
+        };
+        return GetValue(possibleResponses);
+    }
+
+    /// <summary>
     /// Pick a random value from the provided options
     /// </summary>
     /// <param name="options">The list of options to choose from</param>

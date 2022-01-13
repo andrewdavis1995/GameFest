@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 769789317398389801}
   - component: {fileID: 769789317398389802}
   - component: {fileID: 769789317398389800}
+  - component: {fileID: 3816086043095878072}
   m_Layer: 6
   m_Name: FoodItemPrefabBurger
   m_TagString: Player
@@ -85,7 +86,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
+  m_MaskInteraction: 2
   m_SpriteSortPoint: 0
 --- !u!61 &769789317398389802
 BoxCollider2D:
@@ -134,6 +135,18 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &3816086043095878072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 769789317398389804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5c396883c8b58c4cb41332e84e56c7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4276738186400008899
 GameObject:
   m_ObjectHideFlags: 0

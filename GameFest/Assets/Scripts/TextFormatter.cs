@@ -5,6 +5,7 @@ public static class TextFormatter
     const int MAX_NOTEPAD_JOKE_LENGTH = 20;
     const int MAX_BUBBLE_JOKE_LENGTH = 25;
     const int MAX_BUBBLE_ORDER_LENGTH = 11;
+    const int MAX_REVIEW_ORDER_LENGTH = 34;
 
     /// <summary>
     /// Used to format the string of a joke so that it fits on a card
@@ -24,6 +25,16 @@ public static class TextFormatter
     public static string GetNotepadJokeString(string original)
     {
         return GetString(original, MAX_NOTEPAD_JOKE_LENGTH);
+    }
+
+    /// <summary>
+    /// Used to format the string of a burger review line
+    /// </summary>
+    /// <param name="original">The string to be formatted</param>
+    /// <returns>The formatted string</returns>
+    public static string GetBurgerReviewString(string original)
+    {
+        return GetString(original, MAX_REVIEW_ORDER_LENGTH);
     }
 
     /// <summary>

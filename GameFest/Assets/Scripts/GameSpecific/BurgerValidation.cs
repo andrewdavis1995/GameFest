@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 /// <summary>
 /// Class to handle the comparison of two burgers
@@ -8,7 +9,7 @@ using System.Linq;
 public static class BurgerValidation
 {
     // values for heat
-    const float MIN_HEAT_THRESHOLD = 90f;
+    const float MIN_HEAT_THRESHOLD = 80f;
 
     // values for how many points to deduct for each mistake
     const int DEDUCTION_WRONG_BUN = 10;
@@ -31,7 +32,7 @@ public static class BurgerValidation
     const int DEDUCTION_BURNED = 15;
 
     // strings for reporting mistakes
-    const string REASON_WRONG_BUN = "I got the wrong bun";
+    const string REASON_WRONG_BUN = "I got the wrong bread";
     const string REASON_WRONG_PATTY = "I got the wrong burger";
     const string REASON_WRONG_VEG = "I got the wrong veg";
     const string REASON_WRONG_SAUCE = "I got the wrong sauce";
@@ -65,13 +66,13 @@ public static class BurgerValidation
         List<object> itemsRequested = order.GetRequest().GetItems().ToList();
 
         // check each item is present
-        for (int i = 0; i < itemsRequested.Count; i++)
+        for (int i = 0; i < itemsRequested.Count && itemsServed.Count > 0; i++)
         {
             bool found = false;
             var item = itemsRequested[i];
 
             // buns
-            if (item is BurgerBun)
+            if (item is BurgerBun && i == 0)
             {
                 found = CompareBuns_(item as BurgerBun, ref itemsServed, ref complaints);
             }
@@ -97,9 +98,6 @@ public static class BurgerValidation
                 itemsRequested.RemoveAt(i);
                 i--;
             }
-
-            // nothing left to compare against
-            if (itemsServed.Count == 0) break;
         }
 
         // check missing items
@@ -134,7 +132,7 @@ public static class BurgerValidation
                 {
                     // lose points based on how cold it is
                     var percentage = (MIN_HEAT_THRESHOLD - patty.Heat()) / MIN_HEAT_THRESHOLD;
-                    complaints.Add(new BurgerComplaint((int)(DEDUCTION_COLD * percentage), REASON_COLD));
+                    complaints.Add(new BurgerComplaint((int)(DEDUCTION_COLD * percentage), REASON_COLD, LicenseToGrillController.Instance.Burgers[(int)patty.GetBurgerType()], patty.Colour()));
                 }
 
                 // find the range of perfectly cooked
@@ -161,19 +159,22 @@ public static class BurgerValidation
                 if (uncooked > 0)
                 {
                     var msg = uncooked == 2 ? "Both sides" : "One side";
-                    complaints.Add(new BurgerComplaint(DEDUCTION_UNCOOKED * uncooked, REASON_UNCOOKED_PREFIX + msg));
+                    var sprite = LicenseToGrillController.Instance.Burgers[(int)patty.GetBurgerType()];
+                    complaints.Add(new BurgerComplaint(DEDUCTION_UNCOOKED * uncooked, REASON_UNCOOKED_PREFIX + msg, sprite, patty.Colour()));
                 }
                 // if any sides burnt, add complaint
                 if (burnt > 0)
                 {
                     var msg = burnt == 2 ? "Both sides" : "One side";
-                    complaints.Add(new BurgerComplaint(DEDUCTION_BURNED * burnt, REASON_BURNED_PREFIX + msg));
+                    var sprite = LicenseToGrillController.Instance.Burgers[(int)patty.GetBurgerType()];
+                    complaints.Add(new BurgerComplaint(DEDUCTION_BURNED * burnt, REASON_BURNED_PREFIX + msg, sprite, patty.Colour()));
                 }
                 // if any sides overcooked, add complaint
                 if (overcooked > 0)
                 {
                     var msg = overcooked == 2 ? "Both sides" : "One side";
-                    complaints.Add(new BurgerComplaint(DEDUCTION_OVERCOOKED * overcooked, REASON_OVERCOOKED_PREFIX + msg));
+                    var sprite = LicenseToGrillController.Instance.Burgers[(int)patty.GetBurgerType()];
+                    complaints.Add(new BurgerComplaint(DEDUCTION_OVERCOOKED * overcooked, REASON_OVERCOOKED_PREFIX + msg, sprite, patty.Colour()));
                 }
             }
         }
@@ -197,11 +198,13 @@ public static class BurgerValidation
             if (itemsServed[i] is BurgerBun)
             {
                 found = true;
+                var bunType = (itemsServed[i] as BurgerBun).GetBunType();
 
                 // compare types of buns
-                if ((itemsServed[i] as BurgerBun).GetBunType() != ((item as BurgerBun).GetBunType()))
+                if ((itemsServed[i] as BurgerBun).GetBunType() != (bunType))
                 {
-                    complaints.Add(new BurgerComplaint(DEDUCTION_WRONG_BUN, REASON_WRONG_BUN));
+                    var sprite = LicenseToGrillController.Instance.BreadTop[(int)(bunType)];
+                    complaints.Add(new BurgerComplaint(DEDUCTION_WRONG_BUN, REASON_WRONG_BUN, sprite, new Color(1, 1, 1), (int)(bunType)));
                 }
 
                 itemsServed.RemoveAt(i);
@@ -223,6 +226,8 @@ public static class BurgerValidation
     {
         bool matchFound = false;
         bool oneExists = false;
+        Sprite sprite= null;
+        Color colour = new Color(0, 0, 0);
 
         // loop through list of created items
         for (var i = 0; i < itemsServed.Count; i++)
@@ -233,11 +238,15 @@ public static class BurgerValidation
                 // we've found one, so we can complain if it does not match
                 oneExists = true;
 
+                var patty = (itemsServed[i] as BurgerPatty);
+
                 // compare types
-                if ((itemsServed[i] as BurgerPatty).GetBurgerType() == ((item as BurgerPatty).GetBurgerType()))
+                if (patty.GetBurgerType() == ((item as BurgerPatty).GetBurgerType()))
                 {
                     // we have found a match
                     matchFound = true;
+                    sprite = LicenseToGrillController.Instance.Burgers[(int)(itemsServed[i] as BurgerPatty).GetBurgerType()];
+                    colour = patty.Colour();
                     itemsServed.RemoveAt(i);
                     break;
                 }
@@ -246,7 +255,9 @@ public static class BurgerValidation
 
         // if there is no match, and one was found of the wrong type, add a complaint
         if (!matchFound && oneExists)
-            complaints.Add(new BurgerComplaint(DEDUCTION_WRONG_PATTY, REASON_WRONG_PATTY));
+        {
+            complaints.Add(new BurgerComplaint(DEDUCTION_WRONG_PATTY, REASON_WRONG_PATTY, sprite, colour));
+        }
 
         return oneExists;
     }
@@ -262,6 +273,7 @@ public static class BurgerValidation
     {
         bool matchFound = false;
         bool oneExists = false;
+        Sprite sprite = null;
 
         // loop through each item
         for (var i = 0; i < itemsServed.Count; i++)
@@ -277,7 +289,18 @@ public static class BurgerValidation
                 {
                     // we have found a match
                     matchFound = true;
+
+                    // get correct sprite
+                    sprite = null;
+                    switch ((itemsServed[i] as BurgerVeg).GetVegType())
+                    {
+                        case BurgerVegType.Lettuce: sprite = LicenseToGrillController.Instance.LettuceSlice; break;
+                        case BurgerVegType.Tomato: sprite = LicenseToGrillController.Instance.TomatoSlices; break;
+                        case BurgerVegType.Pickle: sprite = LicenseToGrillController.Instance.PickleSlices; break;
+                    }
+
                     itemsServed.RemoveAt(i);
+
                     break;
                 }
             }
@@ -285,7 +308,7 @@ public static class BurgerValidation
 
         // if there is no match, and one was found of the wrong type, add a complaint
         if (!matchFound && oneExists)
-            complaints.Add(new BurgerComplaint(DEDUCTION_WRONG_VEG, REASON_WRONG_VEG));
+            complaints.Add(new BurgerComplaint(DEDUCTION_WRONG_VEG, REASON_WRONG_VEG, sprite, Color.white));
 
         return oneExists;
     }
@@ -301,6 +324,7 @@ public static class BurgerValidation
     {
         bool matchFound = false;
         bool oneExists = false;
+        Sprite sprite = null;
 
         // loop through each item
         for (var i = 0; i < itemsServed.Count; i++)
@@ -316,6 +340,7 @@ public static class BurgerValidation
                 {
                     // we have found a match
                     matchFound = true;
+                    sprite = LicenseToGrillController.Instance.Sauces[(int)(itemsServed[i] as BurgerSauce).GetSauceType()];
                     itemsServed.RemoveAt(i);
                     break;
                 }
@@ -324,7 +349,7 @@ public static class BurgerValidation
 
         // if there is no match, and one was found of the wrong type, add a complaint
         if (!matchFound && oneExists)
-            complaints.Add(new BurgerComplaint(DEDUCTION_WRONG_SAUCE, REASON_WRONG_SAUCE));
+            complaints.Add(new BurgerComplaint(DEDUCTION_WRONG_SAUCE, REASON_WRONG_SAUCE, sprite, Color.white));
 
         return oneExists;
     }
@@ -339,12 +364,12 @@ public static class BurgerValidation
         // add a complaint suitable to the item type
         foreach (var item in requested)
         {
-            if (item is BurgerBun) complaints.Add(new BurgerComplaint(DEDUCTION_MISSING_BUN, REASON_MISSING_BUN));
-            if (item is BurgerPatty) complaints.Add(new BurgerComplaint(DEDUCTION_MISSING_PATTY, REASON_MISSING_PATTY));
+            if (item is BurgerBun) complaints.Add(new BurgerComplaint(DEDUCTION_MISSING_BUN, REASON_MISSING_BUN, null, Color.white));
+            if (item is BurgerPatty) complaints.Add(new BurgerComplaint(DEDUCTION_MISSING_PATTY, REASON_MISSING_PATTY, null, Color.white));
             if (item is BurgerVeg) complaints.Add(new BurgerComplaint(DEDUCTION_MISSING_VEG, REASON_MISSING_VEG_PREFIX
-                 + Enum.GetName(typeof(BurgerVegType), (int)((item as BurgerVeg).GetVegType()))));
+                 + Enum.GetName(typeof(BurgerVegType), (int)((item as BurgerVeg).GetVegType())), null, Color.white));
             if (item is BurgerSauce) complaints.Add(new BurgerComplaint(DEDUCTION_MISSING_SAUCE, REASON_MISSING_SAUCE_PREFIX
-                 + Enum.GetName(typeof(SauceType), (int)((item as BurgerSauce).GetSauceType()))));
+                 + Enum.GetName(typeof(SauceType), (int)((item as BurgerSauce).GetSauceType())), null, Color.white));
         }
     }
 
@@ -358,11 +383,32 @@ public static class BurgerValidation
         // add a complaint suitable to the item type
         foreach (var item in extras)
         {
-            if (item is BurgerPatty) complaints.Add(new BurgerComplaint(DEDUCTION_EXTRA_PATTY, REASON_EXTRA_PATTY));
-            if (item is BurgerVeg) complaints.Add(new BurgerComplaint(DEDUCTION_EXTRA_VEG, REASON_EXTRA_VEG_PREFIX
-                 + Enum.GetName(typeof(BurgerVegType), (int)((item as BurgerVeg).GetVegType()))));
-            if (item is BurgerSauce) complaints.Add(new BurgerComplaint(DEDUCTION_EXTRA_SAUCE, REASON_EXTRA_SAUCE_PREFIX
-                 + Enum.GetName(typeof(SauceType), (int)((item as BurgerSauce).GetSauceType()))));
+            if (item is BurgerPatty)
+            {
+                var sprite = LicenseToGrillController.Instance.Burgers[(int)(item as BurgerPatty).GetBurgerType()];
+                complaints.Add(new BurgerComplaint(DEDUCTION_EXTRA_PATTY, REASON_EXTRA_PATTY, sprite, (item as BurgerPatty).Colour()));
+            }
+            else if (item is BurgerVeg)
+            {
+                // get correct sprite
+                Sprite sprite = null;
+                switch((item as BurgerVeg).GetVegType())
+                {
+                    case BurgerVegType.Lettuce: sprite = LicenseToGrillController.Instance.LettuceSlice; break;
+                    case BurgerVegType.Tomato: sprite = LicenseToGrillController.Instance.TomatoSlices; break;
+                    case BurgerVegType.Pickle: sprite = LicenseToGrillController.Instance.PickleSlices; break;
+                }
+
+                // add complaint
+                complaints.Add(new BurgerComplaint(DEDUCTION_EXTRA_VEG, REASON_EXTRA_VEG_PREFIX
+                 + Enum.GetName(typeof(BurgerVegType), (int)((item as BurgerVeg).GetVegType())), sprite, Color.white));
+
+            }
+            else if (item is BurgerSauce)
+            {
+                complaints.Add(new BurgerComplaint(DEDUCTION_EXTRA_SAUCE, REASON_EXTRA_SAUCE_PREFIX
+                 + Enum.GetName(typeof(SauceType), (int)((item as BurgerSauce).GetSauceType())), null, Color.white));
+            }
         }
     }
 }

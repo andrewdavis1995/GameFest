@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 enum ChefCameraMovement { None, Left, Right };
 
@@ -23,9 +25,11 @@ public class ChefScript : MonoBehaviour
 
     // components
     public SelectionHand SelectionHand;
+    public SpriteRenderer SelectionHandColour;
     public SelectionHand SelectionSpatula;
     public Transform Plate;
     public Transform ChoppingBoard;
+    public SpriteRenderer ChoppingBoardColour;
     public Transform Knife;
     public Camera ChefCamera;
     public BurgerScript[] Burgers;
@@ -33,6 +37,32 @@ public class ChefScript : MonoBehaviour
     public SpriteRenderer ChopBunRendererTop;
     public SpriteRenderer ChopBunRendererBottom;
     public SpriteRenderer TopBun;
+    public Transform BurgerTray;
+    public Transform Bin;
+    public Transform BinPatty;
+    public TextMesh BinText;
+    public TextMesh BinPattyText;
+    public Transform OrderHolder;
+    public Transform OrderList;
+    public BurgerOrderDisplayScript[] OrderDisplayElements;
+    public GameObject ConfirmPopup;
+    public Text ConfirmPopupText;
+
+    // config
+    public float BurgerTrayY;
+    public float BinY;
+
+    /// <summary>
+    /// Displays the specified orders in the UI
+    /// </summary>
+    /// <param name="list">Orders to display</param>
+    internal void DisplayOrders(List<CustomerOrder> list)
+    {
+        for(int i = 0; i < list.Count && i < OrderDisplayElements.Length; i++)
+        {
+            OrderDisplayElements[i].Initialise(list[i].GetRequest(), list[i].GetCustomerName());
+        }
+    }
 
     // camera config
     public float CameraPositionLeft;
@@ -40,11 +70,27 @@ public class ChefScript : MonoBehaviour
 
     // status variables
     ChefCameraMovement _cameraMoving;
+    float _plateX;
+
+    // Called once at startup
+    private void Start()
+    {
+        _plateX = Plate.localPosition.x;
+    }
 
     // Update is called once per frame
     void Update()
     {
         MoveCamera_();
+    }
+
+    /// <summary>
+    /// X-pposition of the plate
+    /// </summary>
+    /// <returns>The position of the plate</returns>
+    public float PlatePosition()
+    {
+        return _plateX;
     }
 
     /// <summary>
@@ -84,6 +130,8 @@ public class ChefScript : MonoBehaviour
     public void CameraLeft_()
     {
         _cameraMoving = ChefCameraMovement.Left;
+        SelectionSpatula.gameObject.SetActive(true);
+        SelectionHand.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -92,6 +140,8 @@ public class ChefScript : MonoBehaviour
     public void CameraRight_()
     {
         _cameraMoving = ChefCameraMovement.Right;
+        SelectionSpatula.gameObject.SetActive(false);
+        SelectionHand.gameObject.SetActive(true);
     }
 
     /// <summary>

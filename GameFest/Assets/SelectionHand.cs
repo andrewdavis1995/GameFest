@@ -25,7 +25,6 @@ public class SelectionHand : MonoBehaviour
             // check there was a script
             if (cso != null)
             {
-                cso.Selected();
                 _triggerEnterCallback?.Invoke(cso);
             }
         }
@@ -45,7 +44,6 @@ public class SelectionHand : MonoBehaviour
             // check there was a script
             if (cso != null)
             {
-                cso.Unselected();
                 _triggerExitCallback?.Invoke(cso);
             }
         }

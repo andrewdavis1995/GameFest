@@ -1,5 +1,5 @@
 using System;
-using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// Class for dealing with the creation of orders
@@ -16,24 +16,25 @@ public static class OrderFactory
 
         // bun
         var bun = GetValue_<BunType>();
-        burger.AddItem(bun);    // top of bun
+        burger.AddItem(new BurgerBun(bun));    // top of bun
 
         // veg - can be 0, 1, or 2 items
         var numVeg = SpawnItemDistributionFetcher<int>.GetRandomEnumValue(GetDistributionVeg_());
         for(int i = 0; i < numVeg; i++)
-            burger.AddItem(GetValue_<BurgerVegType>());
+            burger.AddItem(new BurgerVeg(GetValue_<BurgerVegType>()));
 
         // burger - can be 1 or 2 pattys
         var numPattys = SpawnItemDistributionFetcher<int>.GetRandomEnumValue(GetDistributionBurgers_());
+        var burgerType = GetValue_<BurgerType>();
         for (int i = 0; i < numPattys; i++)
-            burger.AddItem(GetValue_<BurgerType>());
+            burger.AddItem(new BurgerPatty(burgerType));
 
         // sauce - can be 0 or 1 sauces
         var numSauce = SpawnItemDistributionFetcher<int>.GetRandomEnumValue(GetDistributionSauce_());
         for (int i = 0; i < numSauce; i++)
-            burger.AddItem(GetValue_<SauceType>());
+            burger.AddItem(new BurgerSauce(GetValue_<SauceType>()));
 
-        burger.AddItem(bun);    // bottom of bun
+        burger.AddItem(new BurgerBun(bun));    // bottom of bun
 
         return burger;
     }
@@ -51,13 +52,13 @@ public static class OrderFactory
         // convert randomly generated value to the specified type, and return
         return (T)Enum.Parse(typeof(T), random.ToString());
     }
-    
-    
+
+
     /// <summary>
     /// Gets the distribution of how many veg items to include
     /// </summary>
     /// <returns>A list of enum values and their % likelihood to be spawned</returns>
-    List<Tuple<int, int>> GetDistributionVeg()
+    static List<Tuple<int, int>> GetDistributionVeg_()
     {
         List<Tuple<int, int>> distribution = new List<Tuple<int, int>>();
         distribution.Add(new Tuple<int, int>(0, 20));
@@ -66,12 +67,12 @@ public static class OrderFactory
 
         return distribution;
     }
-    
+
     /// <summary>
     /// Gets the distribution of how many burgers to include
     /// </summary>
     /// <returns>A list of enum values and their % likelihood to be spawned</returns>
-    List<Tuple<int, int>> GetDistributionBurgers()
+    static List<Tuple<int, int>> GetDistributionBurgers_()
     {
         List<Tuple<int, int>> distribution = new List<Tuple<int, int>>();
         distribution.Add(new Tuple<int, int>(1, 90));
@@ -84,7 +85,7 @@ public static class OrderFactory
     /// Gets the distribution of how many sauces to include
     /// </summary>
     /// <returns>A list of enum values and their % likelihood to be spawned</returns>
-    List<Tuple<int, int>> GetDistributionSauce_()
+    static List<Tuple<int, int>> GetDistributionSauce_()
     {
         List<Tuple<int, int>> distribution = new List<Tuple<int, int>>();
         distribution.Add(new Tuple<int, int>(0, 20));
