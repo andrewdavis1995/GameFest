@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum SelectionType { BreadBin, BriocheBun, BriocheBunTop, SesameBun, SesameBunTop, Toast, ToastTop, Sauce, Lettuce, Tomato, GrillZone, Plate, Pickle, None }
+public enum SelectionType { BreadBin, BriocheBun, BriocheBunTop, SesameBun, SesameBunTop, BrownBun, BrownBunTop, Sauce, Lettuce, Tomato, GrillZone, Plate, Pickle, None }
 
 /// <summary>
 /// Object that can be selected by a chef

@@ -3,7 +3,7 @@ using UnityEngine;
 
 // types of each item
 public enum BurgerVegType { Lettuce, Tomato, Pickle };
-public enum BunType { Brioche, Sesame };
+public enum BunType { Brioche, Sesame, Brown };
 public enum SauceType { Ketchup, BBQ, Mustard };
 public enum BurgerType { Beef, Chicken, Veggie };
 

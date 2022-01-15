@@ -33,6 +33,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     CustomerHandler _customerHandler;
     Action _confirmCallback;
     int _wastePoints;
+    Coroutine _errorRoutine;
 
     /// <summary>
     /// Called once on startup
@@ -227,6 +228,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                                 break;
                             case SelectionType.BriocheBunTop:
                             case SelectionType.SesameBunTop:
+                            case SelectionType.BrownBunTop:
                                 SpawnBread_(true);
                                 Chef.TopBun.gameObject.SetActive(false);
                                 break;
@@ -235,6 +237,10 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                                 {
                                     _action = ChefAction.SelectingBread;
                                     ShowBreadOptions_(true);
+                                }
+                                else
+                                {
+                                    ShowErrorMessage_("Bread option has already been selected");
                                 }
                                 break;
                             case SelectionType.Plate:
@@ -252,6 +258,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                         {
                             case SelectionType.BriocheBun:
                             case SelectionType.SesameBun:
+                            case SelectionType.BrownBunTop:
                                 ChopBread_();
                                 break;
                         }
@@ -282,7 +289,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                         }
                         else
                         {
-                            // TODO: Show message
+                            ShowErrorMessage_("Can't serve burger without a bun on the plate");
                         }
                     }
                     break;
@@ -369,6 +376,27 @@ public class LicenseToGrillInputHandler : GenericInputHandler
 
         // TEMP:
         CheckMove_();
+    }
+
+    /// <summary>
+    /// Shows the specified error message
+    /// </summary>
+    /// <param name="msg">The message to show</param>
+    private void ShowErrorMessage_(string msg)
+    {
+        Chef.ErrorPopupText.text = msg;
+        if (_errorRoutine != null) StopCoroutine(_errorRoutine);
+        _errorRoutine = StartCoroutine(ShowErrorMessage_());
+    }
+
+    /// <summary>
+    /// Shows the specified error message
+    /// </summary>
+    private IEnumerator ShowErrorMessage_()
+    {
+        Chef.ErrorPopup.SetActive(true);
+        yield return new WaitForSeconds(2f);
+        Chef.ErrorPopup.SetActive(true);
     }
 
     /// <summary>
@@ -541,6 +569,10 @@ public class LicenseToGrillInputHandler : GenericInputHandler
             // sesame
             case SelectionType.SesameBun:
                 index = 1;
+                break;
+            // brown
+            case SelectionType.BrownBun:
+                index = 2;
                 break;
         }
 
@@ -742,6 +774,11 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                 sprite = top ? LicenseToGrillController.Instance.BreadTop[1] : LicenseToGrillController.Instance.BreadBottoms[1];
                 bunType = BunType.Sesame;
                 break;
+            // spawn brown
+            case SelectionType.BrownBun:
+                sprite = top ? LicenseToGrillController.Instance.BreadTop[2] : LicenseToGrillController.Instance.BreadBottoms[2];
+                bunType = BunType.Brown;
+                break;
         }
 
         // spawn an item
@@ -832,7 +869,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         if ((_burgerItemIndex > MAX_BURGER_ITEMS) && includedInCount)
         {
             // cannot add any more
-            // TODO: display message
+            ShowErrorMessage_("Too many items on the plate");
         }
         else
         {

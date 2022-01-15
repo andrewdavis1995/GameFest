@@ -90,6 +90,7 @@ public class BurgerOrderDisplayScript : MonoBehaviour
                 {
                     case BunType.Brioche: sprite = LicenseToGrillController.Instance.BreadTop[0]; break;
                     case BunType.Sesame: sprite = LicenseToGrillController.Instance.BreadTop[1]; break;
+                    case BunType.Brown: sprite = LicenseToGrillController.Instance.BreadTop[2]; break;
                 }
             }
             else

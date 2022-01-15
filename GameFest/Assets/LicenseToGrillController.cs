@@ -41,6 +41,7 @@ public class LicenseToGrillController : GenericController
     public Text TxtCountdown;
     public GameObject CountdownDisplay;
     public Sprite[] StarImages;
+    public Sprite[] NapkinImages;
 
     /// <summary>
     /// Called once on startup
@@ -124,7 +125,7 @@ public class LicenseToGrillController : GenericController
                 totalPoints += tip;
 
                 // show result
-                BurgerResults[index].Initialise(complaints, tip, points);
+                BurgerResults[index].Initialise(complaints, tip, points, player.GetPlayerIndex());
                 BurgerResults[index].gameObject.SetActive(true);
                 index++;
             }

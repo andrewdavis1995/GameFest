@@ -46,7 +46,9 @@ public class ChefScript : MonoBehaviour
     public Transform OrderList;
     public BurgerOrderDisplayScript[] OrderDisplayElements;
     public GameObject ConfirmPopup;
+    public GameObject ErrorPopup;
     public Text ConfirmPopupText;
+    public Text ErrorPopupText;
 
     // config
     public float BurgerTrayY;
