@@ -31,7 +31,7 @@ public class BurgerResultScript : MonoBehaviour
             TipsRenderers[i].gameObject.SetActive((tip) >= ((i + 1) * 10));
         }
 
-        StarImage.sprite = LicenseToGrillController.Instance.StarImages[((totalScore+19) / 20)];
+        StarImage.sprite = LicenseToGrillController.Instance.StarImages[((totalScore + 19) / 20)];
         NapkinImage.color = ColourFetcher.GetColour(playerIndex);
         NapkinImage.sprite = LicenseToGrillController.Instance.NapkinImages[UnityEngine.Random.Range(0, LicenseToGrillController.Instance.NapkinImages.Length)];
 
@@ -41,6 +41,10 @@ public class BurgerResultScript : MonoBehaviour
 
         foreach (var item in complaints)
         {
+            // add to the message
+            if (message.Length > 0) message += ", ";
+            message += (message.Length > 0) ? item.ErrorMessage().ToLower() : item.ErrorMessage();
+
             if (item.GetSprite() != null)
             {
                 // if bread, add both parts
@@ -48,10 +52,6 @@ public class BurgerResultScript : MonoBehaviour
                 {
                     bread = LicenseToGrillController.Instance.BreadTop[item.GetSpriteIndex()];
                 }
-
-                // add to the message
-                if (message.Length > 0) message += ",\n";
-                message += (message.Length > 0) ? item.ErrorMessage().ToLower() : item.ErrorMessage();
 
                 // show the image
                 ElementRenderers[index].sprite = item.GetSprite();
@@ -63,7 +63,7 @@ public class BurgerResultScript : MonoBehaviour
         }
 
         // update message if flawless
-        if(complaints.Count == 0)
+        if (complaints.Count == 0)
         {
             message = MessageFetcher.GetPerfectBurgerMessage();
         }
@@ -75,7 +75,7 @@ public class BurgerResultScript : MonoBehaviour
         TxtTitle.text = GetHeading_(totalScore);
 
         // add second part of bread
-        if(bread)
+        if (bread)
         {
             // show the image
             ElementRenderers[index].sprite = bread;

@@ -32,7 +32,7 @@ public static class OrderFactory
         // sauce - can be 0 or 1 sauces
         var numSauce = SpawnItemDistributionFetcher<int>.GetRandomEnumValue(GetDistributionSauce_());
         for (int i = 0; i < numSauce; i++)
-            burger.AddItem(new BurgerSauce(GetValue_<SauceType>()));
+            burger.AddItem(new BurgerSauce(GetValue_<SauceType>(), 0));
 
         burger.AddItem(new BurgerBun(bun));    // bottom of bun
 

@@ -40,6 +40,6 @@ public class SnowDoubtInputHandler : GenericInputHandler
 
     public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
     {
-        Debug.Log("Moving");
+
     }
 }

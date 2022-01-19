@@ -40,7 +40,6 @@ public class TopDownMovement : MonoBehaviour
 
         if(trigger != _currentAnimation)
         {
-            Debug.Log(trigger);
             _animator.ResetTrigger("Walk");
             _animator.ResetTrigger("Idle");
             _animator.SetTrigger(trigger);

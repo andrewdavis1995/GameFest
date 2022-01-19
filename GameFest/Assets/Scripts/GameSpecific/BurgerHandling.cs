@@ -134,17 +134,20 @@ class BurgerSauce
 {
     // fields
     SauceType _type;
+    float _size;
 
     // accessors
     public SauceType GetSauceType() { return _type; }
+    public float GetSauceSize() { return _size; }
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="sauceType">The type to set</param>
-    public BurgerSauce(SauceType sauceType)
+    public BurgerSauce(SauceType sauceType, float size)
     {
         _type = sauceType;
+        _size = size;
     }
 }
 

@@ -10,6 +10,8 @@ public static class BurgerValidation
 {
     // values for heat
     const float MIN_HEAT_THRESHOLD = 80f;
+    const float MIN_SAUCE_THRESHOLD = 0.75f;
+    const float MAX_SAUCE_THRESHOLD = 1.05f;    // it's actually 1 but bump it up to account for the fact that there's a delay with stopping sauces
 
     // values for how many points to deduct for each mistake
     const int DEDUCTION_WRONG_BUN = 10;
@@ -31,6 +33,8 @@ public static class BurgerValidation
     const int DEDUCTION_OVERCOOKED = 10;
     const int DEDUCTION_BURNED = 15;
 
+    const int DEDUCTION_SAUCE_FAULT = 5;
+
     // strings for reporting mistakes
     const string REASON_WRONG_BUN = "I got the wrong bread";
     const string REASON_WRONG_PATTY = "I got the wrong burger";
@@ -50,6 +54,9 @@ public static class BurgerValidation
     const string REASON_UNCOOKED_PREFIX = "The burger was not cooked on ";
     const string REASON_OVERCOOKED_PREFIX = "The burger was over cooked on ";
     const string REASON_BURNED_PREFIX = "The burger was burnt to a crisp on";
+
+    const string REASON_TOO_MUCH_SAUCE = "There was too much sauce";
+    const string REASON_NOT_ENOUGH_SAUCE = "There wasn't enough sauce";
 
     /// <summary>
     /// Checks how similar to the requested burger the created burger was
@@ -72,9 +79,10 @@ public static class BurgerValidation
             var item = itemsRequested[i];
 
             // buns
-            if (item is BurgerBun && i == 0)
+            if (item is BurgerBun)
             {
-                found = CompareBuns_(item as BurgerBun, ref itemsServed, ref complaints);
+                // we only add a complaint for one part of the bread (so we don't get "wrong bread" messages twice)
+                found = CompareBuns_(item as BurgerBun, ref itemsServed, ref complaints, i == 0);
             }
             // salad
             if (item is BurgerVeg)
@@ -186,8 +194,9 @@ public static class BurgerValidation
     /// <param name="item">The item to search for</param>
     /// <param name="itemsServed">List of items that were included in the burger</param>
     /// <param name="complaints">Reference to the list of complaints/differences between the created and requested burgers</param>
+    /// <param name="addComplaint">Whether to add a complaint</param>
     /// <returns>Whether a match was found</returns>
-    static bool CompareBuns_(BurgerBun item, ref List<object> itemsServed, ref List<BurgerComplaint> complaints)
+    static bool CompareBuns_(BurgerBun item, ref List<object> itemsServed, ref List<BurgerComplaint> complaints, bool addComplaint = true)
     {
         bool found = false;
 
@@ -198,12 +207,12 @@ public static class BurgerValidation
             if (itemsServed[i] is BurgerBun)
             {
                 found = true;
-                var bunType = (itemsServed[i] as BurgerBun).GetBunType();
+                var bunType = item.GetBunType();
 
                 // compare types of buns
-                if ((itemsServed[i] as BurgerBun).GetBunType() != (bunType))
+                if ((itemsServed[i] as BurgerBun).GetBunType() != bunType && addComplaint)
                 {
-                    var sprite = LicenseToGrillController.Instance.BreadTop[(int)(bunType)];
+                    var sprite = LicenseToGrillController.Instance.BreadBottoms[(int)(bunType)];
                     complaints.Add(new BurgerComplaint(DEDUCTION_WRONG_BUN, REASON_WRONG_BUN, sprite, new Color(1, 1, 1), (int)(bunType)));
                 }
 
@@ -226,7 +235,7 @@ public static class BurgerValidation
     {
         bool matchFound = false;
         bool oneExists = false;
-        Sprite sprite= null;
+        Sprite sprite = null;
         Color colour = new Color(0, 0, 0);
 
         // loop through list of created items
@@ -338,6 +347,12 @@ public static class BurgerValidation
                 // compare types
                 if ((itemsServed[i] as BurgerSauce).GetSauceType() == ((item as BurgerSauce).GetSauceType()))
                 {
+                    var sauceAmount = (itemsServed[i] as BurgerSauce).GetSauceSize();
+                    if (sauceAmount < MIN_SAUCE_THRESHOLD)
+                        complaints.Add(new BurgerComplaint(DEDUCTION_SAUCE_FAULT, REASON_NOT_ENOUGH_SAUCE, null, Color.white));
+                    if (sauceAmount > MAX_SAUCE_THRESHOLD)
+                        complaints.Add(new BurgerComplaint(DEDUCTION_SAUCE_FAULT, REASON_TOO_MUCH_SAUCE, null, Color.white));
+
                     // we have found a match
                     matchFound = true;
                     sprite = LicenseToGrillController.Instance.Sauces[(int)(itemsServed[i] as BurgerSauce).GetSauceType()];
@@ -392,7 +407,7 @@ public static class BurgerValidation
             {
                 // get correct sprite
                 Sprite sprite = null;
-                switch((item as BurgerVeg).GetVegType())
+                switch ((item as BurgerVeg).GetVegType())
                 {
                     case BurgerVegType.Lettuce: sprite = LicenseToGrillController.Instance.LettuceSlice; break;
                     case BurgerVegType.Tomato: sprite = LicenseToGrillController.Instance.TomatoSlices; break;

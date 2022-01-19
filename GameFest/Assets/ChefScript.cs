@@ -40,6 +40,8 @@ public class ChefScript : MonoBehaviour
     public Transform BurgerTray;
     public Transform Bin;
     public Transform BinPatty;
+    public BoxCollider2D SaucePlatform;
+
     public TextMesh BinText;
     public TextMesh BinPattyText;
     public Transform OrderHolder;
@@ -49,10 +51,25 @@ public class ChefScript : MonoBehaviour
     public GameObject ErrorPopup;
     public Text ConfirmPopupText;
     public Text ErrorPopupText;
+    public SauceSquirtBottle SquirtBottle;
+    public Transform[] SauceBottles;
+    public Transform SauceSlider;
+    public GameObject SauceBar;
+
+    // instruction displays
+    public GameObject Help_SelectItem;
+    public GameObject Help_BlankBurger;
+    public GameObject Help_Burger;
+    public GameObject Help_AddToBurger;
+    public GameObject Help_Plate;
+    public GameObject Help_Sauce;
 
     // config
     public float BurgerTrayY;
     public float BinY;
+
+    // callbacks
+    Action<ChefAction> _setActionCallback;
 
     /// <summary>
     /// Displays the specified orders in the UI
@@ -190,5 +207,19 @@ public class ChefScript : MonoBehaviour
         // assign callbacks
         SelectionHand.AddItemSelectionCallbacks(triggerEnter, triggerExit);
         SelectionSpatula.AddItemSelectionCallbacks(triggerEnter, triggerExit);
+    }
+
+    /// <summary>
+    /// When the sauce has finished being squeezed
+    /// </summary>
+    internal void SauceSqueezeComplete()
+    {
+        _setActionCallback?.Invoke(ChefAction.SauceReturn);
+    }
+
+    // Assigns the callback action for setting the action
+    public void AssignActionCallback(Action<ChefAction> action)
+    {
+        _setActionCallback = action;
     }
 }

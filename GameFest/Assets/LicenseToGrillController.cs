@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +41,7 @@ public class LicenseToGrillController : GenericController
     public GameObject CountdownDisplay;
     public Sprite[] StarImages;
     public Sprite[] NapkinImages;
+    public Sprite[] SauceImages;
 
     /// <summary>
     /// Called once on startup
@@ -169,6 +169,9 @@ public class LicenseToGrillController : GenericController
             yield return new WaitForSeconds(1);
             index++;
         }
+
+        yield return new WaitForSeconds(1);
+        StartCoroutine(Complete_());
     }
 
     /// <summary>
@@ -184,5 +187,50 @@ public class LicenseToGrillController : GenericController
 
         // start timer
         _countdownTimer.StartTimer();
+    }
+
+    /// <summary>
+    /// Assigns bonus points to the winner
+    /// </summary>
+    private void AssignBonusPoints_()
+    {
+        // sort the players by points scored
+        var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
+        int[] winnerPoints = new int[] { 180, 70, 25 };
+
+        // add winning score points 
+        for (int i = 0; i < ordered.Count(); i++)
+        {
+            if (ordered[i].GetPoints() > 0)
+            {
+                ordered[i].AddPoints(winnerPoints[i]);
+                ordered[i].SetBonusPoints(winnerPoints[i]);
+            }
+        }
+
+        // set the winner
+        ordered.FirstOrDefault()?.Winner();
+    }
+
+    /// <summary>
+    /// Completes the game and return to menu
+    /// </summary>
+    IEnumerator Complete_()
+    {
+        AssignBonusPoints_();
+
+        yield return new WaitForSeconds(3f);
+
+        //ResultsScreen.Setup();
+
+        GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
+        //ResultsScreen.SetPlayers(genericPlayers);
+
+        ScoreStoreHandler.StoreResults(Scene.MineGames, genericPlayers);
+
+        yield return new WaitForSeconds(4 + genericPlayers.Length);
+
+        // fade out
+        //EndFader.StartFade(0, 1, ReturnToCentral_);
     }
 }

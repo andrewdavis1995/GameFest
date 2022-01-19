@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-enum ChefAction { NotStarted, FacingBoard, FacingGrill, SelectingBread, ChoppingBread, SelectingBurger, SlidingBurgerBoard, Serving, ClearingPlate, Confirmation, ViewingOrders };
+public enum ChefAction { NotStarted, FacingBoard, FacingGrill, SelectingBread, ChoppingBread, SelectingBurger, SlidingBurgerBoard, Serving, ClearingPlate, Confirmation, ViewingOrders, SauceIntoPosition, SquirtingSauce, SauceReturn };
 
 public class LicenseToGrillInputHandler : GenericInputHandler
 {
@@ -15,6 +15,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     const int WASTE_POINTS_VEG = 10;
     const int WASTE_POINTS_SAUCE = 5;
     const int WASTE_POINTS_BUN = 10;
+    const float SAUCE_SQUIRT_BOTTLE_Y_POSITION = 6f;
 
     // components
     ChefScript Chef;
@@ -34,6 +35,11 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     Action _confirmCallback;
     int _wastePoints;
     Coroutine _errorRoutine;
+    float _burgerOffsetY = 0.6f;
+    float _burgerSizeY = 4.4f;
+    float _saucesYPosition;
+    SauceType _selectedSauce;
+    Vector2 _saucePlatformSize;
 
     /// <summary>
     /// Called once on startup
@@ -52,8 +58,31 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         _customerHandler = new CustomerHandler();
         Chef.DisplayOrders(_customerHandler.GetNextOrders(5));
 
-        // assign callbacks for when the selection hand enters a trigger
+        // assign callbacks for when the selection hand enters a trigger, and when an action is complete
         Chef.AddItemSelectionCallbacks(TriggerEntered_, TriggerExited_);
+        Chef.AssignActionCallback(UpdateAction_);
+
+        // store position of the sauce bottles
+        _saucesYPosition = Chef.SauceBottles[0].localPosition.y;
+        _saucePlatformSize = Chef.SaucePlatform.transform.localScale;
+    }
+
+    /// <summary>
+    /// Function that can be called from other scripts once an action is complete
+    /// </summary>
+    /// <param name="newAction"></param>
+    void UpdateAction_(ChefAction newAction)
+    {
+        _action = newAction;
+
+        // does anything need done with this new state?
+        switch (_action)
+        {
+            case ChefAction.SauceReturn:
+                // move bottles back to position
+                StartCoroutine(MoveSauceDown_());
+                break;
+        }
     }
 
     /// <summary>
@@ -87,7 +116,6 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// </summary>
     public void Activate()
     {
-        Debug.Log("Activated");
         _action = ChefAction.FacingBoard;
     }
 
@@ -105,7 +133,29 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// <param name="cso">The selection object that was collided with</param>
     void TriggerEntered_(CookingSelectionObject cso)
     {
-        _currentItem.Add(cso);
+        bool valid = true;
+
+        // check that this item can be selected
+        switch (cso.ObjectType)
+        {
+            case SelectionType.BreadBin:
+                valid = _burgerItemIndex == 0 && !Chef.BreadOptions[0].isActiveAndEnabled;
+                break;
+            case SelectionType.Lettuce:
+            case SelectionType.Tomato:
+            case SelectionType.Pickle:
+                valid = _burgerItemIndex > 0;
+                break;
+
+            case SelectionType.Sauce:
+                valid = (_burgerItemIndex > 0) && (Chef.SquirtBottle.SauceImage.transform.localScale.x == 0);
+                break;
+        }
+
+        // don't do anything if the action is not appropriate
+        if (!valid) return;
+
+        _currentItem.Insert(0, cso);
 
         // if entered a grill zone, keep track of it
         if (_currentItem[0].ObjectType == SelectionType.GrillZone)
@@ -114,6 +164,8 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         }
 
         _currentItem[0].Selected();
+
+        UpdateHelp_();
     }
 
     /// <summary>
@@ -136,6 +188,56 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         {
             _currentItem[0].Selected();
         }
+        UpdateHelp_();
+    }
+
+    /// <summary>
+    /// Shows the appropriate help
+    /// </summary>
+    private void UpdateHelp_()
+    {
+        // hide all
+        Chef.Help_BlankBurger.SetActive(false);
+        Chef.Help_Sauce.SetActive(false);
+        Chef.Help_Burger.SetActive(false);
+        Chef.Help_SelectItem.SetActive(false);
+        Chef.Help_AddToBurger.SetActive(false);
+        Chef.Help_Plate.SetActive(false);
+
+        GameObject helpToShow = null;
+        if (_currentItem.Count > 0)
+        {
+            switch (_currentItem[0].ObjectType)
+            {
+                // player is selecting something
+                case SelectionType.BreadBin:
+                case SelectionType.BriocheBun:
+                case SelectionType.BrownBun:
+                case SelectionType.SesameBun:
+                case SelectionType.Lettuce:
+                case SelectionType.Tomato:
+                case SelectionType.Pickle:
+                case SelectionType.Sauce:
+                    helpToShow = Chef.Help_SelectItem;
+                    break;
+                // player is on a burger zone
+                case SelectionType.GrillZone:
+                    helpToShow = Chef.Burgers[_selectedPattyIndex].isActiveAndEnabled ? Chef.Help_Burger : Chef.Help_SelectItem;
+                    break;
+                // player is over the top of the bun
+                case SelectionType.BriocheBunTop:
+                case SelectionType.SesameBunTop:
+                case SelectionType.BrownBunTop:
+                    helpToShow = Chef.Help_AddToBurger;
+                    break;
+                // player is on the plate
+                case SelectionType.Plate:
+                    helpToShow = Chef.Help_Plate;
+                    break;
+            }
+        }
+
+        helpToShow?.SetActive(true);
     }
 
     /// <summary>
@@ -192,80 +294,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         // current item was selected
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            // perform the required action
-            switch (_action)
-            {
-                case ChefAction.FacingGrill:
-                    if (_selectedPattyIndex > -1)
-                    {
-                        if (Chef.Burgers[_selectedPattyIndex].isActiveAndEnabled)
-                        {
-                            // flip
-                            if (!(Chef.Burgers.Any(b => b.Flipping())))
-                            {
-                                _flippedPattyIndex = _selectedPattyIndex;
-                                Chef.Burgers[_selectedPattyIndex].Flip(() => { StartCoroutine(Chef.Burgers[_flippedPattyIndex].StartNewSide()); });
-                            }
-                        }
-                        else
-                        {
-                            // select burger
-                            _action = ChefAction.SlidingBurgerBoard;
-                            StartCoroutine(SlideBurgersUp_());
-                        }
-                    }
-                    break;
-                case ChefAction.FacingBoard:
-                {
-                    if (_currentItem.Count > 0)
-                    {
-                        switch (_currentItem[0].ObjectType)
-                        {
-                            case SelectionType.Lettuce:
-                            case SelectionType.Tomato:
-                            case SelectionType.Pickle:
-                                SpawnVeg_();
-                                break;
-                            case SelectionType.BriocheBunTop:
-                            case SelectionType.SesameBunTop:
-                            case SelectionType.BrownBunTop:
-                                SpawnBread_(true);
-                                Chef.TopBun.gameObject.SetActive(false);
-                                break;
-                            case SelectionType.BreadBin:
-                                if (_burgerItemIndex == 0)
-                                {
-                                    _action = ChefAction.SelectingBread;
-                                    ShowBreadOptions_(true);
-                                }
-                                else
-                                {
-                                    ShowErrorMessage_("Bread option has already been selected");
-                                }
-                                break;
-                            case SelectionType.Plate:
-                                Confirm_(Serve_, "Are you sure you wish to serve this burger?");
-                                break;
-                        }
-                    }
-                    break;
-                }
-                case ChefAction.SelectingBread:
-                {
-                    if (_currentItem.Count > 0)
-                    {
-                        switch (_currentItem[0].ObjectType)
-                        {
-                            case SelectionType.BriocheBun:
-                            case SelectionType.SesameBun:
-                            case SelectionType.BrownBunTop:
-                                ChopBread_();
-                                break;
-                        }
-                    }
-                    break;
-                }
-            }
+            SpacePressed_();
         }
 
         // current item was selected
@@ -320,6 +349,9 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                     ShowBreadOptions_(false);
                     _action = ChefAction.FacingBoard;
                     break;
+                case ChefAction.SquirtingSauce:
+                    UpdateAction_(ChefAction.SauceReturn);
+                    break;
             }
         }
 
@@ -335,6 +367,19 @@ public class LicenseToGrillInputHandler : GenericInputHandler
             {
                 _action = _actionCopy;
                 Chef.ConfirmPopup.SetActive(false);
+            }
+        }
+
+        // TEMP
+        if (_action == ChefAction.SquirtingSauce)
+        {
+            if (Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
+                Chef.SquirtBottle.Squirt();
+            }
+            if (Input.GetKeyUp(KeyCode.KeypadEnter))
+            {
+                Chef.SquirtBottle.StopSquirt();
             }
         }
 
@@ -376,6 +421,174 @@ public class LicenseToGrillInputHandler : GenericInputHandler
 
         // TEMP:
         CheckMove_();
+    }
+
+    /// <summary>
+    /// When the spacebar is pressed
+    /// </summary>
+    private void SpacePressed_()
+    {// perform the required action
+        switch (_action)
+        {
+            case ChefAction.FacingGrill:
+                if (_selectedPattyIndex > -1)
+                {
+                    if (Chef.Burgers[_selectedPattyIndex].isActiveAndEnabled)
+                    {
+                        // flip
+                        if (!(Chef.Burgers.Any(b => b.Flipping())))
+                        {
+                            _flippedPattyIndex = _selectedPattyIndex;
+                            Chef.Burgers[_selectedPattyIndex].Flip(() => { StartCoroutine(Chef.Burgers[_flippedPattyIndex].StartNewSide()); });
+                        }
+                    }
+                    else
+                    {
+                        // select burger
+                        _action = ChefAction.SlidingBurgerBoard;
+                        StartCoroutine(SlideBurgersUp_());
+                    }
+                }
+                break;
+            case ChefAction.FacingBoard:
+            {
+                if (_currentItem.Count > 0)
+                {
+                    switch (_currentItem[0].ObjectType)
+                    {
+                        case SelectionType.Lettuce:
+                        case SelectionType.Tomato:
+                        case SelectionType.Pickle:
+                            SpawnVeg_();
+                            break;
+                        case SelectionType.Sauce:
+                            DoSauce_(_currentItem[0].Index);
+                            break;
+                        case SelectionType.BriocheBunTop:
+                        case SelectionType.SesameBunTop:
+                        case SelectionType.BrownBunTop:
+                            SpawnBread_(true);
+                            Chef.TopBun.gameObject.SetActive(false);
+                            break;
+                        case SelectionType.BreadBin:
+                            if (_burgerItemIndex == 0)
+                            {
+                                _action = ChefAction.SelectingBread;
+                                ShowBreadOptions_(true);
+                            }
+                            else
+                            {
+                                ShowErrorMessage_("Bread option has already been selected");
+                            }
+                            break;
+                        case SelectionType.Plate:
+                            Confirm_(Serve_, "Are you sure you wish to serve this burger?");
+                            break;
+                    }
+                }
+                break;
+            }
+            case ChefAction.SelectingBread:
+            {
+                if (_currentItem.Count > 0)
+                {
+                    switch (_currentItem[0].ObjectType)
+                    {
+                        case SelectionType.BriocheBun:
+                        case SelectionType.SesameBun:
+                        case SelectionType.BrownBun:
+                            ChopBread_();
+                            break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handles the selection and squirting of sauce
+    /// </summary>
+    /// <param name="index">The index of the selected sauce</param>
+    private void DoSauce_(int index)
+    {
+        // move selected bottle up (change state)
+        Chef.SelectionHand.gameObject.SetActive(false);
+        _action = ChefAction.SauceIntoPosition;
+        StartCoroutine(MoveSauceUp_(index));
+    }
+
+    /// <summary>
+    /// Moves the selected bottle up, and the squirt bottle down
+    /// </summary>
+    /// <param name="index">The bottle to move</param>
+    private IEnumerator MoveSauceUp_(int index)
+    {
+        _selectedSauce = (SauceType)index;
+
+        var bottle = Chef.SauceBottles[index];
+
+        // move bottle up
+        while (bottle.localPosition.y < 8)
+        {
+            bottle.Translate(new Vector3(0, 14 * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        // change sauce appearance
+        Chef.SquirtBottle.BottleImage.sprite = LicenseToGrillController.Instance.SauceImages[index];
+        Chef.SquirtBottle.SauceImage.color = ColourFetcher.GetSauceColour(index);
+
+        // change particle colour
+        var particleMain = Chef.SquirtBottle.SquirtParticle.main;
+        particleMain.startColor = ColourFetcher.GetSauceColour(index);
+
+        // move big bottle down
+        while (Chef.SquirtBottle.transform.localPosition.y > SAUCE_SQUIRT_BOTTLE_Y_POSITION)
+        {
+            Chef.SquirtBottle.transform.Translate(new Vector3(0, -14 * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        _action = ChefAction.SquirtingSauce;
+        Chef.SaucePlatform.gameObject.SetActive(true);
+        Chef.Help_Sauce.SetActive(true);
+    }
+
+    /// <summary>
+    /// Moves the selected bottle down, and the squirt bottle up
+    /// </summary>
+    /// <param name="index">The bottle to move</param>
+    private IEnumerator MoveSauceDown_()
+    {
+        Chef.Help_Sauce.SetActive(false);
+        yield return new WaitForSeconds(1f);
+
+        _burgerSelections.Add(new BurgerSauce(_selectedSauce, Chef.SquirtBottle.SauceImage.transform.localScale.x));
+        _burgerItemIndex++;
+
+        // the highest bottle is the one to use
+        var bottle = Chef.SauceBottles.Where(b => b.localPosition.y >= Chef.SauceBottles.Max(c => c.localPosition.y)).First();
+
+        // move big bottle up
+        while (Chef.SquirtBottle.transform.localPosition.y < 11)
+        {
+            Chef.SquirtBottle.transform.Translate(new Vector3(0, 14 * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        // move bottle down
+        while (bottle.localPosition.y > _saucesYPosition)
+        {
+            bottle.Translate(new Vector3(0, -14 * Time.deltaTime, 0));
+            yield return new WaitForSeconds(0.01f);
+        }
+        bottle.transform.localPosition = new Vector3(bottle.localPosition.x, _saucesYPosition, bottle.localPosition.z);
+
+        // continue to next action
+        _action = ChefAction.FacingBoard;
+        Chef.SelectionHand.gameObject.SetActive(true);
+        Chef.SaucePlatform.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -720,6 +933,9 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     {
         _burgerItemIndex = 0;
 
+        _burgerOffsetY = 0.6f;
+        _burgerSizeY = 4.4f;
+
         // destroy all burger elements
         foreach (var item in _burgerElements)
         {
@@ -729,6 +945,10 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         // no more items
         _burgerElements.Clear();
         _burgerSelections.Clear();
+
+        // reset sauce
+        Chef.SquirtBottle.ResetSauce();
+        Chef.SaucePlatform.transform.localScale = _saucePlatformSize;
 
         StartCoroutine(FadeOutTopBun_());
     }
@@ -884,17 +1104,60 @@ public class LicenseToGrillInputHandler : GenericInputHandler
 
             // adjust collider
             var collider = spawned.GetComponent<BoxCollider2D>();
-            collider.offset = new Vector2(collider.offset.x, 0.6f - (_burgerItemIndex * 0.325f));
-            collider.size = new Vector2(collider.size.x, 4.4f + (_burgerItemIndex * 0.02f));
+            collider.offset = new Vector2(collider.offset.x, _burgerOffsetY);
+            collider.size = new Vector2(collider.size.x, _burgerSizeY);
 
             // move to next position
             _burgerItemIndex++;
 
             _burgerElements.Add(spawned);
             _burgerSelections.Add(burgerItem);
+
+            _burgerOffsetY -= GetOffsetY_(burgerItem);
+            _burgerSizeY += GetSizeY_(burgerItem);
+
+            // update sauce if not already placed
+            if (Chef.SquirtBottle.SauceImage.transform.localScale.x == 0)
+            {
+                Chef.SaucePlatform.size += 2 * new Vector2(0, GetOffsetY_(burgerItem));
+                Chef.SquirtBottle.SauceImage.transform.Translate(new Vector3(0, GetOffsetY_(burgerItem), 0));
+                Chef.SquirtBottle.SauceImage.transform.localPosition = new Vector3(0, Chef.SquirtBottle.SauceImage.transform.localPosition.y, -0.1f - (0.1f * _burgerItemIndex));
+            }
         }
 
         return spawned;
+    }
+
+    /// <summary>
+    /// Get the offset of the collider to use
+    /// </summary>
+    /// <param name="burgerItem">The item that is to be created</param>
+    /// <returns>The offset to use</returns>
+    private float GetOffsetY_(object burgerItem)
+    {
+        float offset = 0.325f;
+        if (burgerItem is BurgerVeg)
+            offset = 0.17f;
+        if (burgerItem is BurgerBun && _burgerItemIndex > 0)
+            offset *= 0.7f;
+
+        return offset;
+    }
+
+    /// <summary>
+    /// Get the size of the collider to use
+    /// </summary>
+    /// <param name="burgerItem">The item that is to be created</param>
+    /// <returns>The size to use</returns>
+    private float GetSizeY_(object burgerItem)
+    {
+        float size = 0.02f;
+        if (burgerItem is BurgerVeg)
+            size = 0.008f;
+        if (burgerItem is BurgerBun && _burgerItemIndex > 0)
+            size *= 0.7f;
+
+        return size;
     }
 
     /// <summary>
