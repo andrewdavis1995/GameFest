@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Assets;
 using UnityEngine;
 
-public enum Scene { Splash, Lobby, GameCentral, PunchlineBling, ShopDrop, MarshLand, Landslide, XTinguish, BeachBowles, QuickPlayLobby, MineGames, Statistics, CashDash, CartAttack, FollowBack }
+public enum Scene { Splash, Lobby, GameCentral, PunchlineBling, ShopDrop, MarshLand, Landslide, XTinguish, BeachBowles, QuickPlayLobby, MineGames, Statistics, CashDash, CartAttack, FollowBack, LicenseToGrill, ToneDeath }
 
 public class GameCentralController : MonoBehaviour
 {
@@ -34,7 +34,7 @@ public class GameCentralController : MonoBehaviour
     public GameObject[] Plinths;
 
     List<Scene> _selectedGames = new List<Scene>();
-    List<Scene> _availableGames = new List<Scene>() { Scene.BeachBowles, Scene.MarshLand, Scene.PunchlineBling, Scene.ShopDrop, Scene.XTinguish, Scene.MineGames, Scene.CashDash, Scene.FollowBack };
+    List<Scene> _availableGames = new List<Scene>() { Scene.BeachBowles, Scene.MarshLand, Scene.PunchlineBling, Scene.ShopDrop, Scene.XTinguish, Scene.MineGames, Scene.CashDash, Scene.FollowBack, Scene.LicenseToGrill };
 
     /// <summary>
     /// Called when item is created

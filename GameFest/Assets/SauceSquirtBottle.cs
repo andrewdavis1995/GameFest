@@ -50,6 +50,7 @@ public class SauceSquirtBottle : MonoBehaviour
     /// </summary>
     public void StopSquirt()
     {
+        Chef.SauceBar.SetActive(false);
         StartCoroutine(StopSquirt_());
     }
 
@@ -90,6 +91,5 @@ public class SauceSquirtBottle : MonoBehaviour
     {
         yield return new WaitForSeconds(DROP_DELAY);
         _squirting = false;
-        Chef.SauceBar.SetActive(false);
     }
 }

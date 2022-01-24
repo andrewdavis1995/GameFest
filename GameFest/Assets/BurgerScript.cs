@@ -16,6 +16,7 @@ public class BurgerScript : MonoBehaviour
     public Transform[] CookedSliders;
     public Transform PerfectlyCooked;
     public GameObject CookedBar;
+    public GameObject Glow;
     [SerializeField]
     SpriteRenderer _grillMark;
     Rigidbody2D _rigidBody;

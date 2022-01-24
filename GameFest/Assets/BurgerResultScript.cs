@@ -9,7 +9,6 @@ public class BurgerResultScript : MonoBehaviour
     public TextMesh TxtDescription;
     public TextMesh TxtTitle;
     public SpriteRenderer StarImage;
-    public SpriteRenderer NapkinImage;
 
     List<BurgerComplaint> _complaints = new List<BurgerComplaint>();
 
@@ -32,8 +31,6 @@ public class BurgerResultScript : MonoBehaviour
         }
 
         StarImage.sprite = LicenseToGrillController.Instance.StarImages[((totalScore + 19) / 20)];
-        NapkinImage.color = ColourFetcher.GetColour(playerIndex);
-        NapkinImage.sprite = LicenseToGrillController.Instance.NapkinImages[UnityEngine.Random.Range(0, LicenseToGrillController.Instance.NapkinImages.Length)];
 
         // display burger
         var index = 0;

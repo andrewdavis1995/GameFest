@@ -12,7 +12,7 @@ public class LicenseToGrillController : GenericController
     // constants
     const int POINTS_PER_BURGER = 100;
     const int TIP_VALUE = 10;
-    const int GAME_TIMEOUT = 60;
+    const int GAME_TIMEOUT = 300;
 
     // static instance
     public static LicenseToGrillController Instance;
@@ -23,6 +23,9 @@ public class LicenseToGrillController : GenericController
     public Transform FoodPlateItemPrefab;
     public Transform FoodPlateBurgerPrefab;
     public Camera BenchCamera;
+    public Camera BackgroundCamera;
+    public ResultsPageScreen ResultsScreen;
+    public TransitionFader EndFader;
     TimeLimit _countdownTimer;
 
     // players
@@ -40,7 +43,6 @@ public class LicenseToGrillController : GenericController
     public Text TxtCountdown;
     public GameObject CountdownDisplay;
     public Sprite[] StarImages;
-    public Sprite[] NapkinImages;
     public Sprite[] SauceImages;
 
     /// <summary>
@@ -50,14 +52,25 @@ public class LicenseToGrillController : GenericController
     {
         Instance = this;
 
-        // temp
-        _players = FindObjectsOfType<LicenseToGrillInputHandler>().ToList();
+        SpawnPlayers_();
 
         // initialise timer
         _countdownTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _countdownTimer.Initialise(GAME_TIMEOUT, CountdownTick_, CountdownDone_, 1f);
 
-        StartGame_();
+        // make full screen if one player
+        if (_players.Count == 1)
+        {
+            Chefs[0].ChefCamera.rect = new Rect(new Vector2(0, 0), new Vector2(1, 1));
+            Chefs[0].ControlsDisplayRect.localScale = new Vector3(1, 1, 1);
+            Chefs[0].ErrorDisplayRect.localScale = new Vector3(1, 1, 1);
+            Chefs[0].ConfirmDisplayRect.localScale = new Vector3(1, 1, 1);
+            Chefs[0].OrdersDisplayRect.localScale = new Vector3(1, 1, 1);
+        }
+
+        // fade in
+        EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
+        EndFader.StartFade(1, 0, () => { PauseGameHandler.Instance.Pause(true, StartGame_); });
     }
 
     /// <summary>
@@ -153,6 +166,7 @@ public class LicenseToGrillController : GenericController
         var index = 0;
 
         BenchCamera.gameObject.SetActive(true);
+        BackgroundCamera.gameObject.SetActive(false);
 
         // continue until found an unused burger
         while (index < BurgerResults.Length && BurgerResults[index].isActiveAndEnabled)
@@ -172,6 +186,23 @@ public class LicenseToGrillController : GenericController
 
         yield return new WaitForSeconds(1);
         StartCoroutine(Complete_());
+    }
+
+    /// <summary>
+    /// Creates the player objects and assigns required script
+    /// </summary>
+    private void SpawnPlayers_()
+    {
+        // loop through all players
+        foreach (var player in PlayerManagerScript.Instance.GetPlayers())
+        {
+            // switch to use an input handler suitable for this scene
+            player.SetActiveScript(typeof(LicenseToGrillInputHandler));
+            _players.Add(player.GetComponent<LicenseToGrillInputHandler>());
+
+            // create the "visual" player at the start point
+            player.Spawn(null, Vector3.zero);
+        }
     }
 
     /// <summary>
@@ -221,16 +252,24 @@ public class LicenseToGrillController : GenericController
 
         yield return new WaitForSeconds(3f);
 
-        //ResultsScreen.Setup();
+        ResultsScreen.Setup();
 
         GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
-        //ResultsScreen.SetPlayers(genericPlayers);
+        ResultsScreen.SetPlayers(genericPlayers);
 
         ScoreStoreHandler.StoreResults(Scene.MineGames, genericPlayers);
 
         yield return new WaitForSeconds(4 + genericPlayers.Length);
 
         // fade out
-        //EndFader.StartFade(0, 1, ReturnToCentral_);
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Moves back to the central screen
+    /// </summary>
+    void ReturnToCentral_()
+    {
+        PlayerManagerScript.Instance.CentralScene();
     }
 }

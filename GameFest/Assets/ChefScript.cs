@@ -41,7 +41,10 @@ public class ChefScript : MonoBehaviour
     public Transform Bin;
     public Transform BinPatty;
     public BoxCollider2D SaucePlatform;
-
+    public RectTransform ControlsDisplayRect;
+    public RectTransform ErrorDisplayRect;
+    public RectTransform ConfirmDisplayRect;
+    public RectTransform OrdersDisplayRect;
     public TextMesh BinText;
     public TextMesh BinPattyText;
     public Transform OrderHolder;
@@ -55,6 +58,13 @@ public class ChefScript : MonoBehaviour
     public Transform[] SauceBottles;
     public Transform SauceSlider;
     public GameObject SauceBar;
+    public Transform TomatoItem;
+    public Transform LettuceItem;
+    public Transform PickleItem;
+    public ChopItem ChoppingTomato;
+    public ChopItem ChoppingPickle;
+    public SpriteRenderer BreadBin;
+    public Sprite[] BreadBinSprites;
 
     // instruction displays
     public GameObject Help_SelectItem;
@@ -63,6 +73,10 @@ public class ChefScript : MonoBehaviour
     public GameObject Help_AddToBurger;
     public GameObject Help_Plate;
     public GameObject Help_Sauce;
+    public GameObject Help_Bread;
+    public GameObject Help_Chop;
+    public GameObject Help_GrillLeft;
+    public GameObject Help_BoardRight;
 
     // config
     public float BurgerTrayY;
