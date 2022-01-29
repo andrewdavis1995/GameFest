@@ -29,6 +29,15 @@ public class GameDescriptionScript : MonoBehaviour
             case Scene.MineGames:
                 description = "How good is your poker face? Take it in turns to choose where the gold goes. Get rewarded for telling the truth, or lie and hope for bigger rewards for fooling your fellow players!";
                 break;
+            case Scene.CartAttack:
+                description = "How are your artistic skills? How your driving? This game combines both! Complete as many laps as possible whilst staying in the lines to create masterpieces!";
+                break;
+            case Scene.FollowBack:
+                description = "Who is the most popular...? Let's find out! Steal followers off your fellow players and see who can grow the biggest social media presence!";
+                break;
+            case Scene.LicenseToGrill:
+                description = "Who doesn't love a burger?! In this game - you are the one making them! Get through as many customers as possible before the time runs out! Pay attention to their orders!";
+                break;
         }
 
         return description;
