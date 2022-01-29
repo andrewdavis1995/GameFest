@@ -260,7 +260,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7443154871356695337, guid: 016c0ebe34463014fbdc471a6bbca9b2, type: 3}
       propertyPath: Game
-      value: 8
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 7443154871356695337, guid: 016c0ebe34463014fbdc471a6bbca9b2, type: 3}
       propertyPath: Video
@@ -1184,7 +1184,7 @@ PrefabInstance:
     - target: {fileID: 7443154871356695337, guid: 016c0ebe34463014fbdc471a6bbca9b2, type: 3}
       propertyPath: Video
       value: 
-      objectReference: {fileID: 8400000, guid: 975dd53b1c7642d46a290472add44d64, type: 2}
+      objectReference: {fileID: 8400000, guid: e084a7cd536057b4f8b1268be7697440, type: 2}
     - target: {fileID: 7443154871356695337, guid: 016c0ebe34463014fbdc471a6bbca9b2, type: 3}
       propertyPath: LogoImage
       value: 
@@ -1192,7 +1192,7 @@ PrefabInstance:
     - target: {fileID: 7443154871356695337, guid: 016c0ebe34463014fbdc471a6bbca9b2, type: 3}
       propertyPath: Video_Clip
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 32900000, guid: f76a12674d0b19547b6082a476e4ebf1, type: 3}
     - target: {fileID: 7443154871356695337, guid: 016c0ebe34463014fbdc471a6bbca9b2, type: 3}
       propertyPath: MinimumPlayers
       value: 0
@@ -2680,7 +2680,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7443154871356695337, guid: 016c0ebe34463014fbdc471a6bbca9b2, type: 3}
       propertyPath: Game
-      value: 8
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 7443154871356695337, guid: 016c0ebe34463014fbdc471a6bbca9b2, type: 3}
       propertyPath: Video

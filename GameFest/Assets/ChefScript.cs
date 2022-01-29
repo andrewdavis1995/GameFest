@@ -65,6 +65,7 @@ public class ChefScript : MonoBehaviour
     public ChopItem ChoppingPickle;
     public SpriteRenderer BreadBin;
     public Sprite[] BreadBinSprites;
+    public AudioSource BreadChopSound;
 
     // instruction displays
     public GameObject Help_SelectItem;

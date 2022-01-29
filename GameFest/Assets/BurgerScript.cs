@@ -21,6 +21,7 @@ public class BurgerScript : MonoBehaviour
     SpriteRenderer _grillMark;
     Rigidbody2D _rigidBody;
     ParticleSystem _particles;
+    public AudioSource SizzleSound;
 
     // status variables
     bool _smoking = false;
@@ -96,6 +97,7 @@ public class BurgerScript : MonoBehaviour
         _bCoroutine = StartCoroutine(ColourBlue_());
 
         CookedBar.SetActive(true);
+        SizzleSound.Play();
     }
 
     /// <summary>
@@ -106,6 +108,7 @@ public class BurgerScript : MonoBehaviour
         if (_flipping) return;
 
         CookedBar.SetActive(false);
+        SizzleSound.Stop();
 
         // stop smoking
         if (_smokeCoroutine != null)
@@ -250,6 +253,9 @@ public class BurgerScript : MonoBehaviour
         _smokeRate = 0.1f;
         _flipping = false;
 
+        // stop audio (belt & braces)
+        SizzleSound.Stop();
+
         // reset colour
         r = new float[] { 1f, 1f };
         g = new float[] { 1f, 1f };
@@ -270,7 +276,6 @@ public class BurgerScript : MonoBehaviour
         // hide unused elements
         _rigidBody.isKinematic = false;
         gameObject.SetActive(false);
-        CookedBar.SetActive(false);
     }
 
     /// <summary>

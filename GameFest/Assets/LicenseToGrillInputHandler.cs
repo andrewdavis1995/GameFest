@@ -162,9 +162,10 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         }
 
         // don't do anything if the action is not appropriate
-        if (!valid) return;
 
         _currentItem.Insert(0, cso);
+
+        if (!valid) return;
 
         // if entered a grill zone, keep track of it
         if (_currentItem[0].ObjectType == SelectionType.GrillZone)
@@ -371,6 +372,33 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     }
 
     /// <summary>
+    /// Flicks the spatula up, then flips the burger
+    /// </summary>
+    /// <param name="action"></param>
+    /// <returns></returns>
+    IEnumerator DoFlip_(Action action)
+    {
+        const int ROTATION_ANGLE = 40;
+
+        // flick spatula up
+        for(int i = 0; i < ROTATION_ANGLE; i+=8)
+        {
+            Chef.SelectionSpatula.transform.eulerAngles = new Vector3(i, 0, 0);
+            yield return new WaitForSeconds(0.001f);
+        }
+
+        // return spatula down
+        for (float i = ROTATION_ANGLE; i >= 0; i-=8)
+        {
+            Chef.SelectionSpatula.transform.eulerAngles = new Vector3(i, 0, 0);
+            yield return new WaitForSeconds(0.001f);
+        }
+
+        // flip burger
+        Chef.Burgers[_selectedPattyIndex].Flip(action);
+    }
+
+    /// <summary>
     /// When the spacebar is pressed
     /// </summary>
     private void CrossPressed_()
@@ -387,7 +415,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                         if (!(Chef.Burgers.Any(b => b.Flipping())))
                         {
                             _flippedPattyIndex = _selectedPattyIndex;
-                            Chef.Burgers[_selectedPattyIndex].Flip(() => { StartCoroutine(Chef.Burgers[_flippedPattyIndex].StartNewSide()); });
+                            StartCoroutine(DoFlip_(() => { StartCoroutine(Chef.Burgers[_flippedPattyIndex].StartNewSide()); }));
                         }
                     }
                     else
@@ -566,14 +594,18 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// Moves the selected bottle down, and the squirt bottle up
     /// </summary>
     /// <param name="index">The bottle to move</param>
-    private IEnumerator MoveSauceDown_()
+    private IEnumerator MoveSauceDown_(bool cancelled = false)
     {
         Chef.Help_Sauce.SetActive(false);
-        yield return new WaitForSeconds(1f);
 
-        _burgerSelections.Add(new BurgerSauce(_selectedSauce, Chef.SquirtBottle.SauceImage.transform.localScale.x));
-        _burgerElements.Add(null);
-        _burgerItemIndex++;
+        if (!cancelled)
+        {
+            yield return new WaitForSeconds(1f);
+
+            _burgerSelections.Add(new BurgerSauce(_selectedSauce, Chef.SquirtBottle.SauceImage.transform.localScale.x));
+            _burgerElements.Add(null);
+            _burgerItemIndex++;
+        }
 
         // the highest bottle is the one to use
         var bottle = Chef.SauceBottles.Where(b => b.localPosition.y >= Chef.SauceBottles.Max(c => c.localPosition.y)).First();
@@ -706,7 +738,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
             _currentItem[0].RendererGlow.gameObject.SetActive(false);
         }
 
-        // show urger
+        // show burger
         burger.SetBurgerType(burgerIndex);
         burger.gameObject.SetActive(true);
 
@@ -1187,6 +1219,8 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         // if left, and meant to be going left
         else if (x < -0.9f && _knifeTarget < 0)
         {
+            Chef.BreadChopSound.Play();
+
             Chef.Knife.Translate(new Vector3(-KNIFE_MOVEMENT, 0, 0));
             _knifeTarget = 1;
 
@@ -1203,6 +1237,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                 Chef.ChopBunRendererBottom.gameObject.SetActive(false);
                 Chef.TopBun.gameObject.SetActive(true);
                 SpawnBread_(false);
+                UpdateHelp_();
             }
         }
     }
@@ -1273,7 +1308,6 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCircle()
     {
-        Debug.Log("crcl");
         switch (_action)
         {
             case ChefAction.SelectingBurger:
@@ -1283,9 +1317,11 @@ public class LicenseToGrillInputHandler : GenericInputHandler
             case ChefAction.SelectingBread:
                 ShowBreadOptions_(false);
                 _action = ChefAction.FacingBoard;
+                SelectFirstItem_();
                 break;
             case ChefAction.SquirtingSauce:
-                UpdateAction_(ChefAction.SauceReturn);
+                _action = ChefAction.SauceReturn;
+                StartCoroutine(MoveSauceDown_(true));
                 break;
             case ChefAction.ChoppingTomato:
                 CancelVegChop_(Chef.ChoppingTomato);
@@ -1374,13 +1410,13 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                     // flip burger
                     if (Chef.TopBun.gameObject.activeInHierarchy)
                     {
-                        Chef.Burgers[_selectedPattyIndex].Flip(() =>
+                        StartCoroutine(DoFlip_(() =>
                         {
                             _flippedPattyIndex = _selectedPattyIndex;
                             SpawnBurger_();
                             Chef.Burgers[_flippedPattyIndex].gameObject.SetActive(false);
                             Chef.Burgers[_flippedPattyIndex].ResetBurger();
-                        });
+                        }));
                     }
                     else
                     {

@@ -9,9 +9,9 @@ using UnityEngine;
 public static class BurgerValidation
 {
     // values for heat
-    const float MIN_HEAT_THRESHOLD = 80f;
+    const float MIN_HEAT_THRESHOLD = 65f;
     const float MIN_SAUCE_THRESHOLD = 0.75f;
-    const float MAX_SAUCE_THRESHOLD = 1.05f;    // it's actually 1 but bump it up to account for the fact that there's a delay with stopping sauces
+    const float MAX_SAUCE_THRESHOLD = 1.1f;    // it's actually 1 but bump it up to account for the fact that there's a delay with stopping sauces
 
     // values for how many points to deduct for each mistake
     const int DEDUCTION_WRONG_BUN = 10;

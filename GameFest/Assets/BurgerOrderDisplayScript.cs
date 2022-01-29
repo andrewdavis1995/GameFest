@@ -5,6 +5,7 @@ public class BurgerOrderDisplayScript : MonoBehaviour
 {
     public Text TxtCustomer;
     public Image[] Images;
+    public Image[] ImageBGs;
 
     /// <summary>
     /// Initialise the display
@@ -20,19 +21,19 @@ public class BurgerOrderDisplayScript : MonoBehaviour
         foreach (var element in elements.GetItems())
         {
             var state = true;
-            Sprite sprite = GetSprite_(element, index, ref state);
+            var sprite = GetSprite_(element, index, ref state);
 
             // set appearance of the image
-            Images[index].gameObject.SetActive(state);
+            ImageBGs[index].gameObject.SetActive(state);
             Images[index].sprite = sprite;
 
             index++;
         }
 
         // hide unused images
-        for (; index < Images.Length; index++)
+        for (; index < ImageBGs.Length; index++)
         {
-            Images[index].gameObject.SetActive(false);
+            ImageBGs[index].gameObject.SetActive(false);
         }
     }
 

@@ -138,7 +138,7 @@ public class LicenseToGrillController : GenericController
                 totalPoints += tip;
 
                 // show result
-                BurgerResults[index].Initialise(complaints, tip, points, player.GetPlayerIndex());
+                BurgerResults[index].Initialise(complaints, tip, points, player.GetPlayerIndex(), customer.GetCustomerName());
                 BurgerResults[index].gameObject.SetActive(true);
                 index++;
             }
@@ -177,14 +177,14 @@ public class LicenseToGrillController : GenericController
             while (BenchCamera.transform.position.x < targetPosition)
             {
                 BenchCamera.transform.Translate(new Vector3(8f * Time.deltaTime, 0, 0));
-                yield return new WaitForSeconds(0.01f);
+                yield return new WaitForSeconds(0.025f);
             }
 
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(2.5f);
             index++;
         }
 
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(2f);
         StartCoroutine(Complete_());
     }
 
@@ -257,7 +257,7 @@ public class LicenseToGrillController : GenericController
         GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
         ResultsScreen.SetPlayers(genericPlayers);
 
-        ScoreStoreHandler.StoreResults(Scene.MineGames, genericPlayers);
+        ScoreStoreHandler.StoreResults(Scene.LicenseToGrill, genericPlayers);
 
         yield return new WaitForSeconds(4 + genericPlayers.Length);
 

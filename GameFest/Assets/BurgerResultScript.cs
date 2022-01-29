@@ -8,7 +8,9 @@ public class BurgerResultScript : MonoBehaviour
     public SpriteRenderer[] TipsRenderers;
     public TextMesh TxtDescription;
     public TextMesh TxtTitle;
+    public TextMesh TxtCustomerName;
     public SpriteRenderer StarImage;
+    public SpriteRenderer ColourBar;
 
     List<BurgerComplaint> _complaints = new List<BurgerComplaint>();
 
@@ -19,7 +21,7 @@ public class BurgerResultScript : MonoBehaviour
     /// <param name="tip">How much top was given</param>
     /// <param name="totalScore">Score achieved for this burger</param>
     /// <param name="playerIndex">Index of the player who made the burger</param>
-    internal void Initialise(List<BurgerComplaint> complaints, int tip, int totalScore, int playerIndex)
+    internal void Initialise(List<BurgerComplaint> complaints, int tip, int totalScore, int playerIndex, string customerName)
     {
         Sprite bread = null;
         _complaints = complaints;
@@ -31,6 +33,8 @@ public class BurgerResultScript : MonoBehaviour
         }
 
         StarImage.sprite = LicenseToGrillController.Instance.StarImages[((totalScore + 19) / 20)];
+        ColourBar.color = ColourFetcher.GetColour(playerIndex);
+        TxtCustomerName.text = customerName;
 
         // display burger
         var index = 0;

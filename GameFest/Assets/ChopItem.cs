@@ -7,6 +7,7 @@ public class ChopItem : MonoBehaviour
 {
     public SpriteRenderer[] Slices;
     public Transform Knife;
+    public AudioSource VegChopSound;
 
     Vector3 _knifeRestPosition;
     Vector3 _startPosition;
@@ -49,12 +50,14 @@ public class ChopItem : MonoBehaviour
 
     private IEnumerator Slice_()
     {
+        VegChopSound.Play();
+
         _available = false;
 
         ++_index;
 
         Knife.SetParent(Slices[_index].transform);
-        Knife.localPosition = new Vector3(Knife.localPosition.x, Knife.localPosition.y, 0.001f);
+        Knife.localPosition = new Vector3(Knife.localPosition.x, Knife.localPosition.y, -0.001f);
         Knife.eulerAngles = Vector3.zero;
 
         while (Knife.transform.localPosition.x > 0)
