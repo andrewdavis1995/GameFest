@@ -86,12 +86,15 @@ public class CartAttackController : GenericController
         CameraLerpController.enabled = true;
         Leaderboard.SetActive(true);
 
+        string[] messages = new string[] { "", "Here we go", "Get Ready", "On your marks", "Get set", "Go!" };
+
         // show countdown
         for (int i = 0; i < StarterLightSprites.Length; i++)
         {
             // wait, then update image
             yield return new WaitForSeconds(1);
             StarterLights.sprite = StarterLightSprites[i];
+            TxtRemainingTime.text = messages[i];
         }
 
         _running = true;
@@ -110,6 +113,7 @@ public class CartAttackController : GenericController
 
         // start process of spawning power ups
         StartCoroutine(SpawnPowerups());
+        StartCoroutine(RotatePowerups());
     }
 
     /// <summary>
@@ -125,6 +129,19 @@ public class CartAttackController : GenericController
             // spawn a random power up
             var r = UnityEngine.Random.Range(0, PowerUps.Length - 1);
             PowerUps[r].SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// Runs throughout the game, spinning power up bubbles
+    /// </summary>
+    private IEnumerator RotatePowerups()
+    {
+        while (_running)
+        {
+            yield return new WaitForSeconds(0.1f);
+            foreach(var v in PowerUps)
+                v.transform.eulerAngles += new Vector3(0, 0, 10);
         }
     }
 
@@ -294,7 +311,7 @@ public class CartAttackController : GenericController
     {
         // show remaining time
         TxtRemainingTime.text = time.ToString();
-        if(time == 10)
+        if (time == 10)
         {
             EndFader.Music.pitch = 1.05f;
         }

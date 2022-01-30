@@ -322,7 +322,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 98b7e612c060cb043b133b95f8d9fceb, type: 3}
-  m_Color: {r: 0.8773585, g: 0.08803895, b: 0.028141629, a: 1}
+  m_Color: {r: 0.9150943, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -875,7 +875,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: b5547f3a56139bf44b1f7725581af69e, type: 3}
-  m_Color: {r: 1, g: 0.5973753, b: 0.058823526, a: 1}
+  m_Color: {r: 1, g: 0.29790545, b: 0.0603773, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1430,7 +1430,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6343743168756823420}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.5, y: -1.77, z: 0.1}
+  m_LocalPosition: {x: -1.34, y: -1.77, z: 0.1}
   m_LocalScale: {x: 4, y: 4, z: 1}
   m_Children: []
   m_Father: {fileID: 6343743168765597654}
@@ -1486,8 +1486,8 @@ TrailRenderer:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0.010471344
-        value: 0.15789604
+        time: 0
+        value: 0.084379196
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -1675,7 +1675,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6343743169747535196}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.5, y: -1.7700005, z: 0.1}
+  m_LocalPosition: {x: 1.34, y: -1.7700005, z: 0.1}
   m_LocalScale: {x: 4, y: 4, z: 1}
   m_Children: []
   m_Father: {fileID: 6343743168765597654}
@@ -1731,8 +1731,8 @@ TrailRenderer:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0.010471344
-        value: 0.15789604
+        time: 0
+        value: 0.08436394
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -2001,13 +2001,13 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: e3752eaf4effab543b822ad91636d233, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.33
+  m_Volume: 0.075
   m_Pitch: 0.9
   Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 128
+  Priority: 74
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500

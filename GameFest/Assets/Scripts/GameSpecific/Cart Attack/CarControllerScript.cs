@@ -14,7 +14,7 @@ public class CarControllerScript : MonoBehaviour
     const int MAX_LAP_POINTS = 350;
     const int LOWEST_LAP_POINTS = 20;
     const int ACCURACY_BONUS = 30;
-    public static float ACCURACY_BONUS_THRESHOLD = 0.9f;
+    public static float ACCURACY_BONUS_THRESHOLD = 0.85f;
     const float BOOST_FACTOR = 1.2f;
     const float BOOST_DURATION = 1.6f;
     const float ROCKET_BOOSTER_OFFSET = -0.9f;
