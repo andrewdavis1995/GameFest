@@ -105,6 +105,8 @@ public class CartAttackController : GenericController
             player.StartRace();
         }
 
+        yield return new WaitForSeconds(1);
+
         // start timer
         _raceTimer.StartTimer();
 

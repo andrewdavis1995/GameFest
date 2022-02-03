@@ -186,7 +186,7 @@ public class CartAttackInputHandler : GenericInputHandler
     public override void OnCross()
     {
         // if vehicle selection in progress, update UI
-        if (CartAttackController.Instance.VehicleSelection.GetActiveState())
+        if (CartAttackController.Instance.VehicleSelection.GetActiveState() && !PauseGameHandler.Instance.IsPaused())
         {
             _vehicleSelected = true;
             CartAttackController.Instance.VehicleSelection.Complete(GetPlayerIndex());
