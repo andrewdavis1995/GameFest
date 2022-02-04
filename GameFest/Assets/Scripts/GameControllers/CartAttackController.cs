@@ -176,6 +176,7 @@ public class CartAttackController : GenericController
             player.SetActiveState(false);
         }
 
+        EndFader.Music.pitch = .9f;
         StartCoroutine(ShowResults_());
     }
 
@@ -313,9 +314,9 @@ public class CartAttackController : GenericController
     {
         // show remaining time
         TxtRemainingTime.text = time.ToString();
-        if (time == 10)
+        if (time == 10 || time == 20)
         {
-            EndFader.Music.pitch = 1.05f;
+            EndFader.Music.pitch += .1f;
         }
     }
 

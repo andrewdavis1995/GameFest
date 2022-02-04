@@ -224,7 +224,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 7f4d852ddfec3ab4ea721c638002eb47, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 3cb37e78c40746b488d5d7a2a90bba31, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0
   m_Pitch: 1
@@ -10293,6 +10293,10 @@ PrefabInstance:
     - target: {fileID: 4937542563770664287, guid: 5e11fbfb178a3354baf2646c5dc0ad3c, type: 3}
       propertyPath: m_Offset.y
       value: 0.81350166
+      objectReference: {fileID: 0}
+    - target: {fileID: 6287103668045415068, guid: 5e11fbfb178a3354baf2646c5dc0ad3c, type: 3}
+      propertyPath: m_Volume
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 6343743168382966353, guid: 5e11fbfb178a3354baf2646c5dc0ad3c, type: 3}
       propertyPath: m_Parameters.colorGradient.key0.b
@@ -20594,6 +20598,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6287103668045415068, guid: 5e11fbfb178a3354baf2646c5dc0ad3c, type: 3}
+      propertyPath: m_Volume
+      value: 0.01
+      objectReference: {fileID: 0}
     - target: {fileID: 6343743168382966353, guid: 5e11fbfb178a3354baf2646c5dc0ad3c, type: 3}
       propertyPath: m_Parameters.colorGradient.key0.b
       value: 0.6784314
@@ -22906,6 +22914,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6287103668045415068, guid: 5e11fbfb178a3354baf2646c5dc0ad3c, type: 3}
+      propertyPath: m_Volume
+      value: 0.01
+      objectReference: {fileID: 0}
     - target: {fileID: 6343743168382966353, guid: 5e11fbfb178a3354baf2646c5dc0ad3c, type: 3}
       propertyPath: m_Parameters.colorGradient.key0.b
       value: 0.050053377
@@ -24500,6 +24512,10 @@ PrefabInstance:
     - target: {fileID: 2559741068664887745, guid: 5e11fbfb178a3354baf2646c5dc0ad3c, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6287103668045415068, guid: 5e11fbfb178a3354baf2646c5dc0ad3c, type: 3}
+      propertyPath: m_Volume
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 6343743170062133944, guid: 5e11fbfb178a3354baf2646c5dc0ad3c, type: 3}
       propertyPath: m_RootOrder

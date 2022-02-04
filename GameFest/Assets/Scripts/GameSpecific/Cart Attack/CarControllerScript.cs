@@ -281,7 +281,7 @@ public class CarControllerScript : MonoBehaviour
     /// </summary>
     void ApplyEngineForce_()
     {
-        MotorSound.volume = _accelerationInput / 3f;
+        MotorSound.volume = _accelerationInput / 40f;
 
         // get the forward speed
         float velocityVsUp = Vector2.Dot(transform.up, _carRigidBody.velocity);
