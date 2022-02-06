@@ -62,7 +62,6 @@ public class CarControllerScript : MonoBehaviour
     public SpriteRenderer BackWheelsRenderer;
     public SpriteRenderer GlassRenderer;
     public Transform ControlsFlippedIcon;
-    public TextMesh TxtFlipCountdown;
     public AudioSource LapSound;
     public AudioSource PowerUpSound;
     public AudioSource MotorSound;
@@ -281,7 +280,7 @@ public class CarControllerScript : MonoBehaviour
     /// </summary>
     void ApplyEngineForce_()
     {
-        MotorSound.volume = _accelerationInput / 40f;
+        MotorSound.volume = _accelerationInput / 50f;
 
         // get the forward speed
         float velocityVsUp = Vector2.Dot(transform.up, _carRigidBody.velocity);
@@ -312,7 +311,6 @@ public class CarControllerScript : MonoBehaviour
     {
         _flipSteeringRequests++;
         ControlsFlippedIcon.gameObject.SetActive(true);
-        TxtFlipCountdown.gameObject.SetActive(true);
     }
 
     /// <summary>
@@ -322,9 +320,6 @@ public class CarControllerScript : MonoBehaviour
     {
         _flipSteeringRequests--;
         ControlsFlippedIcon.gameObject.SetActive(_flipSteeringRequests > 0);
-        TxtFlipCountdown.gameObject.SetActive(_flipSteeringRequests > 0);
-        if (_flipSteeringRequests == 0)
-            TxtFlipCountdown.text = "0";
     }
 
     /// <summary>

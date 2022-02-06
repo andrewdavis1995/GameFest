@@ -53,9 +53,6 @@ public class CartAttackController : GenericController
 
         Instance = this;
 
-        // show vehicle selection UI
-        VehicleSelection.SetActiveState(true);
-
         // spawn player objects
         _players = SpawnPlayers_();
 
@@ -69,8 +66,11 @@ public class CartAttackController : GenericController
         // setup pause functionality and pause
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
         PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
-    }
 
+        // show vehicle selection UI
+        VehicleSelection.SetActiveState(true);
+    }
+    
     /// <summary>
     /// Callback for when the player quits
     /// </summary>
@@ -135,6 +135,15 @@ public class CartAttackController : GenericController
         // start process of spawning power ups
         StartCoroutine(SpawnPowerups());
         StartCoroutine(RotatePowerups());
+    }
+
+    /// <summary>
+    /// Checks if the race is running
+    /// </summary>
+    /// <returns>Whether the race has started</returns>
+    public bool IsRunning()
+    {
+        return _running;
     }
 
     /// <summary>
@@ -477,21 +486,6 @@ public class CartAttackController : GenericController
             // don't flip direction of player who triggered the behaviour
             if (i != plTrigger)
                 _players[i].FlipSteeringStarted();
-        }
-    }
-
-    /// <summary>
-    /// Flips all players steering direction (other than the player that triggered it)
-    /// </summary>
-    /// <param id="plTrigger">The index of the player who triggered the power up</param>
-    /// <param id="time">The time remaining</param>
-    public void UpdateFlipCount(int plTrigger, int time)
-    {
-        for (int i = 0; i < _players.Count; i++)
-        {
-            // don't flip direction of player who triggered the behaviour
-            if (i != plTrigger)
-                _players[i].UpdateFlipCount(time);
         }
     }
 
