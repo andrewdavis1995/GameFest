@@ -144,7 +144,9 @@ public class PunchlineBlingInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCross()
     {
-        if (!_canMove) return;
+        base.OnCross();
+
+        if (!_canMove || PauseGameHandler.Instance.IsPaused()) return;
 
         _movement.Jump();
     }
@@ -159,32 +161,6 @@ public class PunchlineBlingInputHandler : GenericInputHandler
         // flip the selected card
         if (_currentCard != null && _isActivePlayer)
             _currentCard.Flip();
-    }
-
-    /// <summary>
-    /// When the R1 event is triggered
-    /// </summary>
-    public override void OnR1()
-    {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.NextPage();
-        }
-        else
-        {
-            PunchlineBlingController.Instance.SpeedUp(GetPlayerIndex());
-        }
-    }
-
-    /// <summary>
-    /// When the L1 event is triggered
-    /// </summary>
-    public override void OnL1()
-    {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.PreviousPage();
-        }
     }
 
     /// <summary>

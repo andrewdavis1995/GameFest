@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +38,7 @@ public class CashDashController : GenericController
 
     int _remainingPoints;
     bool _active = false;
+    bool _ended = false;
 
     List<CashDashInputHandler> _players = new List<CashDashInputHandler>();
     int _completedPlayers = 0;
@@ -66,7 +66,25 @@ public class CashDashController : GenericController
         EndFader.StartFade(1, 0, FadeInComplete);
 
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
-        PauseGameHandler.Instance.Initialise(genericPlayers);
+        PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
+    }
+
+    /// <summary>
+    /// Callback for when the player quits
+    /// </summary>
+    private void QuitGame_()
+    {
+        _ended = true;
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Can't pause once we get to the results section
+    /// </summary>
+    /// <returns>Whether the game can be paused at the current stage</returns>
+    public override bool CanPause()
+    {
+        return !_ended;
     }
 
     /// <summary>
@@ -131,6 +149,7 @@ public class CashDashController : GenericController
     /// </summary>
     private IEnumerator EndGame_()
     {
+        _ended = true;
         CameraFollowScript.enabled = false;
 
         // kill timers

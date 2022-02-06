@@ -252,7 +252,9 @@ public class CashDashInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCross()
     {
-        if (!_canMove || !CashDashController.Instance.IsActive() || PauseGameHandler.Instance.IsPaused()) return;
+        base.OnCross();
+        if (PauseGameHandler.Instance.IsPaused()) return;
+        if (!_canMove || !CashDashController.Instance.IsActive()) return;
 
         _movement.Jump();
     }
@@ -329,28 +331,6 @@ public class CashDashInputHandler : GenericInputHandler
         foreach (var platform in _jamWheelPlatforms)
         {
             platform.OnMove(ctx.ReadValue<Vector2>());
-        }
-    }
-
-    /// <summary>
-    /// Input handler for L1 button
-    /// </summary>
-    public override void OnL1()
-    {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.PreviousPage();
-        }
-    }
-
-    /// <summary>
-    /// Input handler for R1 button
-    /// </summary>
-    public override void OnR1()
-    {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.NextPage();
         }
     }
 }

@@ -97,12 +97,7 @@ public class CartAttackInputHandler : GenericInputHandler
     /// <param name="ctx">The input action</param>
     public override void OnL1()
     {
-        if (PauseGameHandler.Instance.IsPaused())
-        {
-            if (IsHost())
-                PauseGameHandler.Instance.PreviousPage();
-        }
-        else
+        if (!PauseGameHandler.Instance.IsPaused())
         {
             // if vehicle selection in progress, update UI
             if (CartAttackController.Instance.VehicleSelection.GetActiveState() && !_vehicleSelected)
@@ -110,6 +105,8 @@ public class CartAttackInputHandler : GenericInputHandler
                 CartAttackController.Instance.VehicleSelection.UpdateDisplay(GetPlayerIndex(), -1);
             }
         }
+
+        base.OnL1();
     }
 
     /// <summary>
@@ -118,12 +115,7 @@ public class CartAttackInputHandler : GenericInputHandler
     /// <param name="ctx">The input action</param>
     public override void OnR1()
     {
-        if (PauseGameHandler.Instance.IsPaused())
-        {
-            if (IsHost())
-                PauseGameHandler.Instance.NextPage();
-        }
-        else
+        if (!PauseGameHandler.Instance.IsPaused())
         {
             // if vehicle selection in progress, update UI
             if (CartAttackController.Instance.VehicleSelection.GetActiveState() && !_vehicleSelected)
@@ -131,6 +123,8 @@ public class CartAttackInputHandler : GenericInputHandler
                 CartAttackController.Instance.VehicleSelection.UpdateDisplay(GetPlayerIndex(), 1);
             }
         }
+
+        base.OnR1();
     }
 
     /// <summary>
@@ -139,6 +133,9 @@ public class CartAttackInputHandler : GenericInputHandler
     /// <param name="ctx">The input action</param>
     public override void OnCircle()
     {
+        base.OnCircle();
+        if (PauseGameHandler.Instance.IsPaused()) return;
+
         // if vehicle selection in progress, update UI
         if (CartAttackController.Instance.VehicleSelection.GetActiveState())
         {
@@ -185,6 +182,9 @@ public class CartAttackInputHandler : GenericInputHandler
     /// <param name="ctx">The input action</param>
     public override void OnCross()
     {
+        base.OnCross();
+        if (PauseGameHandler.Instance.IsPaused()) return;
+
         // if vehicle selection in progress, update UI
         if (CartAttackController.Instance.VehicleSelection.GetActiveState() && !PauseGameHandler.Instance.IsPaused())
         {

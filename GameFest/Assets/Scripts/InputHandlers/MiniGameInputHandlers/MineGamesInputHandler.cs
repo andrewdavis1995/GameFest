@@ -183,6 +183,8 @@ public class MineGamesInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCross()
     {
+        base.OnCross();
+        if (PauseGameHandler.Instance.IsPaused()) return;
         MineGamesController.Instance.OptionSelected(GetPlayerIndex(), ButtonValues.Cross);
     }
 
@@ -199,6 +201,9 @@ public class MineGamesInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCircle()
     {
+        base.OnCircle();
+        if (PauseGameHandler.Instance.IsPaused()) return;
+
         MineGamesController.Instance.OptionSelected(GetPlayerIndex(), ButtonValues.Circle);
     }
 
@@ -255,27 +260,5 @@ public class MineGamesInputHandler : GenericInputHandler
     {
         _roundPoints = 0;
         _results.Clear();
-    }
-
-    /// <summary>
-    /// When the R1 event is triggered
-    /// </summary>
-    public override void OnR1()
-    {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.NextPage();
-        }
-    }
-
-    /// <summary>
-    /// When the L1 event is triggered
-    /// </summary>
-    public override void OnL1()
-    {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.PreviousPage();
-        }
     }
 }

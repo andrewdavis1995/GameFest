@@ -42,6 +42,8 @@ public class FollowBackInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCross()
     {
+        base.OnCross();
+        if (PauseGameHandler.Instance.IsPaused()) return;
         if (!_canMove) return;
         if (_activeTrolls.Count > 0) return;
         _movement.Jump();
@@ -83,29 +85,6 @@ public class FollowBackInputHandler : GenericInputHandler
         if (_activeTrolls.Count > 0) return;
 
         TakeSelfie_();
-    }
-
-    /// <summary>
-    /// L1 event handler
-    /// </summary>
-    public override void OnL1()
-    {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.PreviousPage();
-        }
-    }
-
-
-    /// <summary>
-    /// Triangle event handler
-    /// </summary>
-    public override void OnR1()
-    {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.NextPage();
-        }
     }
 
     /// <summary>

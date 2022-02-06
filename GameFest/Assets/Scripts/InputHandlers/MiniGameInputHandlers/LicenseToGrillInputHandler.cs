@@ -1257,11 +1257,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     #region Button inputs
     public override void OnL1()
     {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.PreviousPage();
-        }
-        else
+        if (!PauseGameHandler.Instance.IsPaused())
         {
             // move the camera based on the current action
             switch (_action)
@@ -1273,15 +1269,13 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                     break;
             }
         }
+
+        base.OnL1();
     }
 
     public override void OnR1()
     {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.NextPage();
-        }
-        else
+        if (!PauseGameHandler.Instance.IsPaused())
         {
             // move the camera based on the current action
             switch (_action)
@@ -1293,6 +1287,8 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                     break;
             }
         }
+
+        base.OnR1();
     }
 
     /// <summary>
@@ -1300,6 +1296,8 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCross()
     {
+        base.OnCross();
+        if (PauseGameHandler.Instance.IsPaused()) return;
         CrossPressed_();
     }
 
@@ -1308,6 +1306,8 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// </summary>
     public override void OnCircle()
     {
+        base.OnCircle();
+        if (PauseGameHandler.Instance.IsPaused()) return;
         switch (_action)
         {
             case ChefAction.SelectingBurger:

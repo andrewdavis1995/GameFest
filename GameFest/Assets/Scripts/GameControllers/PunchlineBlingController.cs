@@ -128,13 +128,21 @@ public class PunchlineBlingController : GenericController
         _playerLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
 
         _overallLimit.Initialise(300, OverallTickCallback, OverallTimeoutCallback);
-        //_overallLimit.Initialise(600, OverallTickCallback, OverallTimeoutCallback);        // TEST ONLY
         _playerLimit.Initialise(20, PlayerTickCallback, PlayerTimeoutCallback);
 
         SpinWheel.Initialise(_players.ToList());
 
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
-        PauseGameHandler.Instance.Initialise(genericPlayers);
+        PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
+    }
+
+    /// <summary>
+    /// Callback for when the player quits
+    /// </summary>
+    private void QuitGame_()
+    {
+        _ended = true;
+        EndFader.StartFade(0, 1, ReturnToCentral_);
     }
 
     /// <summary>
@@ -145,6 +153,18 @@ public class PunchlineBlingController : GenericController
         PauseGameHandler.Instance.Pause(true, StartGame);
     }
 
+    /// <summary>
+    /// Can't pause once we get to the results section
+    /// </summary>
+    /// <returns>Whether the game can be paused at the current stage</returns>
+    public override bool CanPause()
+    {
+        return !_ended;
+    }
+
+    /// <summary>
+    /// Called once per frame
+    /// </summary>
     private void Update()
     {
         // only continue if there are cards remaining
@@ -825,15 +845,6 @@ public class PunchlineBlingController : GenericController
     {
         _selectedCards[index] = card;
         NoteBookTexts[index].text = TextFormatter.GetNotepadJokeString(card.IsPunchline() ? card.GetJoke().Punchline : card.GetJoke().Setup);
-    }
-
-    /// <summary>
-    /// Can't pause once we get to the results section
-    /// </summary>
-    /// <returns>Whether the game can be paused at the current stage</returns>
-    public override bool CanPause()
-    {
-        return !_ended;
     }
 
     IEnumerator ShowLaterMessage_()

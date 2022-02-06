@@ -103,6 +103,7 @@ public class BeachBowlesController : GenericController
     bool _cancelled = false;
     float _cameraOffset;
     bool _showingCharacter = false;
+    bool _ended = false;
 
     Vector3 _scoreScreenPosition;
     Vector3 _sotpSignPosition;
@@ -167,9 +168,18 @@ public class BeachBowlesController : GenericController
         _cameraLocation = GameplayCamera.transform.localPosition;
 
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
-        PauseGameHandler.Instance.Initialise(genericPlayers);
+        PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
 
         InitialiseScoreDisplays_();
+    }
+
+    /// <summary>
+    /// Callback for when the player quits
+    /// </summary>
+    private void QuitGame_()
+    {
+        _ended = true;
+        EndFader.StartFade(0, 1, ReturnToCentral_);
     }
 
     /// <summary>
@@ -181,6 +191,15 @@ public class BeachBowlesController : GenericController
         {
             wall.SetActive(true);
         }
+    }
+
+    /// <summary>
+    /// Can't pause once we get to the results section
+    /// </summary>
+    /// <returns>Whether the game can be paused at the current stage</returns>
+    public override bool CanPause()
+    {
+        return !_ended;
     }
 
     /// <summary>
@@ -1518,6 +1537,8 @@ public class BeachBowlesController : GenericController
     /// </summary>
     IEnumerator EndScene_()
     {
+        _ended = true;
+
         // wait while podium shows
         yield return new WaitForSeconds(3.5f);
 
