@@ -169,7 +169,7 @@ public class CartAttackInputHandler : GenericInputHandler
     /// <param name="ctx">The input action</param>
     public override void OnR2(InputAction.CallbackContext ctx)
     {
-        if (!CartAttackController.Instance.VehicleSelection.GetActiveState())
+        if (!CartAttackController.Instance.VehicleSelection.GetActiveState() && CartAttackController.Instance.IsRunning())
         {
             if (_active)
             {
@@ -240,16 +240,5 @@ public class CartAttackInputHandler : GenericInputHandler
     public void FlipSteeringStopped()
     {
         _carController.FlipSteeringStopped();
-    }
-
-    /// <summary>
-    /// Updates the flip countdown
-    /// </summary>
-    /// <param name="time">The time left</param>
-    internal void UpdateFlipCount(int time)
-    {
-        var current = int.Parse(_carController.TxtFlipCountdown.text);
-        if (time > current)
-            _carController.TxtFlipCountdown.text = time.ToString();
     }
 }

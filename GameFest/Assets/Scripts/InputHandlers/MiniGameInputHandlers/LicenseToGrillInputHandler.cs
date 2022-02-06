@@ -139,8 +139,10 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     {
         bool valid = true;
 
+        _currentItem.Insert(0, cso);
+
         // check that this item can be selected
-        switch (cso.ObjectType)
+        switch (_currentItem[0].ObjectType)
         {
             case SelectionType.BreadBin:
                 valid = _burgerItemIndex == 0 && !Chef.BreadOptions[0].isActiveAndEnabled;
@@ -153,7 +155,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
             case SelectionType.Lettuce:
             case SelectionType.Tomato:
             case SelectionType.Pickle:
-                valid = _burgerItemIndex > 0 && Chef.TopBun.gameObject.activeInHierarchy;;
+                valid = _burgerItemIndex > 0 && Chef.TopBun.gameObject.activeInHierarchy;
                 break;
 
             case SelectionType.Sauce:
@@ -162,8 +164,6 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         }
 
         // don't do anything if the action is not appropriate
-
-        _currentItem.Insert(0, cso);
 
         if (!valid) return;
 
@@ -649,7 +649,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     {
         Chef.ErrorPopup.SetActive(true);
         yield return new WaitForSeconds(2f);
-        Chef.ErrorPopup.SetActive(true);
+        Chef.ErrorPopup.SetActive(false);
     }
 
     /// <summary>
