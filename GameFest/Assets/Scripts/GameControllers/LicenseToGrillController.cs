@@ -45,6 +45,9 @@ public class LicenseToGrillController : GenericController
     public Sprite[] StarImages;
     public Sprite[] SauceImages;
 
+    // status variables
+    bool _ended = false;
+
     /// <summary>
     /// Called once on startup
     /// </summary>
@@ -71,6 +74,27 @@ public class LicenseToGrillController : GenericController
         // fade in
         EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
         EndFader.StartFade(1, 0, () => { PauseGameHandler.Instance.Pause(true, StartGame_); });
+
+        List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
+        PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
+    }
+
+    /// <summary>
+    /// Callback for when the player quits
+    /// </summary>
+    private void QuitGame_()
+    {
+        _ended = true;
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Can't pause once we get to the results section
+    /// </summary>
+    /// <returns>Whether the game can be paused at the current stage</returns>
+    public override bool CanPause()
+    {
+        return !_ended;
     }
 
     /// <summary>
@@ -96,6 +120,7 @@ public class LicenseToGrillController : GenericController
     /// </summary>
     private void EndGame_()
     {
+        _ended = true;
         CountdownDisplay.SetActive(false);
 
         // stop all players

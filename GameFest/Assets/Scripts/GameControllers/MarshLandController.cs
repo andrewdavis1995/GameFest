@@ -47,6 +47,7 @@ public class MarshLandController : GenericController
     List<int> _completedPlayers = new List<int>();
     int _remainingPoints;
     int _resultsPlayerIndex = 0;
+    bool _ended = false;
 
     public AudioClip SplashSound;
 
@@ -66,7 +67,7 @@ public class MarshLandController : GenericController
 
         // initialise pause handler
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
-        PauseGameHandler.Instance.Initialise(genericPlayers);
+        PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
 
         // assign players to the camera
         CameraFollowScript.SetPlayers(playerTransforms, FollowDirection.Right);
@@ -84,6 +85,24 @@ public class MarshLandController : GenericController
         // fade in
         EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
         EndFader.StartFade(1, 0, FadeInComplete);
+    }
+
+    /// <summary>
+    /// Callback for when the player quits
+    /// </summary>
+    private void QuitGame_()
+    {
+        _ended = true;
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Can't pause once we get to the results section
+    /// </summary>
+    /// <returns>Whether the game can be paused at the current stage</returns>
+    public override bool CanPause()
+    {
+        return !_ended;
     }
 
     /// <summary>
@@ -232,6 +251,7 @@ public class MarshLandController : GenericController
     /// </summary>
     private IEnumerator EndGame_()
     {
+        _ended = true;
         CameraFollowScript.enabled = false;
 
         // kill timers

@@ -25,6 +25,7 @@ public class PauseGameHandler : MonoBehaviour
     public Sprite[] NextPageSprites;
     public Sprite[] PreviousPageSprites;
     public Sprite[] ResumeSprites;
+    public GameObject QuitPopup;
 
     // Formattable objects
     public Image PauseBackground;
@@ -38,6 +39,9 @@ public class PauseGameHandler : MonoBehaviour
 
     // callback for when un-paused
     Action _unPauseCallback;
+    Action _quitCallback;
+    bool _quiting = false;
+    bool _hasQuit = false;
 
     // called when the script is created
     void Start()
@@ -62,6 +66,48 @@ public class PauseGameHandler : MonoBehaviour
     public void Startup()
     {
         ConfigureAppearance_();
+    }
+
+    /// <summary>
+    /// The host has selected the option to quit
+    /// </summary>
+    public void Quit()
+    {
+        if (_hasQuit) return;
+
+        // if popup active, cancel
+        if (_quiting)
+            QuitCancel_();
+        else
+        {
+            // if not, show popup
+            _quiting = true;
+            QuitPopup.SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// The host has confirmed they want to quit
+    /// </summary>
+    public void QuitConfirm()
+    {
+        if (!_quiting) return;
+
+        Time.timeScale = 1;
+        QuitPopup.SetActive(false);
+        _hasQuit = true;
+        _quitCallback?.Invoke();
+    }
+
+    /// <summary>
+    /// The host has cancelled the quit
+    /// </summary>
+    void QuitCancel_()
+    {
+        if (!_quiting) return;
+
+        _quiting = false;
+        QuitPopup.SetActive(false);
     }
 
     /// <summary>
@@ -156,7 +202,7 @@ public class PauseGameHandler : MonoBehaviour
     public void Resume()
     {
         // only allow the game to resume if the completion condition has been met
-        if (_tutorialComplete)
+        if ((_tutorialComplete && !_quiting))
         {
             // set the variables for un-pausing
             _isPaused = false;
@@ -187,6 +233,8 @@ public class PauseGameHandler : MonoBehaviour
     /// </summary>
     public void NextPage()
     {
+        if (_quiting) return;
+
         // if there are more pages, move to the next one
         if (_pageIndex < Pages.Length - 1)
             _pageIndex++;
@@ -207,6 +255,8 @@ public class PauseGameHandler : MonoBehaviour
     /// </summary>
     public void PreviousPage()
     {
+        if (_quiting) return;
+
         // as long as we aren't at the start, go back a page
         if (_pageIndex > 0)
             _pageIndex--;
@@ -219,10 +269,12 @@ public class PauseGameHandler : MonoBehaviour
     /// Initialises the pause popups
     /// </summary>
     /// <param name="players">The list of players involved in the game</param>
-    public void Initialise(List<GenericInputHandler> players)
+    public void Initialise(List<GenericInputHandler> players, Action quitCallback)
     {
+        _quitCallback = quitCallback;
+
         // loop through the players and configure the pause request messages
-        for(int i = 1; i < players.Count; i++)
+        for (int i = 1; i < players.Count; i++)
         {
             // update the colour and the name on the popup
             PausePopups[i - 1].GetComponentsInChildren<Image>()[1].color = ColourFetcher.GetColour(i);

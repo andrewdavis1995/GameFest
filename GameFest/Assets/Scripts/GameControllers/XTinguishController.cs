@@ -75,11 +75,29 @@ public class XTinguishController : GenericController
 
         // setup pause
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
-        PauseGameHandler.Instance.Initialise(genericPlayers);
+        PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
 
         // fade in
         Fader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
         Fader.StartFade(1, 0, FadeInComplete);
+    }
+
+    /// <summary>
+    /// Can't pause once we get to the results section
+    /// </summary>
+    /// <returns>Whether the game can be paused at the current stage</returns>
+    public override bool CanPause()
+    {
+        return !_ended;
+    }
+
+    /// <summary>
+    /// Callback for when the player quits
+    /// </summary>
+    private void QuitGame_()
+    {
+        _ended = true;
+        Fader.StartFade(0, 1, ReturnToCentral_);
     }
 
     /// <summary>

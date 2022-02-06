@@ -38,7 +38,8 @@ public class ShopDropController : GenericController
     TimeLimit _overallLimit;
 
     // state variables
-    private bool _gameRunning = false;
+    bool _gameRunning = false;
+    bool _ended = false;
 
     // easy access
     public static ShopDropController Instance;
@@ -75,7 +76,7 @@ public class ShopDropController : GenericController
 
         // setup pause handler
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
-        PauseGameHandler.Instance.Initialise(genericPlayers);
+        PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
 
         // setup the timeout
         _overallLimit = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
@@ -87,11 +88,29 @@ public class ShopDropController : GenericController
     }
 
     /// <summary>
+    /// Callback for when the player quits
+    /// </summary>
+    private void QuitGame_()
+    {
+        _ended = true;
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
     /// Called once fully faded in
     /// </summary>
     private void FadeInComplete()
     {
         PauseGameHandler.Instance.Pause(true, StartGame_);
+    }
+
+    /// <summary>
+    /// Can't pause once we get to the results section
+    /// </summary>
+    /// <returns>Whether the game can be paused at the current stage</returns>
+    public override bool CanPause()
+    {
+        return !_ended;
     }
 
     /// <summary>
@@ -289,6 +308,7 @@ public class ShopDropController : GenericController
     /// <returns></returns>
     IEnumerator Complete_()
     {
+        _ended = true;
         AssignBonusPoints_();
         ResultsScreen.Setup();
 

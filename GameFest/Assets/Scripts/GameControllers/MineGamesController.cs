@@ -61,6 +61,7 @@ public class MineGamesController : GenericController
     MineSelectionState _selectionState = MineSelectionState.None;
     TimeLimit _zoneSelectionLimit;
     bool _timeoutOccurred = false;
+    bool _ended = false;
 
     ButtonValues _goldZone;
     ButtonValues _goldClaimZone;
@@ -82,7 +83,7 @@ public class MineGamesController : GenericController
 
         // initialise pause handler
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
-        PauseGameHandler.Instance.Initialise(genericPlayers);
+        PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
 
         // more points for more players
         Correct_Points /= _players.Count;
@@ -99,7 +100,25 @@ public class MineGamesController : GenericController
         EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
         EndFader.StartFade(1, 0, () => { PauseGameHandler.Instance.Pause(true, StartGame_);});
     }
-     
+
+    /// <summary>
+    /// Callback for when the player quits
+    /// </summary>
+    private void QuitGame_()
+    {
+        _ended = true;
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Can't pause once we get to the results section
+    /// </summary>
+    /// <returns>Whether the game can be paused at the current stage</returns>
+    public override bool CanPause()
+    {
+        return !_ended;
+    }
+
     /// <summary>
     /// Callback for the zone selection timer - called once per second
     /// </summary>
@@ -636,6 +655,7 @@ public class MineGamesController : GenericController
     /// </summary>
     IEnumerator Complete_()
     {
+        _ended = true;
         AssignBonusPoints_();
 
         yield return new WaitForSeconds(3f);

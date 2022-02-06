@@ -339,11 +339,15 @@ public class MarshLandInputHandler : GenericInputHandler
     #region Input Handlers - all pass through to InputReceived
     public override void OnCircle()
     {
+        base.OnCircle();
+        if (PauseGameHandler.Instance.IsPaused()) return;
         InputReceived_(MarshLandInputAction.Circle);
     }
 
     public override void OnCross()
     {
+        base.OnCross();
+        if (PauseGameHandler.Instance.IsPaused()) return;
         InputReceived_(MarshLandInputAction.Cross);
     }
 
@@ -359,26 +363,22 @@ public class MarshLandInputHandler : GenericInputHandler
 
     public override void OnL1()
     {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.PreviousPage();
-        }
-        else
+        if (!PauseGameHandler.Instance.IsPaused())
         {
             InputReceived_(MarshLandInputAction.L1);
         }
+
+        base.OnL1();
     }
 
     public override void OnR1()
     {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.NextPage();
-        }
-        else
+        if (!PauseGameHandler.Instance.IsPaused())
         {
             InputReceived_(MarshLandInputAction.R1);
         }
+
+        base.OnR1();
     }
     #endregion
 

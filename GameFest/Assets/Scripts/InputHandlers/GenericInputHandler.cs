@@ -32,17 +32,49 @@ public abstract class GenericInputHandler : MonoBehaviour
 
     public virtual void OnMove(InputAction.CallbackContext ctx, InputDevice device) { }
     public virtual void OnMoveRight(InputAction.CallbackContext ctx) { }
-    public virtual void OnCross() { }
-    public virtual void OnCircle() { }
     public virtual void OnTriangle() { }
     public virtual void OnSquare() { }
     public virtual void OnTouchpad() { }
-    public virtual void OnL1() { }
-    public virtual void OnR1() { }
     public virtual void OnL2(InputAction.CallbackContext ctx) { }
     public virtual void OnR2(InputAction.CallbackContext ctx) { }
     public virtual void TriggerEnter(Collision2D collision) { }
     public virtual void TriggerExit(Collision2D collision) { }
+    public virtual void OnCross()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.QuitConfirm();
+        }
+    }
+    public virtual void OnCircle()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.Quit();
+        }
+    }
+
+    /// <summary>
+    /// Handles L1 movement on pause screen
+    /// </summary>
+    public virtual void OnL1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.PreviousPage();
+        }
+    }
+
+    /// <summary>
+    /// Handles R1 movement on pause screen
+    /// </summary>
+    public virtual void OnR1()
+    {
+        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        {
+            PauseGameHandler.Instance.NextPage();
+        }
+    }
 
     /// <summary>
     /// Returns of the character being used by this player

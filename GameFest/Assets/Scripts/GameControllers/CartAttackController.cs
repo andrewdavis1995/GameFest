@@ -42,6 +42,7 @@ public class CartAttackController : GenericController
     double _currentBestLap = Int32.MaxValue;
     int _currentBestLapPlayer = -1;
     bool _running = false;
+    bool _ended = false;
 
     // Called once on startup
     private void Start()
@@ -67,7 +68,25 @@ public class CartAttackController : GenericController
 
         // setup pause functionality and pause
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
-        PauseGameHandler.Instance.Initialise(genericPlayers);
+        PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
+    }
+
+    /// <summary>
+    /// Callback for when the player quits
+    /// </summary>
+    private void QuitGame_()
+    {
+        _ended = true;
+        EndFader.StartFade(0, 1, ReturnToCentral_);
+    }
+
+    /// <summary>
+    /// Can't pause once we get to the results section
+    /// </summary>
+    /// <returns>Whether the game can be paused at the current stage</returns>
+    public override bool CanPause()
+    {
+        return !_ended;
     }
 
     /// <summary>
@@ -142,7 +161,7 @@ public class CartAttackController : GenericController
         while (_running)
         {
             yield return new WaitForSeconds(0.1f);
-            foreach(var v in PowerUps)
+            foreach (var v in PowerUps)
                 v.transform.eulerAngles += new Vector3(0, 0, 10);
         }
     }
@@ -201,6 +220,8 @@ public class CartAttackController : GenericController
     /// </summary>
     IEnumerator ShowResults_()
     {
+        _ended = true;
+
         // add bonus points for quickest lap
         if (_currentBestLapPlayer > -1)
         {

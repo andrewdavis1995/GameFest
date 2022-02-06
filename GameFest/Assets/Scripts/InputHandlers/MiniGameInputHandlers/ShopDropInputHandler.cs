@@ -163,26 +163,4 @@ public class ShopDropInputHandler : GenericInputHandler
 
         return _playerTransform;
     }
-
-    /// <summary>
-    /// Event handler for R1
-    /// </summary>
-    public override void OnR1()
-    {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.NextPage();
-        }
-    }
-
-    /// <summary>
-    /// Event handler for L1
-    /// </summary>
-    public override void OnL1()
-    {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
-        {
-            PauseGameHandler.Instance.PreviousPage();
-        }
-    }
 }
