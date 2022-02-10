@@ -76,7 +76,7 @@ public class PlayerMovement : MonoBehaviour
     {
         // work out which direction to apply force in
         int offset = transform.position.x < collider.transform.position.x ? -1 : 1;
-        _rigidBody.AddForce(new Vector3(180f * offset, 150f, 0));
+        transform.Translate(new Vector3(0.7f * offset, 0.4f, 0));
     }
 
     /// <summary>

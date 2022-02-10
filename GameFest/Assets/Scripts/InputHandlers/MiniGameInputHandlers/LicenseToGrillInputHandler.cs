@@ -44,6 +44,8 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     Vector2 _saucePlatformSize;
     bool _squirting = false;
     Vector2 _movementVector = Vector2.zero;
+    Coroutine _newSideRoutine;
+    bool _disposing = false;
 
     /// <summary>
     /// Called once on startup
@@ -415,7 +417,9 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                         if (!(Chef.Burgers.Any(b => b.Flipping())))
                         {
                             _flippedPattyIndex = _selectedPattyIndex;
-                            StartCoroutine(DoFlip_(() => { StartCoroutine(Chef.Burgers[_flippedPattyIndex].StartNewSide()); }));
+                            if (_newSideRoutine != null)
+                                StopCoroutine(_newSideRoutine);
+                            StartCoroutine(DoFlip_(() => { _newSideRoutine = StartCoroutine(Chef.Burgers[_flippedPattyIndex].StartNewSide()); }));
                         }
                     }
                     else
@@ -677,6 +681,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         // only do this if the burger is active
         if (Chef.Burgers[_selectedPattyIndex].gameObject.activeInHierarchy)
         {
+            _disposing = true;
             var targetPosition = Chef.BinY;
 
             // continue until reached the top
@@ -716,6 +721,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
 
             // reset the burger
             Chef.Burgers[_selectedPattyIndex].ResetBurger();
+            _disposing = false;
         }
     }
 
@@ -1494,7 +1500,9 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                 Chef.MoveHand(_movementVector.x, _movementVector.y);
                 break;
             case ChefAction.FacingGrill:
-                Chef.MoveSpatula(_movementVector.x, _movementVector.y);
+                // don't move while flipping
+                if (Chef.SelectionSpatula.transform.eulerAngles.x == 0 && !(Chef.Burgers.Any(b => b.Flipping())) && !_disposing)
+                    Chef.MoveSpatula(_movementVector.x, _movementVector.y);
                 break;
             case ChefAction.ChoppingBread:
                 CheckKnife_(_movementVector.x);

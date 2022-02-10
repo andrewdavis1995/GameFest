@@ -124,6 +124,7 @@ public class BurgerScript : MonoBehaviour
         // move the burger up (flip it)
         StartCoroutine(MoveUp_(transform.localPosition + new Vector3(0, 10f), callback));
         _rigidBody.isKinematic = true;
+        _rigidBody.velocity = Vector3.zero;
         _smoking = false;
     }
 

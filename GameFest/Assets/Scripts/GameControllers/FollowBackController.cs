@@ -280,7 +280,7 @@ public class FollowBackController : GenericController
         // hide loading message
         LoadingMessage.SetActive(false);
 
-        var postfix = _selfies.Count > 1 ? "s" : "";
+        var postfix = _selfies.Count != 1 ? "s" : "";
         TxtNumPosts.text = "<b>" + _selfies.Count + "</b> post" + postfix;
 
         int index = 0;

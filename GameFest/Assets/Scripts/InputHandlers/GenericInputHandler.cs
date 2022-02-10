@@ -59,7 +59,7 @@ public abstract class GenericInputHandler : MonoBehaviour
     /// </summary>
     public virtual void OnL1()
     {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        if (PauseGameHandler.Instance != null && PauseGameHandler.Instance.IsPaused() && IsHost())
         {
             PauseGameHandler.Instance.PreviousPage();
         }
@@ -70,7 +70,7 @@ public abstract class GenericInputHandler : MonoBehaviour
     /// </summary>
     public virtual void OnR1()
     {
-        if (PauseGameHandler.Instance.IsPaused() && IsHost())
+        if (PauseGameHandler.Instance != null && PauseGameHandler.Instance.IsPaused() && IsHost())
         {
             PauseGameHandler.Instance.NextPage();
         }
