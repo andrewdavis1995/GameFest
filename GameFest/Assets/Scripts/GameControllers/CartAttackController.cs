@@ -66,9 +66,6 @@ public class CartAttackController : GenericController
         // setup pause functionality and pause
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
         PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
-
-        // show vehicle selection UI
-        VehicleSelection.SetActiveState(true);
     }
     
     /// <summary>
@@ -95,6 +92,8 @@ public class CartAttackController : GenericController
     void FadeInComplete_()
     {
         PauseGameHandler.Instance.Pause(true, () => VehicleSelection.VehicleSelectionUI.SetActive(true));
+        // show vehicle selection UI
+        VehicleSelection.SetActiveState(true);
     }
 
     /// <summary>

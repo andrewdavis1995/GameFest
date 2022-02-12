@@ -196,7 +196,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// </summary>
     private IEnumerator CloseBreadBin_()
     {
-        for(int i = Chef.BreadBinSprites.Length - 1; i >=0; i--)
+        for (int i = Chef.BreadBinSprites.Length - 1; i >= 0; i--)
         {
             Chef.BreadBin.sprite = Chef.BreadBinSprites[i];
             yield return new WaitForSeconds(0.05f);
@@ -237,23 +237,23 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         switch (cso.ObjectType)
         {
             case SelectionType.BreadBin:
-            {
-                if (_breadBinRoutine != null)
                 {
-                    StopCoroutine(_breadBinRoutine);
+                    if (_breadBinRoutine != null)
+                    {
+                        StopCoroutine(_breadBinRoutine);
+                    }
+                    _breadBinRoutine = StartCoroutine(CloseBreadBin_());
+                    break;
                 }
-                _breadBinRoutine = StartCoroutine(CloseBreadBin_());
-                break;
-            }
             case SelectionType.GrillZone:
-            {
-                if (_currentItem.Count == 0)
                 {
-                    Chef.Burgers[_selectedPattyIndex].Glow.SetActive(false);
-                    _selectedPattyIndex = -1;
+                    if (_currentItem.Count == 0)
+                    {
+                        Chef.Burgers[_selectedPattyIndex].Glow.SetActive(false);
+                        _selectedPattyIndex = -1;
+                    }
+                    break;
                 }
-                break;
-            }
         }
         SelectFirstItem_();
         UpdateHelp_();
@@ -281,80 +281,80 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         switch (_action)
         {
             case ChefAction.FacingBoard:
-            {
-                if (_currentItem.Count > 0)
                 {
-                    switch (_currentItem[0].ObjectType)
+                    if (_currentItem.Count > 0)
                     {
-                        // player is selecting something
-                        case SelectionType.BreadBin:
-                        case SelectionType.BriocheBun:
-                        case SelectionType.BrownBun:
-                        case SelectionType.SesameBun:
-                        case SelectionType.Lettuce:
-                        case SelectionType.Tomato:
-                        case SelectionType.Pickle:
-                        case SelectionType.Sauce:
-                            helpToShow = Chef.Help_SelectItem;
-                            break;
-                        // player is on the plate
-                        case SelectionType.Plate:
-                            helpToShow = Chef.Help_Plate;
-                            break;
-                        case SelectionType.BriocheBunTop:
-                        case SelectionType.BrownBunTop:
-                        case SelectionType.SesameBunTop:
-                            helpToShow = Chef.Help_AddToBurger;
-                            break;
+                        switch (_currentItem[0].ObjectType)
+                        {
+                            // player is selecting something
+                            case SelectionType.BreadBin:
+                            case SelectionType.BriocheBun:
+                            case SelectionType.BrownBun:
+                            case SelectionType.SesameBun:
+                            case SelectionType.Lettuce:
+                            case SelectionType.Tomato:
+                            case SelectionType.Pickle:
+                            case SelectionType.Sauce:
+                                helpToShow = Chef.Help_SelectItem;
+                                break;
+                            // player is on the plate
+                            case SelectionType.Plate:
+                                helpToShow = Chef.Help_Plate;
+                                break;
+                            case SelectionType.BriocheBunTop:
+                            case SelectionType.BrownBunTop:
+                            case SelectionType.SesameBunTop:
+                                helpToShow = Chef.Help_AddToBurger;
+                                break;
+                        }
                     }
+                    Chef.Help_GrillLeft.SetActive(true);
+                    break;
                 }
-                Chef.Help_GrillLeft.SetActive(true);
-                break;
-            }
             case ChefAction.FacingGrill:
-            {
-                if (_currentItem.Count > 0)
                 {
-                    switch (_currentItem[0].ObjectType)
+                    if (_currentItem.Count > 0)
                     {
-                        // player is on a burger zone
-                        case SelectionType.GrillZone:
-                            helpToShow = Chef.Burgers[_selectedPattyIndex].isActiveAndEnabled ? Chef.Help_Burger : Chef.Help_SelectItem;
-                            break;
+                        switch (_currentItem[0].ObjectType)
+                        {
+                            // player is on a burger zone
+                            case SelectionType.GrillZone:
+                                helpToShow = Chef.Burgers[_selectedPattyIndex].isActiveAndEnabled ? Chef.Help_Burger : Chef.Help_SelectItem;
+                                break;
+                        }
                     }
+
+                    Chef.Help_BoardRight.SetActive(true);
+
+                    break;
                 }
-
-                Chef.Help_BoardRight.SetActive(true);
-
-                break;
-            }
             case ChefAction.SelectingBread:
-            {
-                if (_currentItem.Count > 0)
                 {
-                    switch (_currentItem[0].ObjectType)
+                    if (_currentItem.Count > 0)
                     {
-                        // player is over the top of the bun
-                        case SelectionType.BriocheBunTop:
-                        case SelectionType.SesameBunTop:
-                        case SelectionType.BrownBunTop:
-                            helpToShow = Chef.Help_AddToBurger;
-                            break;
+                        switch (_currentItem[0].ObjectType)
+                        {
+                            // player is over the top of the bun
+                            case SelectionType.BriocheBunTop:
+                            case SelectionType.SesameBunTop:
+                            case SelectionType.BrownBunTop:
+                                helpToShow = Chef.Help_AddToBurger;
+                                break;
+                        }
                     }
+                    break;
                 }
-                break;
-            }
             case ChefAction.ChoppingBread:
-            {
-                helpToShow = Chef.Help_Bread;
-                break;
-            }
+                {
+                    helpToShow = Chef.Help_Bread;
+                    break;
+                }
             case ChefAction.ChoppingPickle:
             case ChefAction.ChoppingTomato:
-            {
-                helpToShow = Chef.Help_Chop;
-                break;
-            }
+                {
+                    helpToShow = Chef.Help_Chop;
+                    break;
+                }
         }
         helpToShow?.SetActive(true);
     }
@@ -383,14 +383,14 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         const int ROTATION_ANGLE = 40;
 
         // flick spatula up
-        for(int i = 0; i < ROTATION_ANGLE; i+=8)
+        for (int i = 0; i < ROTATION_ANGLE; i += 8)
         {
             Chef.SelectionSpatula.transform.eulerAngles = new Vector3(i, 0, 0);
             yield return new WaitForSeconds(0.001f);
         }
 
         // return spatula down
-        for (float i = ROTATION_ANGLE; i >= 0; i-=8)
+        for (float i = ROTATION_ANGLE; i >= 0; i -= 8)
         {
             Chef.SelectionSpatula.transform.eulerAngles = new Vector3(i, 0, 0);
             yield return new WaitForSeconds(0.001f);
@@ -431,73 +431,73 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                 }
                 break;
             case ChefAction.FacingBoard:
-            {
-                if (_currentItem.Count > 0)
                 {
-                    switch (_currentItem[0].ObjectType)
+                    if (_currentItem.Count > 0)
                     {
-                        case SelectionType.Lettuce:
-                            StartVegChop_(BurgerVegType.Lettuce);
-                            break;
-                        case SelectionType.Tomato:
-                            StartVegChop_(BurgerVegType.Tomato);
-                            break;
-                        case SelectionType.Pickle:
-                            StartVegChop_(BurgerVegType.Pickle);
-                            break;
-                        case SelectionType.Sauce:
-                            DoSauce_(_currentItem[0].Index);
-                            break;
-                        case SelectionType.BriocheBunTop:
-                        case SelectionType.SesameBunTop:
-                        case SelectionType.BrownBunTop:
-                            SpawnBread_(true);
-                            Chef.TopBun.gameObject.SetActive(false);
-                            break;
-                        case SelectionType.BreadBin:
-                            if (_burgerItemIndex == 0)
-                            {
-                                _action = ChefAction.SelectingBread;
-                                ShowBreadOptions_(true);
-                            }
-                            else
-                            {
-                                ShowErrorMessage_("Bread option has already been selected");
-                            }
-                            break;
-                        case SelectionType.Plate:
-                            Confirm_(Serve_, "Are you sure you wish to serve this burger?");
-                            break;
+                        switch (_currentItem[0].ObjectType)
+                        {
+                            case SelectionType.Lettuce:
+                                StartVegChop_(BurgerVegType.Lettuce);
+                                break;
+                            case SelectionType.Tomato:
+                                StartVegChop_(BurgerVegType.Tomato);
+                                break;
+                            case SelectionType.Pickle:
+                                StartVegChop_(BurgerVegType.Pickle);
+                                break;
+                            case SelectionType.Sauce:
+                                DoSauce_(_currentItem[0].Index);
+                                break;
+                            case SelectionType.BriocheBunTop:
+                            case SelectionType.SesameBunTop:
+                            case SelectionType.BrownBunTop:
+                                SpawnBread_(true);
+                                Chef.TopBun.gameObject.SetActive(false);
+                                break;
+                            case SelectionType.BreadBin:
+                                if (_burgerItemIndex == 0)
+                                {
+                                    _action = ChefAction.SelectingBread;
+                                    ShowBreadOptions_(true);
+                                }
+                                else
+                                {
+                                    ShowErrorMessage_("Bread option has already been selected");
+                                }
+                                break;
+                            case SelectionType.Plate:
+                                Confirm_(Serve_, "Are you sure you wish to serve this burger?");
+                                break;
+                        }
                     }
+                    break;
                 }
-                break;
-            }
             case ChefAction.SelectingBread:
-            {
-                if (_currentItem.Count > 0)
                 {
-                    switch (_currentItem[0].ObjectType)
+                    if (_currentItem.Count > 0)
                     {
-                        case SelectionType.BriocheBun:
-                        case SelectionType.SesameBun:
-                        case SelectionType.BrownBun:
-                            ChopBread_();
-                            break;
+                        switch (_currentItem[0].ObjectType)
+                        {
+                            case SelectionType.BriocheBun:
+                            case SelectionType.SesameBun:
+                            case SelectionType.BrownBun:
+                                ChopBread_();
+                                break;
+                        }
                     }
+                    break;
                 }
-                break;
-            }
             case ChefAction.Confirmation:
-            {
-                _confirmCallback?.Invoke();
-                Chef.ConfirmPopup.SetActive(false);
-                break;
-            }
+                {
+                    _confirmCallback?.Invoke();
+                    Chef.ConfirmPopup.SetActive(false);
+                    break;
+                }
             case ChefAction.SelectingBurger:
-            {
-                DropBurger(1);
-                break;
-            }
+                {
+                    DropBurger(1);
+                    break;
+                }
         }
     }
 
@@ -600,6 +600,7 @@ public class LicenseToGrillInputHandler : GenericInputHandler
     /// <param name="index">The bottle to move</param>
     private IEnumerator MoveSauceDown_(bool cancelled = false)
     {
+
         Chef.Help_Sauce.SetActive(false);
 
         if (!cancelled)
@@ -1326,8 +1327,11 @@ public class LicenseToGrillInputHandler : GenericInputHandler
                 SelectFirstItem_();
                 break;
             case ChefAction.SquirtingSauce:
-                _action = ChefAction.SauceReturn;
-                StartCoroutine(MoveSauceDown_(true));
+                if (!_squirting)
+                {
+                    _action = ChefAction.SauceReturn;
+                    StartCoroutine(MoveSauceDown_(true));
+                }
                 break;
             case ChefAction.ChoppingTomato:
                 CancelVegChop_(Chef.ChoppingTomato);
@@ -1350,50 +1354,50 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         switch (_action)
         {
             case ChefAction.FacingBoard:
-            {
-                // dispose of plate
-                if (_currentItem.Count > 0)
                 {
-                    switch (_currentItem[0].ObjectType)
+                    // dispose of plate
+                    if (_currentItem.Count > 0)
                     {
-                        case SelectionType.Plate:
-                            if (_burgerItemIndex > 0)
-                                Confirm_(DisposePlate_, "Are you sure you wish to throw away your creation? You will lose points");
-                            break;
+                        switch (_currentItem[0].ObjectType)
+                        {
+                            case SelectionType.Plate:
+                                if (_burgerItemIndex > 0)
+                                    Confirm_(DisposePlate_, "Are you sure you wish to throw away your creation? You will lose points");
+                                break;
+                        }
                     }
+                    break;
                 }
-                break;
-            }
             case ChefAction.FacingGrill:
-            {
-                if (_currentItem.Count > 0)
                 {
-                    // dispose of burger
-                    switch (_currentItem[0].ObjectType)
+                    if (_currentItem.Count > 0)
                     {
-                        case SelectionType.GrillZone:
-                            if (Chef.Burgers[_selectedPattyIndex].isActiveAndEnabled)
-                                Confirm_(() => StartCoroutine(DisposePatty_()), "Are you sure you wish to throw away this patty? You will lose points");
-                            break;
+                        // dispose of burger
+                        switch (_currentItem[0].ObjectType)
+                        {
+                            case SelectionType.GrillZone:
+                                if (Chef.Burgers[_selectedPattyIndex].isActiveAndEnabled)
+                                    Confirm_(() => StartCoroutine(DisposePatty_()), "Are you sure you wish to throw away this patty? You will lose points");
+                                break;
+                        }
                     }
+                    break;
                 }
-                break;
-            }
             case ChefAction.SelectingBurger:
-            {
-                DropBurger(0);
-                break;
-            }
+                {
+                    DropBurger(0);
+                    break;
+                }
             case ChefAction.ChoppingTomato:
-            {
-                Chef.ChoppingTomato.Slice();
-                break;
-            }
+                {
+                    Chef.ChoppingTomato.Slice();
+                    break;
+                }
             case ChefAction.ChoppingPickle:
-            {
-                Chef.ChoppingPickle.Slice();
-                break;
-            }
+                {
+                    Chef.ChoppingPickle.Slice();
+                    break;
+                }
         }
     }
 
@@ -1405,32 +1409,32 @@ public class LicenseToGrillInputHandler : GenericInputHandler
         switch (_action)
         {
             case ChefAction.SelectingBurger:
-            {
-                DropBurger(2);
-                break;
-            }
-            case ChefAction.FacingGrill:
-            {
-                if (_selectedPattyIndex > -1)
                 {
-                    // flip burger
-                    if (Chef.TopBun.gameObject.activeInHierarchy)
-                    {
-                        StartCoroutine(DoFlip_(() =>
-                        {
-                            _flippedPattyIndex = _selectedPattyIndex;
-                            SpawnBurger_();
-                            Chef.Burgers[_flippedPattyIndex].gameObject.SetActive(false);
-                            Chef.Burgers[_flippedPattyIndex].ResetBurger();
-                        }));
-                    }
-                    else
-                    {
-                        ShowErrorMessage_("Can't serve burger without a bun on the plate");
-                    }
+                    DropBurger(2);
+                    break;
                 }
-                break;
-            }
+            case ChefAction.FacingGrill:
+                {
+                    if (_selectedPattyIndex > -1)
+                    {
+                        // flip burger
+                        if (Chef.TopBun.gameObject.activeInHierarchy)
+                        {
+                            StartCoroutine(DoFlip_(() =>
+                            {
+                                _flippedPattyIndex = _selectedPattyIndex;
+                                SpawnBurger_();
+                                Chef.Burgers[_flippedPattyIndex].gameObject.SetActive(false);
+                                Chef.Burgers[_flippedPattyIndex].ResetBurger();
+                            }));
+                        }
+                        else
+                        {
+                            ShowErrorMessage_("Can't serve burger without a bun on the plate");
+                        }
+                    }
+                    break;
+                }
         }
     }
 
