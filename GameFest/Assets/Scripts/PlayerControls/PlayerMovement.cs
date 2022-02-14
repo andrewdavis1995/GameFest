@@ -18,11 +18,13 @@ public class PlayerMovement : MonoBehaviour
     // components/objects
     Rigidbody2D _rigidBody;
     Animator[] _animators;
+    SpriteRenderer _renderer;
     Collider2D _collider;
 
     // public objects
     public TextMesh TxtPlayerName;
     public SpriteRenderer ActivePlayerIcon;
+    public SpriteRenderer Shadow;
     public List<SpriteRenderer> _blingRenderers;
     public Transform BlingHolder;
     public ItemFlash Flash;
@@ -44,11 +46,13 @@ public class PlayerMovement : MonoBehaviour
     Action<Collision2D> _collisionCallback;
     Action<Collision2D> _collisionExitCallback;
 
-    public PlayerAnimation[] PlayerAnimators;
+    public PlayerAnimation PlayerAnimator;
+    public PlayerAnimation ShadowAnimator;
 
     void Awake()
     {
         // find necessary components
+        _renderer = GetComponent<SpriteRenderer>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _animators = GetComponentsInChildren<Animator>();
         _collider = GetComponent<Collider2D>();
@@ -112,7 +116,7 @@ public class PlayerMovement : MonoBehaviour
         foreach (var col in bvColliders)
             Physics2D.IgnoreCollision(_collider, col);
     }
-    
+
     /// <summary>
     /// Sets the functions to call when the player collides with a trigger
     /// </summary>
@@ -123,7 +127,7 @@ public class PlayerMovement : MonoBehaviour
         _triggerEnterCallback = triggerEnter;
         _triggerExitCallback = triggerExit;
     }
-    
+
     /// <summary>
     /// Returns whether the player is on an element tagged as ground
     /// </summary>
@@ -175,7 +179,7 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForSeconds(duration);
         Reenable();
     }
-    
+
     /// <summary>
     /// Stop movement
     /// </summary>
@@ -185,11 +189,11 @@ public class PlayerMovement : MonoBehaviour
         Move(Vector2.zero);
 
         _disabled = true;
-        
+
         // disable animations
         foreach (var anim in _animators)
             anim.enabled = false;
-        
+
         _renderer.sprite = disabledImage;
     }
 
@@ -235,22 +239,13 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
-    /// Returns the renderer of the player
-    /// </summary>
-    /// <returns>The renderer</returns>
-    internal SpriteRenderer GetRenderer()
-    {
-        return _renderer;
-    }
-
-    /// <summary>
     /// Sets the animation trigger of all animators
     /// </summary>
     /// <param name="animation">The trigger to set</param>
     public void Animate(string animation)
     {
-        foreach(var animator in PlayerAnimators)
-            PlayerAnimator.SetAnimation(animation);
+        PlayerAnimator.SetAnimation(animation);
+        ShadowAnimator?.SetAnimation(animation);
     }
 
     /// <summary>
@@ -277,8 +272,13 @@ public class PlayerMovement : MonoBehaviour
         // only change direction when necessary
         if (flipped != _flipX)
         {
-            foreach(var r in Renderers)
-                r.flipX = _flipX;
+            _renderer.flipX = _flipX;
+            Shadow.flipX = _flipX;
+
+            foreach (var rend in _blingRenderers)
+            {
+                rend.flipX = _flipX;
+            }
         }
 
         // note: if not moving, flip will remain the same as it was before
@@ -307,7 +307,7 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="movement">How much to move by</param>
     public void Move(Vector2 movement)
     {
-        _movementInput = movement* _movementForce;
+        _movementInput = movement * _movementForce;
     }
 
     /// <summary>
