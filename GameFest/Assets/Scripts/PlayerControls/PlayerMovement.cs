@@ -38,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
     bool _disabled = false;
     float _jumpForce = JUMP_FORCE;
     float _movementForce = 1;
+    bool _disableExit = false;
 
     // callback functions
     Action<Collider2D> _triggerEnterCallback;
@@ -55,6 +56,15 @@ public class PlayerMovement : MonoBehaviour
         _rigidBody = GetComponent<Rigidbody2D>();
         _animators = GetComponentsInChildren<Animator>();
         _collider = GetComponent<Collider2D>();
+    }
+
+    /// <summary>
+    /// Controls whether exiting the ground should change the animation
+    /// </summary>
+    /// <param name="state"></param>
+    public void SetExitDisable(bool state)
+    {
+        _disableExit = state;
     }
 
     /// <summary>
@@ -338,7 +348,6 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="collision">The collision event - including the object that the player collided with</param>
     void OnCollisionEnter2D(Collision2D collision)
     {
-
         // if colliding with the ground, and moving downwards
         if (collision.gameObject.tag == "Ground" && collision.relativeVelocity.y > 0)
         {
@@ -357,7 +366,7 @@ public class PlayerMovement : MonoBehaviour
     void OnCollisionExit2D(Collision2D collision)
     {
         // if the player left the ground, they are falling
-        if (collision.gameObject.tag == "Ground")
+        if (collision.gameObject.tag == "Ground" && !_disableExit)
         {
             // they are no longer on the ground
             _onGround = false;
