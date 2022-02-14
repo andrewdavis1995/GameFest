@@ -18,13 +18,11 @@ public class PlayerMovement : MonoBehaviour
     // components/objects
     Rigidbody2D _rigidBody;
     Animator[] _animators;
-    SpriteRenderer _renderer;
     Collider2D _collider;
 
     // public objects
     public TextMesh TxtPlayerName;
     public SpriteRenderer ActivePlayerIcon;
-    public SpriteRenderer Shadow;
     public List<SpriteRenderer> _blingRenderers;
     public Transform BlingHolder;
     public ItemFlash Flash;
@@ -46,13 +44,11 @@ public class PlayerMovement : MonoBehaviour
     Action<Collision2D> _collisionCallback;
     Action<Collision2D> _collisionExitCallback;
 
-    public PlayerAnimation PlayerAnimator;
-    public PlayerAnimation ShadowAnimator;
+    public PlayerAnimation[] PlayerAnimators;
 
     void Awake()
     {
         // find necessary components
-        _renderer = GetComponent<SpriteRenderer>();
         _rigidBody = GetComponent<Rigidbody2D>();
         _animators = GetComponentsInChildren<Animator>();
         _collider = GetComponent<Collider2D>();
@@ -248,13 +244,13 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
-    /// Sets the animation trigger of the player and shadow
+    /// Sets the animation trigger of all animators
     /// </summary>
-    /// <param name="animation"></param>
+    /// <param name="animation">The trigger to set</param>
     public void Animate(string animation)
     {
-        PlayerAnimator.SetAnimation(animation);
-        ShadowAnimator?.SetAnimation(animation);
+        foreach(var animator in PlayerAnimators)
+            PlayerAnimator.SetAnimation(animation);
     }
 
     /// <summary>
@@ -281,13 +277,8 @@ public class PlayerMovement : MonoBehaviour
         // only change direction when necessary
         if (flipped != _flipX)
         {
-            _renderer.flipX = _flipX;
-            Shadow.flipX = _flipX;
-
-            foreach (var rend in _blingRenderers)
-            {
-                rend.flipX = _flipX;
-            }
+            foreach(var r in Renderers)
+                r.flipX = _flipX;
         }
 
         // note: if not moving, flip will remain the same as it was before
