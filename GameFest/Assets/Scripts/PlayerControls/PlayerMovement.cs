@@ -98,6 +98,15 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
+    /// Is the player disabled?
+    /// </summary>
+    /// <returns>If the player is disabled</returns>
+    public bool Disabled()
+    {
+        return _disabled;
+    }
+
+    /// <summary>
     /// Changes the force used to make the player jump
     /// </summary>
     /// <param name="modifier">How much to affect the power by</param>
