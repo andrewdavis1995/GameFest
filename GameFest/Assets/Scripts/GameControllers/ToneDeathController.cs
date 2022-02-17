@@ -52,6 +52,18 @@ public class ToneDeathController : GenericController
 
         // TODO
         //SpawnPlayers_();
+        
+        // TODO: Use pause handler and fader to start game
+        StartGame_();
+    }   
+    
+    /// <summary>
+    /// Starts the gameplay
+    /// </summary>
+    void StartGame_()
+    {    
+        // start the timer for the level
+        _levelTimer.StartTimer();
     }
     
     /// <summary>
@@ -113,6 +125,12 @@ public class ToneDeathController : GenericController
         if (_players.All(p => p.FloorComplete() || p.Died()))
         {
             StartCoroutine(NextLevel_());
+        }
+        else
+        {
+            // start the elevator end timer (hurry other players)
+            if(!_elevatorEndTimer.Running())
+                _elevatorEndTimer.StartTimer();
         }
     }
 
@@ -184,7 +202,12 @@ public class ToneDeathController : GenericController
 
             // end game if this was the last level
             if (_elevatorIndex >= FLOOR_COUNT)
-                EndGame_();
+                EndGame_();    
+            else
+            {
+                // start the timer for the level
+                _levelTimer.StartTimer();
+            }
         }
     }
 
