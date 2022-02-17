@@ -121,6 +121,9 @@ public class ToneDeathController : GenericController
     /// </summary>
     private IEnumerator NextLevel_()
     {
+        _elevatorEndTimer.Abort();
+        _levelTimer.Abort();
+    
         // if everyone dead, end the game
         if(_players.All(p => p.Died())
         {
