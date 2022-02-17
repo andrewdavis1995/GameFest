@@ -184,6 +184,7 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="disabledImage">Image to use when disabled</param>
     public IEnumerator Disable(float duration, Sprite disabledImage)
     {
+        Move(Vector2.zero);
         Disable(disabledImage);
         yield return new WaitForSeconds(duration);
         Reenable();

@@ -5,8 +5,8 @@ using UnityEngine.InputSystem;
 public class ToneDeathInputHandler : GenericInputHandler
 {
     // components
-    public Transform Pointer;
     public PlayerMovement Movement;
+    ToneDeathMovement _toneDeathMovement;
     Rigidbody2D _rigidBody;
     Animator _animator;
     SpriteRenderer[] _movementRenderers;
@@ -16,6 +16,7 @@ public class ToneDeathInputHandler : GenericInputHandler
     ElevatorScript _elevatorZone;
     bool _enteredElevator = false;
     float _health = 100f;
+    float _pointerAngle = 0f;
 
     // Update is called once per frame
     void Update()
@@ -38,6 +39,17 @@ public class ToneDeathInputHandler : GenericInputHandler
         if (Input.GetKey(KeyCode.T))
         {
             OnTriangle();
+        }
+        if (Input.GetKeyDown(KeyCode.P))
+            OnR1();
+
+        {
+            int x = 0, y = 0;
+            if (Input.GetKey(KeyCode.A)) x = -1;
+            else if (Input.GetKey(KeyCode.D)) x = 1;
+            if (Input.GetKey(KeyCode.S)) y = -1;
+            else if (Input.GetKey(KeyCode.W)) y = 1;
+            MovePointer_(new Vector2(x, y));
         }
     }
 
@@ -84,6 +96,8 @@ public class ToneDeathInputHandler : GenericInputHandler
         Movement.SetJumpModifier(1.5f);
         Movement.AddTriggerCallbacks(TriggerEntered_, TriggerLeft_);
         Movement.AddMovementCallbacks(CollisionEntered_, null);
+
+        _toneDeathMovement = Movement.GetComponentInChildren<ToneDeathMovement>();
 
         // gather components
         _rigidBody = Movement.GetComponent<Rigidbody2D>();
@@ -200,9 +214,12 @@ public class ToneDeathInputHandler : GenericInputHandler
     /// <param name="movement">Where to move to</param>
     void MovePointer_(Vector2 movement)
     {
+        // if in elevator, do nothing
+        if (_enteredElevator || Movement.Disabled()) return;
+
         // work out angle to position pointer at
-        var angle = Vector2.Angle(Vector2.zero, movement);
-        Pointer.eulerAngles = new Vector3(0, 0, angle);
+        _pointerAngle = Mathf.Atan2(movement.y, movement.x) * 180 / Mathf.PI - 90;
+        _toneDeathMovement.Pointer.eulerAngles = new Vector3(0, 0, _pointerAngle);
     }
 
     /// <summary>
@@ -239,15 +256,23 @@ public class ToneDeathInputHandler : GenericInputHandler
 
         // jump
         Movement.Jump();
-    }    
+    }
 
-    /// <summary>
-    /// When the right joystick is moved
-    /// </summary>
-    /// <param name="ctx">Context of the input</param>
     public override void OnMoveRight(InputAction.CallbackContext ctx)
     {
         MovePointer_(ctx.ReadValue<Vector2>());
     }
+
+    public override void OnR1()
+    {
+        if (_enteredElevator) return;
+
+        // shoot bullet
+        if (PauseGameHandler.Instance == null || !PauseGameHandler.Instance.IsPaused())
+            _toneDeathMovement.Shoot();
+
+        base.OnR1();
+    }
+
     #endregion
 }

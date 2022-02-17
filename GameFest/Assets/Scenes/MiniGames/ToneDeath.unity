@@ -155,6 +155,7 @@ MonoBehaviour:
   _points: 0
   _characterIndex: 0
   _playerName: 
+  Pointer: {fileID: 0}
   Movement: {fileID: 0}
 --- !u!4 &11912885
 Transform:
@@ -361,7 +362,7 @@ GameObject:
   - component: {fileID: 214641958}
   m_Layer: 0
   m_Name: Dropper (1)
-  m_TagString: Untagged
+  m_TagString: KickBack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -493,7 +494,7 @@ GameObject:
   - component: {fileID: 394767902}
   m_Layer: 0
   m_Name: Dropper (9)
-  m_TagString: Untagged
+  m_TagString: KickBack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -625,7 +626,7 @@ GameObject:
   - component: {fileID: 501337216}
   m_Layer: 0
   m_Name: Dropper (6)
-  m_TagString: Untagged
+  m_TagString: KickBack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -757,7 +758,7 @@ GameObject:
   - component: {fileID: 553707976}
   m_Layer: 0
   m_Name: Dropper (2)
-  m_TagString: Untagged
+  m_TagString: KickBack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -889,7 +890,7 @@ GameObject:
   - component: {fileID: 607946511}
   m_Layer: 0
   m_Name: Dropper (7)
-  m_TagString: Untagged
+  m_TagString: KickBack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1102,7 +1103,7 @@ GameObject:
   - component: {fileID: 734878443}
   m_Layer: 0
   m_Name: Dropper
-  m_TagString: Untagged
+  m_TagString: KickBack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1245,7 +1246,7 @@ GameObject:
   - component: {fileID: 1060515055}
   m_Layer: 0
   m_Name: Dropper (3)
-  m_TagString: Untagged
+  m_TagString: KickBack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1540,7 +1541,7 @@ GameObject:
   - component: {fileID: 1219177905}
   m_Layer: 0
   m_Name: Dropper (5)
-  m_TagString: Untagged
+  m_TagString: KickBack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1769,7 +1770,7 @@ GameObject:
   - component: {fileID: 1480729558}
   m_Layer: 0
   m_Name: Dropper (4)
-  m_TagString: Untagged
+  m_TagString: KickBack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2021,7 +2022,7 @@ GameObject:
   - component: {fileID: 1961523576}
   m_Layer: 0
   m_Name: Dropper (8)
-  m_TagString: Untagged
+  m_TagString: KickBack
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
