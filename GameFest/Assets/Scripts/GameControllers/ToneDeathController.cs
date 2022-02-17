@@ -72,6 +72,7 @@ public class ToneDeathController : GenericController
     private void levelTimerTick_(int time)
     {
         // TODO: show remaining time once it get below 20 seconds or so
+        Debug.Log(time + " left in level");
     }
     
     /// <summary>
@@ -106,6 +107,7 @@ public class ToneDeathController : GenericController
     private void elevatorTimerTick_(int time)
     {
         // TODO: show remaining time (above door)
+        Debug.Log(time + " left after other players");
     }
     
     /// <summary>
