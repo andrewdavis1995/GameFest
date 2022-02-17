@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 public class ToneDeathInputHandler : GenericInputHandler
 {
     // components
+    public Transform Pointer;
     public PlayerMovement Movement;
     Rigidbody2D _rigidBody;
     Animator _animator;
@@ -192,6 +193,17 @@ public class ToneDeathInputHandler : GenericInputHandler
             ToneDeathController.Instance.CheckAllPlayersComplete();
         }
     }
+    
+    /// <summary>
+    /// Rotates the pointer (direction in which shots will be fired)
+    /// </summary>
+    /// <param name="movement">Where to move to</param>
+    void MovePointer_(Vector2 movement)
+    {
+        // work out angle to position pointer at
+        var angle = Vector2.Angle(Vector2.zero, movement);
+        Pointer.eulerAngles = new Vector3(0, 0, angle);
+    }
 
     /// <summary>
     /// Checks if the player is complete for this level
@@ -227,6 +239,15 @@ public class ToneDeathInputHandler : GenericInputHandler
 
         // jump
         Movement.Jump();
+    }    
+
+    /// <summary>
+    /// When the right joystick is moved
+    /// </summary>
+    /// <param name="ctx">Context of the input</param>
+    public override void OnMoveRight(InputAction.CallbackContext ctx)
+    {
+        MovePointer_(ctx.ReadValue<Vector2>());
     }
     #endregion
 }
