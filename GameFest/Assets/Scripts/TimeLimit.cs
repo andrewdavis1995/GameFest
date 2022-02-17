@@ -82,4 +82,13 @@ public class TimeLimit : MonoBehaviour
 
         _running = false;
     }
+    
+    /// <summary>
+    /// Checks if the timer is running
+    /// </summary>
+    /// <returns>Whether the timer is running</returns>
+    public bool Running()
+    {
+        return _running;
+    }
 }
