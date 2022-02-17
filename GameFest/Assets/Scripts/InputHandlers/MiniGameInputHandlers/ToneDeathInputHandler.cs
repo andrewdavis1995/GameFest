@@ -45,7 +45,7 @@ public class ToneDeathInputHandler : GenericInputHandler
     /// The player has lost health
     /// </summary>
     /// <param name="damage">The amount of damage that was done</param>
-    public void DamageDone_(float damage)
+    public void DamageDone(float damage)
     {
         _health -= damage;
         if (_health <= 0)
@@ -103,7 +103,7 @@ public class ToneDeathInputHandler : GenericInputHandler
             // Crushendo - do damage and briefly disable
             if (obj.gameObject.name.Contains("Dropper") && !Movement.Disabled())
             {
-                DamageDone_(Crushendo.CRUSHENDO_DAMAGE);
+                DamageDone(Crushendo.CRUSHENDO_DAMAGE);
                 if (_health > 0)
                     StartCoroutine(Movement.Disable(6f, ToneDeathController.Instance.DisabledImages[GetCharacterIndex()]));
             }

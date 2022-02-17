@@ -26,8 +26,8 @@ public class ToneDeathController : GenericController
 
     // timers
     TimeLimit _levelTimer;
-    TimeLimit _elevatorEndTimer;    
-    
+    TimeLimit _elevatorEndTimer;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -52,20 +52,20 @@ public class ToneDeathController : GenericController
 
         // TODO
         //SpawnPlayers_();
-        
+
         // TODO: Use pause handler and fader to start game
         StartGame_();
-    }   
-    
+    }
+
     /// <summary>
     /// Starts the gameplay
     /// </summary>
     void StartGame_()
-    {    
+    {
         // start the timer for the level
         _levelTimer.StartTimer();
     }
-    
+
     /// <summary>
     /// Callback for when the timer ticks
     /// </summary>
@@ -74,7 +74,7 @@ public class ToneDeathController : GenericController
         // TODO: show remaining time once it get below 20 seconds or so
         Debug.Log(time + " left in level");
     }
-    
+
     /// <summary>
     /// Callback for when the timer completes
     /// </summary>
@@ -82,25 +82,25 @@ public class ToneDeathController : GenericController
     {
         KillIncompletePlayers_();
     }
-    
+
     /// <summary>
     /// Kills any players who are not already complete
     /// </summary>
     void KillIncompletePlayers_()
-    {    
+    {
         // mark all players as complete and close elevator
-        foreach(var p in _players)
+        foreach (var p in _players)
         {
-            if(!p.FloorComplete())
+            if (!p.FloorComplete())
             {
                 // if the player did not make it to the escalator, they are dead
                 p.DamageDone(1000f);
             }
-        }    
-        
+        }
+
         StartCoroutine(NextLevel_());
     }
-    
+
     /// <summary>
     /// Callback for when the timer ticks
     /// </summary>
@@ -109,7 +109,7 @@ public class ToneDeathController : GenericController
         // TODO: show remaining time (above door)
         Debug.Log(time + " left after other players");
     }
-    
+
     /// <summary>
     /// Callback for when the timer completes
     /// </summary>
@@ -131,7 +131,7 @@ public class ToneDeathController : GenericController
         else
         {
             // start the elevator end timer (hurry other players)
-            if(!_elevatorEndTimer.Running())
+            if (!_elevatorEndTimer.Running())
                 _elevatorEndTimer.StartTimer();
         }
     }
@@ -143,9 +143,9 @@ public class ToneDeathController : GenericController
     {
         _elevatorEndTimer.Abort();
         _levelTimer.Abort();
-    
+
         // if everyone dead, end the game
-        if(_players.All(p => p.Died())
+        if (_players.All(p => p.Died()))
         {
             EndGame_();
         }
@@ -204,7 +204,7 @@ public class ToneDeathController : GenericController
 
             // end game if this was the last level
             if (_elevatorIndex >= FLOOR_COUNT)
-                EndGame_();    
+                EndGame_();
             else
             {
                 // start the timer for the level
