@@ -39,6 +39,8 @@ public class PlayerMovement : MonoBehaviour
     float _jumpForce = JUMP_FORCE;
     float _movementForce = 1;
     bool _disableExit = false;
+    bool _autoPilot = false;
+    float _autoPilotX = 0f;
 
     // callback functions
     Action<Collider2D> _triggerEnterCallback;
@@ -198,6 +200,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Move(Vector2.zero);
 
+        Debug.Log("DDDDIIISSS");
         _disabled = true;
 
         // disable animations
@@ -208,11 +211,33 @@ public class PlayerMovement : MonoBehaviour
     }
 
     /// <summary>
+    /// Sets whether the player is in auto-pilot mode (i.e. moving without input)
+    /// </summary>
+    /// <param name="state">Whether the player is in input</param>
+    public void AutoPilot(bool state, float positionX = 0)
+    {
+        _autoPilot = state;
+        _autoPilotX = positionX;
+    }
+
+    /// <summary>
+    /// Gets whether the player is in auto-pilot mode (i.e. moving without input)
+    /// </summary>
+    /// <returns>Whether the player is in auto-pilot</returns>
+    public bool AutoPilot()
+    {
+        return _autoPilot;
+    }
+
+    /// <summary>
     /// Re-enables the movement
     /// </summary>
     public void Reenable()
     {
         _disabled = false;
+
+        Debug.Log("reeeeeeeeeeeeeeeeeee");
+
         // enable animations
         foreach (var anim in _animators)
             anim.enabled = true;
@@ -223,7 +248,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     void Update()
     {
-        if (!_disabled)
+        if (!_disabled || _autoPilot)
         {
             transform.eulerAngles = new Vector3(0, 0, 0);
 
@@ -236,6 +261,14 @@ public class PlayerMovement : MonoBehaviour
                 Animate(xMove == 0 ? "Idle" : "Walk");
 
             UpdateOrientation_(xMove);
+
+            if (_autoPilot && (transform.position.x < _autoPilotX))
+            {
+                _autoPilot = false;
+                transform.Translate(new Vector3(_autoPilotX - transform.position.x, 0, 0));
+                DisableMovement();
+                ToneDeathController.Instance.CheckInstrumentElevatorComplete();
+            }
         }
     }
 
@@ -307,6 +340,8 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     internal void DisableMovement()
     {
+        _disabled = true;
+        Debug.Log("DIS");
         _movementInput = new Vector2(0, 0);
         Animate("Idle");
     }

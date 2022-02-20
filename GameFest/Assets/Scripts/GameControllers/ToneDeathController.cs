@@ -5,10 +5,12 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+public enum Instrument { None, Drums, Bass }
+
 public class ToneDeathController : GenericController
 {
     float FLOOR_HEIGHT = 10f;
-    uint FLOOR_COUNT = 2;
+    uint FLOOR_COUNT = 3;
     const float ELEVATOR_SPEED = 0.25f;
     const int OVERALL_LEVEL_TIMEOUT = 120;
     const int ELEVATOR_TIMEOUT = 30;
@@ -21,8 +23,12 @@ public class ToneDeathController : GenericController
     public Sprite[] ElevatorDoors;
     public Sprite[] DisabledImages;
 
+    public float INSTRUMENT_ELEVATOR_POSITION = 0f;
+
     List<ToneDeathInputHandler> _players;
     int _elevatorIndex = 0;
+    bool _selectingInstrument = true;
+    public bool InstrumentRunOff = false;
 
     // timers
     TimeLimit _levelTimer;
@@ -72,7 +78,7 @@ public class ToneDeathController : GenericController
     private void levelTimerTick_(int time)
     {
         // TODO: show remaining time once it get below 20 seconds or so
-        Debug.Log(time + " left in level");
+        //Debug.Log(time + " left in level");
     }
 
     /// <summary>
@@ -107,7 +113,7 @@ public class ToneDeathController : GenericController
     private void elevatorTimerTick_(int time)
     {
         // TODO: show remaining time (above door)
-        Debug.Log(time + " left after other players");
+        //Debug.Log(time + " left after other players");
     }
 
     /// <summary>
@@ -137,10 +143,30 @@ public class ToneDeathController : GenericController
     }
 
     /// <summary>
+    /// Checks if all players are complete, and moves to the next level if applicable
+    /// </summary>
+    public void CheckAllInstrumentsSelected()
+    {
+        // if all done, move elevator
+        if (_players.All(p => p.GetInstrument() != Instrument.None))
+        {
+            InstrumentRunOff = true;
+
+            foreach (var p in _players)
+            {
+                p.Movement.AutoPilot(true, Elevators[0].transform.position.x - (Elevators[0].transform.localScale.x/2) + (0.2f * p.GetPlayerIndex()));
+                p.Movement.Move(new Vector2(-1, 0));
+            }
+        }
+    }
+
+    /// <summary>
     /// All players complete or dead. Move to next floor
     /// </summary>
     private IEnumerator NextLevel_()
     {
+        Debug.Log("NEXT");
+
         _elevatorEndTimer.Abort();
         _levelTimer.Abort();
 
@@ -214,6 +240,15 @@ public class ToneDeathController : GenericController
     }
 
     /// <summary>
+    /// If players are selecting instruments
+    /// </summary>
+    /// <returns>Whether we are at the instrument selection stage</returns>
+    public bool InstrumentSelect()
+    {
+        return _selectingInstrument;
+    }
+
+    /// <summary>
     /// Ends the game
     /// </summary>
     private void EndGame_()
@@ -241,5 +276,27 @@ public class ToneDeathController : GenericController
 
             _players.Add(ih);
         }
+    }
+
+    /// <summary>
+    /// Checks if all players have had instruments selected
+    /// </summary>
+    internal void CheckInstrumentElevatorComplete()
+    {
+        if(_players.All(p => p.Movement.AutoPilot() == false))
+        {
+            foreach (var p in _players)
+            {
+                p.Movement.Reenable();
+                p.EnterElevator();
+            }
+
+            // done. Close door
+            StartCoroutine(NextLevel_());
+
+            InstrumentRunOff = false;
+            _selectingInstrument = false;
+        }
+
     }
 }

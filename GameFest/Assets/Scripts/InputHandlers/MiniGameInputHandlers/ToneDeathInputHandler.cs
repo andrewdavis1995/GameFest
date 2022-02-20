@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,18 +12,20 @@ public class ToneDeathInputHandler : GenericInputHandler
     Animator _animator;
     SpriteRenderer[] _movementRenderers;
     float _zPosition;
+    Instrument _instrument;
 
     // status variables
     ElevatorScript _elevatorZone;
     bool _enteredElevator = false;
-    float _health = 100f;
     float _pointerAngle = 0f;
+    bool _firing = false;
+    InstrumentSelection _instrumentSelection;
 
     // Update is called once per frame
     void Update()
     {
         // TEMP
-        if (!_enteredElevator)
+        if (!_enteredElevator && !Movement.AutoPilot())
         {
             var x = 0f;
             var y = 0f;
@@ -33,15 +36,17 @@ public class ToneDeathInputHandler : GenericInputHandler
             Movement.Move(new Vector2(x, y));
         }
         if (Input.GetKey(KeyCode.KeypadEnter))
-        {
             OnCross();
-        }
-        if (Input.GetKey(KeyCode.T))
-        {
+        if (Input.GetKey(KeyCode.Escape))
+            OnCircle();
+        if (Input.GetKey(KeyCode.T)) 
             OnTriangle();
-        }
         if (Input.GetKeyDown(KeyCode.P))
             OnR1();
+        if (Input.GetKeyDown(KeyCode.O))
+            HandleR2(1);
+        if (Input.GetKeyUp(KeyCode.O))
+            HandleR2(0);
 
         {
             int x = 0, y = 0;
@@ -59,8 +64,8 @@ public class ToneDeathInputHandler : GenericInputHandler
     /// <param name="damage">The amount of damage that was done</param>
     public void DamageDone(float damage)
     {
-        _health -= damage;
-        if (_health <= 0)
+        _toneDeathMovement.DamageDone(damage);
+        if (_toneDeathMovement.Health() <= 0)
         {
             Die_();
         }
@@ -82,7 +87,7 @@ public class ToneDeathInputHandler : GenericInputHandler
     /// <returns>If the player died</returns>
     internal bool Died()
     {
-        return _health <= 0;
+        return _toneDeathMovement.Health() <= 0;
     }
 
     /// <summary>
@@ -118,7 +123,7 @@ public class ToneDeathInputHandler : GenericInputHandler
             if (obj.gameObject.name.Contains("Dropper") && !Movement.Disabled())
             {
                 DamageDone(Crushendo.CRUSHENDO_DAMAGE);
-                if (_health > 0)
+                if (_toneDeathMovement.Health() > 0)
                     StartCoroutine(Movement.Disable(6f, ToneDeathController.Instance.DisabledImages[GetCharacterIndex()]));
             }
         }
@@ -132,6 +137,15 @@ public class ToneDeathInputHandler : GenericInputHandler
         // hide all renderers
         foreach (var r in _movementRenderers)
             r.enabled = false;
+    }
+
+    /// <summary>
+    /// Returns the instrument associated with this player
+    /// </summary>
+    /// <returns></returns>
+    internal Instrument GetInstrument()
+    {
+        return _instrument;
     }
 
     /// <summary>
@@ -168,6 +182,14 @@ public class ToneDeathInputHandler : GenericInputHandler
     {
         if (collider.tag == "Checkpoint")
             _elevatorZone = collider.GetComponentInParent<ElevatorScript>();
+        if (collider.tag == "AreaTrigger")
+            _toneDeathMovement.ResetBulletCount();
+        if (collider.tag == "PlayerColourDisplay")
+        {
+            _instrumentSelection = collider.GetComponent<InstrumentSelection>();
+            _instrumentSelection.PlayerEntered(GetPlayerIndex());
+            _instrument = _instrumentSelection.Instrument;
+        }
     }
 
     /// <summary>
@@ -178,12 +200,18 @@ public class ToneDeathInputHandler : GenericInputHandler
     {
         if (collider.tag == "Checkpoint")
             _elevatorZone = null;
+        if (collider.tag == "PlayerColourDisplay")
+        {
+            _instrumentSelection = null;
+            _instrument = Instrument.None;
+            collider.GetComponent<InstrumentSelection>().PlayerExited(GetPlayerIndex());
+        }
     }
 
     /// <summary>
     /// Makes the player go into the elevator (if they are beside one)
     /// </summary>
-    private void EnterElevator_()
+    public void EnterElevator()
     {
         // if no elevator (and not already in it)
         if (_elevatorZone != null && !_enteredElevator)
@@ -203,11 +231,14 @@ public class ToneDeathInputHandler : GenericInputHandler
             Movement.transform.SetParent(_elevatorZone.Platform);
             Movement.transform.localPosition = new Vector3(Movement.transform.localPosition.x, Movement.transform.localPosition.y, .5f);
 
-            // check if there are any remaining players
-            ToneDeathController.Instance.CheckAllPlayersComplete();
+            if (!ToneDeathController.Instance.InstrumentRunOff)
+            {
+                // check if there are any remaining players
+                ToneDeathController.Instance.CheckAllPlayersComplete();
+            }
         }
     }
-    
+
     /// <summary>
     /// Rotates the pointer (direction in which shots will be fired)
     /// </summary>
@@ -217,9 +248,19 @@ public class ToneDeathInputHandler : GenericInputHandler
         // if in elevator, do nothing
         if (_enteredElevator || Movement.Disabled()) return;
 
-        // work out angle to position pointer at
-        _pointerAngle = Mathf.Atan2(movement.y, movement.x) * 180 / Mathf.PI - 90;
-        _toneDeathMovement.Pointer.eulerAngles = new Vector3(0, 0, _pointerAngle);
+        // only update if a direction is selected
+        if (Math.Abs(movement.x) > 0.1f || Math.Abs(movement.y) > 0.1f)
+        {
+            _toneDeathMovement.Pointer.gameObject.SetActive(true);
+
+            // work out angle to position pointer at
+            _pointerAngle = Mathf.Atan2(movement.y, movement.x) * 180 / Mathf.PI - 90;
+            _toneDeathMovement.Pointer.eulerAngles = new Vector3(0, 0, _pointerAngle);
+        }
+        else
+        {
+            _toneDeathMovement.Pointer.gameObject.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -232,12 +273,35 @@ public class ToneDeathInputHandler : GenericInputHandler
         return _enteredElevator;
     }
 
+    /// <summary>
+    /// Temporarily disable firing to prevent rapid fire
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator DisableFiring_()
+    {
+        _firing = true;
+        yield return new WaitForSeconds(0.1f);
+        _firing = false;
+    }
+
+    /// <summary>
+    /// R2 has been pressed or released
+    /// </summary>
+    /// <param name="v">How pressed the R2 paddle is</param>
+    private void HandleR2(float v)
+    {
+        if (_enteredElevator) return;
+
+        // turn particles on/off
+        _toneDeathMovement.ToggleParticles(v > 0.1f);
+    }
+
     #region Player Controls
     public override void OnTriangle()
     {
         // go into elevator if on ground
         if (Movement.OnGround())
-            EnterElevator_();
+            EnterElevator();
     }
 
     public override void OnMove(InputAction.CallbackContext ctx, InputDevice device)
@@ -245,8 +309,19 @@ public class ToneDeathInputHandler : GenericInputHandler
         // if in elevator, do nothing
         if (_enteredElevator) return;
 
+        if (Movement.AutoPilot()) return;
+
         // move
         Movement.Move(ctx.ReadValue<Vector2>());
+    }
+
+    public override void OnCircle()
+    {
+        if (ToneDeathController.Instance.InstrumentSelect() && _instrumentSelection.Set())
+        {
+            _instrumentSelection.Set(false, GetPlayerIndex());
+            Movement.Reenable();
+        }
     }
 
     public override void OnCross()
@@ -254,12 +329,26 @@ public class ToneDeathInputHandler : GenericInputHandler
         // if in elevator, do nothing
         if (_enteredElevator) return;
 
-        // jump
-        Movement.Jump();
+        if (ToneDeathController.Instance.InstrumentSelect())
+        {
+            if (_instrumentSelection != null && !_instrumentSelection.Set() && !ToneDeathController.Instance.InstrumentRunOff)
+            {
+                _instrumentSelection.Set(true, GetPlayerIndex());
+                Movement.DisableMovement();
+                ToneDeathController.Instance.CheckAllInstrumentsSelected();
+            }
+        }
+        else
+        {
+            // jump
+            Movement.Jump();
+        }
     }
 
     public override void OnMoveRight(InputAction.CallbackContext ctx)
     {
+        if (_enteredElevator) return;
+
         MovePointer_(ctx.ReadValue<Vector2>());
     }
 
@@ -268,11 +357,22 @@ public class ToneDeathInputHandler : GenericInputHandler
         if (_enteredElevator) return;
 
         // shoot bullet
-        if (PauseGameHandler.Instance == null || !PauseGameHandler.Instance.IsPaused())
-            _toneDeathMovement.Shoot();
+        if (!_firing && (PauseGameHandler.Instance == null || !PauseGameHandler.Instance.IsPaused()))
+        {
+            // don't shoot if not pointing
+            if (_toneDeathMovement.Pointer.gameObject.activeInHierarchy)
+            {
+                _toneDeathMovement.Shoot();
+                StartCoroutine(DisableFiring_());
+            }
+        }
 
         base.OnR1();
     }
 
+    public override void OnR2(InputAction.CallbackContext ctx)
+    {
+        HandleR2(ctx.ReadValue<float>());
+    }
     #endregion
 }
