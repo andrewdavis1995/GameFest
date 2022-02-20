@@ -8,6 +8,7 @@ public class ToneDeathMovement : MonoBehaviour
     public Transform Pointer;
     public Transform BulletPrefab;
     public ParticleSystem Particles;
+    public ParticleSystemRenderer ParticlesInstrument;
 
     float _health = 100f;
     int _bulletCount = MAX_BULLET_COUNT;
@@ -20,7 +21,7 @@ public class ToneDeathMovement : MonoBehaviour
     {
         if (_bulletCount > 0 && !_particlesFiring)
         {
-            //// shoot
+            // shoot
             var bullet = Instantiate(BulletPrefab, transform.position + BulletOffset, Quaternion.identity);
             StartCoroutine(bullet.GetComponent<BulletScript>().SetBounces(1));
             StartCoroutine(bullet.GetComponent<BulletScript>().IgnorePlayer(GetComponent<BoxCollider2D>()));
@@ -41,8 +42,6 @@ public class ToneDeathMovement : MonoBehaviour
         var emission = Particles.emission;
         emission.enabled = state;
         Particles.gameObject.SetActive(state);
-
-        // TODO: enable collider
     }
 
     /// <summary>

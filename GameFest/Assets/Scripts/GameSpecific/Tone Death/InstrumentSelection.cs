@@ -6,6 +6,7 @@ public class InstrumentSelection : MonoBehaviour
     public SpriteRenderer[] InZoneDisplays;
     public SpriteRenderer ColourDisplay;
     public Instrument Instrument;
+    public Material Material;
 
     bool _set = false;
 

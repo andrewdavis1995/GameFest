@@ -14,6 +14,7 @@ public class ToneDeathController : GenericController
     const float ELEVATOR_SPEED = 0.25f;
     const int OVERALL_LEVEL_TIMEOUT = 120;
     const int ELEVATOR_TIMEOUT = 30;
+    const int INSTRUMENT_TIMEOUT = 10;
 
     public static ToneDeathController Instance;
 
@@ -22,6 +23,8 @@ public class ToneDeathController : GenericController
     public ElevatorScript[] Elevators;
     public Sprite[] ElevatorDoors;
     public Sprite[] DisabledImages;
+    public Material[] InstrumentMaterials;
+    public AudioClip[] AudioTracks;
 
     public float INSTRUMENT_ELEVATOR_POSITION = 0f;
 
@@ -33,17 +36,20 @@ public class ToneDeathController : GenericController
     // timers
     TimeLimit _levelTimer;
     TimeLimit _elevatorEndTimer;
+    TimeLimit _instrumentSelectionTimer;
 
     // Start is called before the first frame update
     void Start()
     {
         Instance = this;
 
-        // initialise timers        
+        // initialise timers
         _levelTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _levelTimer.Initialise(OVERALL_LEVEL_TIMEOUT, levelTimerTick_, levelTimerComplete_, 1f);
         _elevatorEndTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
         _elevatorEndTimer.Initialise(ELEVATOR_TIMEOUT, elevatorTimerTick_, elevatorTimerComplete_, 1f);
+        _instrumentSelectionTimer = (TimeLimit)gameObject.AddComponent(typeof(TimeLimit));
+        _instrumentSelectionTimer.Initialise(INSTRUMENT_TIMEOUT, null, InstrumentTimeout_, 1f);
 
         // get the distance between floors
         FLOOR_HEIGHT = Elevators[1].transform.position.y - Elevators[0].transform.position.y;
@@ -56,11 +62,11 @@ public class ToneDeathController : GenericController
             pl.InitialisePlayer(movement);
         }
 
+        // TODO: Move to after pause menu is closed
+        _instrumentSelectionTimer.StartTimer();
+
         // TODO
         //SpawnPlayers_();
-
-        // TODO: Use pause handler and fader to start game
-        StartGame_();
     }
 
     /// <summary>
@@ -100,7 +106,7 @@ public class ToneDeathController : GenericController
             if (!p.FloorComplete())
             {
                 // if the player did not make it to the escalator, they are dead
-                p.DamageDone(1000f);
+                p.DamageDone(10000f);
             }
         }
 
@@ -122,6 +128,27 @@ public class ToneDeathController : GenericController
     private void elevatorTimerComplete_()
     {
         KillIncompletePlayers_();
+    }
+
+    /// <summary>
+    /// Timeout occurred when waiting for instruments to be selected
+    /// </summary>
+    void InstrumentTimeout_()
+    {
+        // TODO: set remaining players
+
+        var allInstruments = FindObjectsOfType<InstrumentSelection>().Where(i => !i.Set()).ToList();
+        foreach(var p in _players)
+        {
+            // if the player hasn't selected an item, generate one
+            if(!p.Movement.Disabled())
+            {
+                // generate a random value
+                var i = UnityEngine.Random.Range(0, allInstruments.Count());
+                p.SetInstrument(allInstruments[i]);
+                allInstruments.RemoveAt(i);
+            }
+        }
     }
 
     /// <summary>
@@ -147,6 +174,8 @@ public class ToneDeathController : GenericController
     /// </summary>
     public void CheckAllInstrumentsSelected()
     {
+        _instrumentSelectionTimer.Abort();
+
         // if all done, move elevator
         if (_players.All(p => p.GetInstrument() != Instrument.None))
         {
@@ -154,7 +183,7 @@ public class ToneDeathController : GenericController
 
             foreach (var p in _players)
             {
-                p.Movement.AutoPilot(true, Elevators[0].transform.position.x - (Elevators[0].transform.localScale.x/2) + (0.2f * p.GetPlayerIndex()));
+                p.Movement.AutoPilot(true, Elevators[0].transform.position.x - (Elevators[0].transform.localScale.x / 2) + (0.2f * p.GetPlayerIndex()));
                 p.Movement.Move(new Vector2(-1, 0));
             }
         }
@@ -165,8 +194,6 @@ public class ToneDeathController : GenericController
     /// </summary>
     private IEnumerator NextLevel_()
     {
-        Debug.Log("NEXT");
-
         _elevatorEndTimer.Abort();
         _levelTimer.Abort();
 
@@ -183,6 +210,20 @@ public class ToneDeathController : GenericController
                 // loop through images
                 Elevators[_elevatorIndex].Doors.sprite = ElevatorDoors[i];
                 yield return new WaitForSeconds(.05f);
+                foreach (var speaker in Elevators[_elevatorIndex].Speakers)
+                {
+                    speaker.volume -= 0.05f;
+                }
+            }
+
+            // decrease speaker volume
+            while (Elevators[_elevatorIndex].Speakers.Count() > 0 && Elevators[_elevatorIndex].Speakers[0].volume > 0)
+            {
+                foreach (var speaker in Elevators[_elevatorIndex].Speakers)
+                {
+                    speaker.volume -= 0.1f;
+                    yield return new WaitForSeconds(0.05f);
+                }
             }
 
             // hide all players (before moving up)
@@ -279,11 +320,21 @@ public class ToneDeathController : GenericController
     }
 
     /// <summary>
+    /// Gets the audio track for the specified player
+    /// </summary>
+    /// <param name="index">The player to get audio for</param>
+    /// <returns>The audio clip to use</returns>
+    public AudioClip GetAudioTrack(int index)
+    {
+        return AudioTracks[(int)_players[index].GetInstrument() - 1];
+    }
+
+    /// <summary>
     /// Checks if all players have had instruments selected
     /// </summary>
     internal void CheckInstrumentElevatorComplete()
     {
-        if(_players.All(p => p.Movement.AutoPilot() == false))
+        if (_players.All(p => p.Movement.AutoPilot() == false))
         {
             foreach (var p in _players)
             {
@@ -296,7 +347,9 @@ public class ToneDeathController : GenericController
 
             InstrumentRunOff = false;
             _selectingInstrument = false;
-        }
 
+            // start the timer
+            StartGame_();
+        }
     }
 }

@@ -200,7 +200,6 @@ public class PlayerMovement : MonoBehaviour
     {
         Move(Vector2.zero);
 
-        Debug.Log("DDDDIIISSS");
         _disabled = true;
 
         // disable animations
@@ -235,8 +234,6 @@ public class PlayerMovement : MonoBehaviour
     public void Reenable()
     {
         _disabled = false;
-
-        Debug.Log("reeeeeeeeeeeeeeeeeee");
 
         // enable animations
         foreach (var anim in _animators)
@@ -341,7 +338,6 @@ public class PlayerMovement : MonoBehaviour
     internal void DisableMovement()
     {
         _disabled = true;
-        Debug.Log("DIS");
         _movementInput = new Vector2(0, 0);
         Animate("Idle");
     }

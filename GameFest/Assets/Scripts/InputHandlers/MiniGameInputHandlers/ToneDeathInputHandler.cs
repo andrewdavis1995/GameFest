@@ -103,6 +103,10 @@ public class ToneDeathInputHandler : GenericInputHandler
         Movement.AddMovementCallbacks(CollisionEntered_, null);
 
         _toneDeathMovement = Movement.GetComponentInChildren<ToneDeathMovement>();
+        var main = _toneDeathMovement.Particles.main;
+        var col = ColourFetcher.GetColour(GetPlayerIndex());
+        col.a = main.startColor.color.a;
+        main.startColor = col;
 
         // gather components
         _rigidBody = Movement.GetComponent<Rigidbody2D>();
@@ -127,6 +131,16 @@ public class ToneDeathInputHandler : GenericInputHandler
                     StartCoroutine(Movement.Disable(6f, ToneDeathController.Instance.DisabledImages[GetCharacterIndex()]));
             }
         }
+    }
+
+    internal void SetInstrument(InstrumentSelection instrumentSelection)
+    {
+        _instrumentSelection = instrumentSelection;
+        _instrumentSelection.PlayerEntered(GetPlayerIndex());
+        _instrument = _instrumentSelection.Instrument;
+        _toneDeathMovement.ParticlesInstrument.material = _instrumentSelection.Material;
+
+        OnCross();
     }
 
     /// <summary>
@@ -180,15 +194,27 @@ public class ToneDeathInputHandler : GenericInputHandler
     /// <param name="collider">The trigger</param>
     private void TriggerEntered_(Collider2D collider)
     {
+        // elevator zone
         if (collider.tag == "Checkpoint")
             _elevatorZone = collider.GetComponentInParent<ElevatorScript>();
+
+        // bullet collection trigger
         if (collider.tag == "AreaTrigger")
             _toneDeathMovement.ResetBulletCount();
-        if (collider.tag == "PlayerColourDisplay")
+
+        // instrument selection zone
+        if (collider.tag == "PlayerColourDisplay" && !Movement.AutoPilot())
         {
             _instrumentSelection = collider.GetComponent<InstrumentSelection>();
             _instrumentSelection.PlayerEntered(GetPlayerIndex());
             _instrument = _instrumentSelection.Instrument;
+            _toneDeathMovement.ParticlesInstrument.material = _instrumentSelection.Material;
+        }
+
+        // speaker
+        if(collider.tag == "Speaker")
+        {
+            collider.GetComponent<SpeakerScript>().StartClaim(GetPlayerIndex());
         }
     }
 
@@ -198,13 +224,22 @@ public class ToneDeathInputHandler : GenericInputHandler
     /// <param name="collider">The trigger</param>
     private void TriggerLeft_(Collider2D collider)
     {
+        // elevator zone
         if (collider.tag == "Checkpoint")
             _elevatorZone = null;
-        if (collider.tag == "PlayerColourDisplay")
+
+        // instrument selection zone
+        if (collider.tag == "PlayerColourDisplay" && !Movement.AutoPilot())
         {
             _instrumentSelection = null;
             _instrument = Instrument.None;
             collider.GetComponent<InstrumentSelection>().PlayerExited(GetPlayerIndex());
+        }
+
+        // speaker
+        if (collider.tag == "Speaker")
+        {
+            collider.GetComponent<SpeakerScript>().StopClaim(GetPlayerIndex());
         }
     }
 
@@ -246,7 +281,7 @@ public class ToneDeathInputHandler : GenericInputHandler
     void MovePointer_(Vector2 movement)
     {
         // if in elevator, do nothing
-        if (_enteredElevator || Movement.Disabled()) return;
+        if (_enteredElevator || Movement.Disabled() || ToneDeathController.Instance.InstrumentSelect()) return;
 
         // only update if a direction is selected
         if (Math.Abs(movement.x) > 0.1f || Math.Abs(movement.y) > 0.1f)
