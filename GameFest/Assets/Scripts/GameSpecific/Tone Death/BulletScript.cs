@@ -40,6 +40,10 @@ public class BulletScript : MonoBehaviour
                 collision.gameObject.GetComponent<ToneDeathMovement>().DamageDone(BULLET_DAMAGE);
                 Destroy(gameObject);
                 break;
+            case "Enemy":
+                collision.gameObject.GetComponent<EnemyControl>().Damage(BULLET_DAMAGE);
+                Destroy(gameObject);
+                break;
             case "Bullet":
                 Destroy(gameObject);
                 break;
