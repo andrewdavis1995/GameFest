@@ -186,4 +186,13 @@ public class EnemyControl : MonoBehaviour
         // TODO: use raycast on each player
         return false;
     }
+    
+    /// <summary>
+    /// Checks if the enemy can be shot
+    /// </summary>
+    /// <returns>If the player can be shot</returns>
+    public bool IsShootable()
+    {
+        return _isShootable;
+    }
 }
