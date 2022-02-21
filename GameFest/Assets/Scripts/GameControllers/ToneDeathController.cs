@@ -294,7 +294,9 @@ public class ToneDeathController : GenericController
     /// </summary>
     private void EndGame_()
     {
-        // TODO: Temp
+        AssignBonusPoints_();
+    
+        // TODO: Temp. Move to fade out
         SceneManager.LoadScene((int)Scene.GameCentral);
     }
 
@@ -374,5 +376,28 @@ public class ToneDeathController : GenericController
             // add points
             _players[playerIndex].AddPoints(points);
         }
+    }   
+    
+    /// <summary>
+    /// Assigns bonus points to the winner
+    /// </summary>
+    private void AssignBonusPoints_()
+    {
+        // sort the players by points scored
+        var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
+        int[] winnerPoints = new int[] { 100, 40, 15 };
+
+        // add winning score points 
+        for (int i = 0; i < ordered.Count(); i++)
+        {
+            if (ordered[i].GetPoints() > 0)
+            {
+                ordered[i].AddPoints(winnerPoints[i]);
+                ordered[i].SetBonusPoints(winnerPoints[i]);
+            }
+        }
+
+        // set the winner
+        ordered.FirstOrDefault()?.Winner();
     }
 }
