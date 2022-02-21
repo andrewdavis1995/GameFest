@@ -328,6 +328,15 @@ public class ToneDeathController : GenericController
     {
         return AudioTracks[(int)_players[index].GetInstrument() - 1];
     }
+    
+    /// <summary>
+    /// Gets a list of transforms linked to the player movements
+    /// </summary>
+    /// <returns>List of player objects</returns>
+    public List<Transform> GetPlayers()
+    {
+        return _players.Select(p => p.Movement.transform)
+    }
 
     /// <summary>
     /// Checks if all players have had instruments selected
