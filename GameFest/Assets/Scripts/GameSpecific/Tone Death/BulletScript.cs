@@ -26,6 +26,11 @@ public class BulletScript : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
         _bouncesRemaining = bounces;
     }
+    
+    public void SetDamage(float damage)
+    {
+        BULLET_DAMAGE = damage;
+    }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
