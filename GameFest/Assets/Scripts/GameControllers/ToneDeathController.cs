@@ -361,4 +361,18 @@ public class ToneDeathController : GenericController
             StartGame_();
         }
     }
+
+    /// <summary>
+    /// Assigns points to the player who hit an enemy
+    /// </summary>
+    /// <param name="points">The points to assign</param>
+    /// <param name="playerIndex">The index of the player to assign points to</param>
+    internal void AssignHitPoints(int points, int playerIndex)
+    {
+        if(playerIndex >= 0 && playerIndex < _players.Count)
+        {
+            // add points
+            _players[playerIndex].AddPoints(points);
+        }
+    }
 }
