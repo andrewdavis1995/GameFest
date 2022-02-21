@@ -15,12 +15,15 @@ public class EnemyControl : MonoBehaviour
     public float            DAMAGE                = 100f;
     public int              PROJECTILE_BOUNCES    = 1;
     public float            DISABLED_TIME         = 4f;
+    public float            HIDE_DELAY            = 1f;
+    public bool             CAN_HIDE              = false;
     
     // fields
     private float           _health;
     private bool            _disabled;
     private bool            _claimed;
     private int             _claimedPlayerIndex;
+    private bool            _isShootable;
     
     /// <summary>
     /// Called at startup
@@ -29,6 +32,28 @@ public class EnemyControl : MonoBehaviour
     {
         _health = HEALTH_POINTS;
         StartCoroutine(HandlingShooting_());
+        _isShootable = true;
+    }
+    
+    /// <summary>
+    /// Enemy goes into hiding place
+    /// </summary>
+    IEnumerator Hide_()
+    {
+        yield return new WaitForSeconds(HIDE_DELAY);
+        // TODO: update hiding appearance
+        
+        _isShootable = false;
+    }
+    
+    /// <summary>
+    /// Enemy appears from hiding place
+    /// </summary>
+    IEnumerator Appear_()
+    {
+        _isShootable = true;
+        // TODO: update appearance
+        yield return new WaitForSeconds(0.1f);  // TEMP
     }
     
     /// <summary>
@@ -41,13 +66,25 @@ public class EnemyControl : MonoBehaviour
             yield return new WaitForSeconds(SHOOT_RATE);
             
             if(!_disabled && !_claimed)
+            {
+                // popout if necessary
+                if(CAN_HIDE)
+                    StartCoroutine(Appear_());
+
+                // shoot
                 Shoot();
+            
+                // hide again if necessary
+                if(CAN_HIDE)
+                    StartCoroutine(Hide_());
+            }
         }
     }
     
     /// <summary>
     /// The enemy has been claimed by a player
     /// </summary>
+    /// <param id="playerIndex">The index of the player who claimed this enemy</param>
     public void Claim(int playerIndex)
     {
         _claimed = true;
@@ -59,17 +96,32 @@ public class EnemyControl : MonoBehaviour
     }
     
     /// <summary>
+    /// The enemy has taken damage
+    /// </summary>
+    /// <param id="damage">The amount of damage down</param>
+    public void Damage(float damage)
+    {
+        _health -= damage;
+        
+        // if no more health, disable
+        if(_health <= 0)
+            StartCoroutine(Disable_());
+    }
+    
+    /// <summary>
     /// Disable the enemy for a period of time
     /// </summary>
     IEnumerator Disable_()
     {
         _disabled = true;
+        // TODO: update appearance
         yield return new WaitForSeconds(DISABLED_TIME);
         _disabled = false;
         
         // if not claimed yet, start shooting again
         if(!_claimed)
         {
+            _health = HEALTH_POINTS;
             StartCoroutine(HandlingShooting_());
         }
     }
