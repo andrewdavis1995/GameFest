@@ -50,7 +50,7 @@ public class BulletScript : MonoBehaviour
                 // only apply damage if enemy can be shot
                 if(enemy.IsShootable())
                 {
-                    ToneDeathController.Instance.AssignHitPoints(BULLET_HIT_SCORE);
+                    ToneDeathController.Instance.AssignHitPoints(BULLET_HIT_SCORE, _shooterIndex);
                     enemy.Damage(BULLET_DAMAGE);
                 }
                 Destroy(gameObject);
