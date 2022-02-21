@@ -8,6 +8,8 @@ public class BulletScript : MonoBehaviour
     int _bouncesRemaining = 0;
     Rigidbody2D _rigidBody;
     float BULLET_DAMAGE = 15f;
+    int _shooterIndex = -1;
+    int BULLET_HIT_SCORE = 10;
 
     private void Start()
     {
@@ -37,13 +39,23 @@ public class BulletScript : MonoBehaviour
         switch (collision.gameObject.tag)
         {
             case "Player":
-                collision.gameObject.GetComponent<ToneDeathMovement>().DamageDone(BULLET_DAMAGE);
+                // only apply damage if it wasn't fired by a player
+                collision.gameObject.GetComponent<ToneDeathMovement>().DamageDone(_shooterIndex < 0 ? BULLET_DAMAGE : 0);
                 Destroy(gameObject);
                 break;
             case "Enemy":
-                collision.gameObject.GetComponent<EnemyControl>().Damage(BULLET_DAMAGE);
+            {
+                var enemy = collision.gameObject.GetComponent<EnemyControl>();
+                
+                // only apply damage if enemy can be shot
+                if(enemy.IsShootable())
+                {
+                    ToneDeathController.Instance.AssignHitPoints(BULLET_HIT_SCORE);
+                    enemy.Damage(BULLET_DAMAGE);
+                }
                 Destroy(gameObject);
                 break;
+            }
             case "Bullet":
                 Destroy(gameObject);
                 break;
@@ -58,8 +70,10 @@ public class BulletScript : MonoBehaviour
         }
     }
 
-    internal IEnumerator IgnorePlayer(BoxCollider2D boxCollider2D)
+    internal IEnumerator IgnorePlayer(BoxCollider2D boxCollider2D, int playerIndex)
     {
+        _shooterIndex = playerIndex;
+    
         var script = GetComponent<BoxCollider2D>();
         Physics2D.IgnoreCollision(boxCollider2D, script, true);
         yield return new WaitForSeconds(0.25f);
