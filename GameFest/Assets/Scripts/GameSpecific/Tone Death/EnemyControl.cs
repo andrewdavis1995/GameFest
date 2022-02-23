@@ -17,6 +17,7 @@ public class EnemyControl : MonoBehaviour
     public float            DISABLED_TIME         = 4f;
     public float            HIDE_DELAY            = 1f;
     public bool             CAN_HIDE              = false;
+    public float            INCREASE_FACTOR       = 0.00125f;
     
     // fields
     private float           _health;
@@ -24,15 +25,41 @@ public class EnemyControl : MonoBehaviour
     private bool            _claimed;
     private int             _claimedPlayerIndex;
     private bool            _isShootable;
+
+    // capture tracking
+    float[]                 _capturedValues       = new float[4];
+    List<int>               _playersInZone        = new List<int>();
     
-    /// <summary>
-    /// Called at startup
-    /// </summary>
+    // called at startup
     void Start()
     {
         _health = HEALTH_POINTS;
         StartCoroutine(HandlingShooting_());
         _isShootable = true;
+    }
+    
+    // called once per frame
+    void Update()
+    {
+        // nothing to do if already claimed
+        if(!_claimed)
+        {
+            // update all players
+            foreach (var p in _playersInZone)
+            {
+                if (_capturedValues[p] <= 1)
+                {
+                    _capturedValues[p] += INCREASE_FACTOR;
+
+                    // check if complete
+                    if (Mathf.Abs(1 - _capturedValues[p]) < INCREASE_FACTOR)
+                    {
+                        // claim player
+                        Claim(p);
+                    }
+                }
+            }
+        }
     }
     
     /// <summary>
@@ -93,6 +120,8 @@ public class EnemyControl : MonoBehaviour
         // set appearance to match colour of player who claimed them
         foreach(var renderer in ColorRenderers)
             renderer.color = ColourFetcher.GetColour(playerIndex);
+            
+        // TODO: set animation 
     }
     
     /// <summary>
@@ -194,5 +223,23 @@ public class EnemyControl : MonoBehaviour
     public bool IsShootable()
     {
         return _isShootable;
+    }
+    
+    /// <summary>
+    /// When a player starts to claim this speaker
+    /// </summary>
+    /// <param name="playerIndex">The index of the player</param>
+    internal void StartClaim(int playerIndex)
+    {
+        _playersInZone.Add(playerIndex);
+    }
+
+    /// <summary>
+    /// When a player stops claiming this speaker
+    /// </summary>
+    /// <param name="playerIndex">The index of the player</param>
+    internal void StopClaim(int playerIndex)
+    {
+        _playersInZone.Remove(playerIndex);
     }
 }
