@@ -216,6 +216,12 @@ public class ToneDeathInputHandler : GenericInputHandler
         {
             collider.GetComponent<SpeakerScript>().StartClaim(GetPlayerIndex());
         }
+
+        // enemy
+        if(collider.tag == "Enemy")
+        {
+            collider.GetComponent<EnemyControl>().StartClaim(GetPlayerIndex());
+        }
     }
 
     /// <summary>
