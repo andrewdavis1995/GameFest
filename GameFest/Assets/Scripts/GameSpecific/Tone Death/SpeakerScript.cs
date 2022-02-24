@@ -12,6 +12,18 @@ public class SpeakerScript : MonoBehaviour
     public ParticleSystem[] Confetti;
 
     /// <summary>
+    /// Hides unused elements
+    /// </summary>
+    /// <param name="numPlayers">The number of players in the game</param>
+    public void Setup(int numPlayers)
+    {
+        for (int i = numPlayers; i < ColourRenderers.Length; i++)
+        {
+            ColourRenderers[i].gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
     /// When a player starts to claim this speaker
     /// </summary>
     /// <param name="playerIndex">The index of the player</param>

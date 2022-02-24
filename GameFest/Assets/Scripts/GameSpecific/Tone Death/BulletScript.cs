@@ -48,7 +48,7 @@ public class BulletScript : MonoBehaviour
                 var enemy = collision.gameObject.GetComponent<EnemyControl>();
                 
                 // only apply damage if enemy can be shot
-                if(enemy.IsShootable())
+                if(enemy != null && enemy.IsShootable())
                 {
                     ToneDeathController.Instance.AssignHitPoints(BULLET_HIT_SCORE, _shooterIndex);
                     enemy.Damage(BULLET_DAMAGE);

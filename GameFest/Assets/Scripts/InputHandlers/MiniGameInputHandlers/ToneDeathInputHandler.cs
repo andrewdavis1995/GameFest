@@ -39,7 +39,7 @@ public class ToneDeathInputHandler : GenericInputHandler
             OnCross();
         if (Input.GetKey(KeyCode.Escape))
             OnCircle();
-        if (Input.GetKey(KeyCode.T)) 
+        if (Input.GetKey(KeyCode.T))
             OnTriangle();
         if (Input.GetKeyDown(KeyCode.P))
             OnR1();
@@ -65,10 +65,6 @@ public class ToneDeathInputHandler : GenericInputHandler
     public void DamageDone(float damage)
     {
         _toneDeathMovement.DamageDone(damage);
-        if (_toneDeathMovement.Health() <= 0)
-        {
-            Die_();
-        }
     }
 
     /// <summary>
@@ -102,7 +98,11 @@ public class ToneDeathInputHandler : GenericInputHandler
         Movement.AddTriggerCallbacks(TriggerEntered_, TriggerLeft_);
         Movement.AddMovementCallbacks(CollisionEntered_, null);
 
+        // initialise game specific movement
         _toneDeathMovement = Movement.GetComponentInChildren<ToneDeathMovement>();
+        _toneDeathMovement.Setup(GetPlayerIndex(), Die_);
+
+        // set colour of particles
         var main = _toneDeathMovement.Particles.main;
         var col = ColourFetcher.GetColour(GetPlayerIndex());
         col.a = main.startColor.color.a;
@@ -212,15 +212,17 @@ public class ToneDeathInputHandler : GenericInputHandler
         }
 
         // speaker
-        if(collider.tag == "Speaker")
+        if (collider.tag == "Speaker")
         {
             collider.GetComponent<SpeakerScript>().StartClaim(GetPlayerIndex());
         }
 
         // enemy
-        if(collider.tag == "Enemy")
+        if (collider.tag == "Enemy")
         {
-            collider.GetComponent<EnemyControl>().StartClaim(GetPlayerIndex());
+            var enemy = collider.GetComponent<EnemyControl>();
+            if (enemy != null && !enemy.Claimed())
+                enemy.StartClaim(GetPlayerIndex());
         }
     }
 
@@ -246,6 +248,14 @@ public class ToneDeathInputHandler : GenericInputHandler
         if (collider.tag == "Speaker")
         {
             collider.GetComponent<SpeakerScript>().StopClaim(GetPlayerIndex());
+        }
+
+        // enemy
+        if (collider.tag == "Enemy")
+        {
+            var enemy = collider.GetComponent<EnemyControl>();
+            if (enemy != null)
+                enemy.StopClaim(GetPlayerIndex());
         }
     }
 

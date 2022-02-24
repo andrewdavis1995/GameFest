@@ -67,6 +67,11 @@ public class ToneDeathController : GenericController
 
         // TODO
         //SpawnPlayers_();
+
+        foreach (var sel in FindObjectsOfType<InstrumentSelection>())
+            sel.Setup(_players.Count);
+        foreach (var s in FindObjectsOfType<SpeakerScript>())
+            s.Setup(_players.Count);
     }
 
     /// <summary>
@@ -337,7 +342,7 @@ public class ToneDeathController : GenericController
     /// <returns>List of player objects</returns>
     public List<Transform> GetPlayers()
     {
-        return _players.Select(p => p.Movement.transform)
+        return _players.Select(p => p.Movement.transform).ToList();
     }
 
     /// <summary>

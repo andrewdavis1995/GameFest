@@ -10,6 +10,14 @@ public class InstrumentSelection : MonoBehaviour
 
     bool _set = false;
 
+    public void Setup(int numPlayers)
+    {
+        for(int i = numPlayers; i < InZoneDisplays.Length; i++)
+        {
+            InZoneDisplays[i].gameObject.SetActive(false);
+        }
+    }
+
     public void PlayerEntered(int index)
     {
         if (ToneDeathController.Instance.InstrumentRunOff)

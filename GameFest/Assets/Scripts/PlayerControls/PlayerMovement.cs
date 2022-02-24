@@ -313,7 +313,9 @@ public class PlayerMovement : MonoBehaviour
         if (flipped != _flipX)
         {
             _renderer.flipX = _flipX;
-            Shadow.flipX = _flipX;
+
+            if (Shadow != null)
+                Shadow.flipX = _flipX;
 
             foreach (var rend in _blingRenderers)
             {
@@ -324,6 +326,9 @@ public class PlayerMovement : MonoBehaviour
         // note: if not moving, flip will remain the same as it was before
     }
 
+    /// <summary>
+    /// Disables all animators
+    /// </summary>
     public void DisableAnimators()
     {
         foreach (var animator in _animators)
