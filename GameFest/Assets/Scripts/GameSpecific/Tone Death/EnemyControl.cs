@@ -7,39 +7,39 @@ using UnityEngine;
 public class EnemyControl : MonoBehaviour
 {
     // components
-    public Transform        ProjectilePrefab;
-    public PlayerAnimation  AnimationHandler;
+    public Transform ProjectilePrefab;
+    public PlayerAnimation AnimationHandler;
     public SpriteRenderer[] ColourElements;
-    public SpriteRenderer   Renderer;
-    public Sprite           DisabledImage;
-    public SpriteRenderer   HealthBarFill;
-    public GameObject       HealthBar;
-    private BoxCollider2D   _collider;
-    private Rigidbody2D     _rigidbody;
-    private Animator[]      _animators;
+    public SpriteRenderer Renderer;
+    public Sprite DisabledImage;
+    public SpriteRenderer HealthBarFill;
+    public GameObject HealthBar;
+    private BoxCollider2D _collider;
+    private Rigidbody2D _rigidbody;
+    private Animator[] _animators;
 
     // config
-    public Vector3          BulletOffset;
-    public float            MOVEMENT_SPEED        = 1f;
-    public float            SHOOT_RATE            = 1f;
-    public float            HEALTH_POINTS         = 100f;
-    public float            DAMAGE                = 100f;
-    public int              PROJECTILE_BOUNCES    = 1;
-    public float            DISABLED_TIME         = 4f;
-    public float            HIDE_DELAY            = 1f;
-    public bool             CAN_HIDE              = false;
-    public float            INCREASE_FACTOR       = 0.00125f;
-    
+    public Vector3 BulletOffset;
+    public float MOVEMENT_SPEED = 1f;
+    public float SHOOT_RATE = 1f;
+    public float HEALTH_POINTS = 100f;
+    public float DAMAGE = 100f;
+    public int PROJECTILE_BOUNCES = 1;
+    public float DISABLED_TIME = 4f;
+    public float HIDE_DELAY = 1f;
+    public bool CAN_HIDE = false;
+    public float INCREASE_FACTOR = 0.00125f;
+
     // fields
-    private float           _health;
-    private bool            _disabled;
-    private bool            _claimed;
-    private int             _claimedPlayerIndex;
-    private bool            _isShootable;
+    private float _health;
+    private bool _disabled;
+    private bool _claimed;
+    private int _claimedPlayerIndex;
+    private bool _isShootable;
 
     // capture tracking
-    float[]                 _capturedValues       = new float[4];
-    List<int>               _playersInZone        = new List<int>();
+    float[] _capturedValues = new float[4];
+    List<int> _playersInZone = new List<int>();
 
     // routines
     Coroutine _disableRoutine;
@@ -55,20 +55,21 @@ public class EnemyControl : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody2D>();
         _collider = GetComponent<BoxCollider2D>();
     }
-    
+
     // called once per frame
     void Update()
     {
         // nothing to do if already claimed
-        if(!_claimed && _disabled)
+        if (!_claimed && _disabled)
         {
             // update all players
             foreach (var p in _playersInZone)
             {
-                Debug.Log(_capturedValues[0]);
-
                 if (_capturedValues[p] <= 1)
                 {
+                    Debug.Log(_capturedValues[p]);
+
+                    // increase captured values
                     _capturedValues[p] += INCREASE_FACTOR;
 
                     // check if complete
@@ -98,10 +99,10 @@ public class EnemyControl : MonoBehaviour
     {
         yield return new WaitForSeconds(HIDE_DELAY);
         // TODO: update hiding appearance
-        
+
         _isShootable = false;
     }
-    
+
     /// <summary>
     /// Enemy appears from hiding place
     /// </summary>
@@ -111,7 +112,7 @@ public class EnemyControl : MonoBehaviour
         // TODO: update appearance
         yield return new WaitForSeconds(0.1f);  // TEMP
     }
-    
+
     /// <summary>
     /// Handles shooting every so often
     /// </summary>
@@ -120,18 +121,18 @@ public class EnemyControl : MonoBehaviour
         while (!_disabled && !_claimed)
         {
             yield return new WaitForSeconds(SHOOT_RATE);
-            
-            if(!_disabled && !_claimed)
+
+            if (!_disabled && !_claimed)
             {
                 // popout if necessary
-                if(CAN_HIDE)
+                if (CAN_HIDE)
                     StartCoroutine(Appear_());
 
                 // shoot
                 Shoot();
-            
+
                 // hide again if necessary
-                if(CAN_HIDE)
+                if (CAN_HIDE)
                     StartCoroutine(Hide_());
             }
         }
@@ -167,9 +168,9 @@ public class EnemyControl : MonoBehaviour
 
         _rigidbody.isKinematic = true;
         _collider.isTrigger = true;
-        
+
         // set appearance to match colour of player who claimed them
-        foreach(var renderer in ColourElements)
+        foreach (var renderer in ColourElements)
             renderer.color = ColourFetcher.GetColour(playerIndex);
 
         // back to normal appearance
@@ -187,7 +188,7 @@ public class EnemyControl : MonoBehaviour
     /// <param name="collision">The object that was collided with</param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.tag == "Ground")
+        if (collision.gameObject.tag == "Ground")
         {
             // stop movement (other than that controlled by this script)
             _rigidbody.isKinematic = true;
@@ -203,15 +204,15 @@ public class EnemyControl : MonoBehaviour
         _health -= damage;
 
         // don't allow under 0
-        if (_health < 0) _health =0;
+        if (_health < 0) _health = 0;
 
         UpdateHealthImage_();
 
         // if no more health, disable
-        if(_health <= 0)
+        if (_health <= 0)
             _disableRoutine = StartCoroutine(Disable_());
     }
-    
+
     /// <summary>
     /// Disable the enemy for a period of time
     /// </summary>
@@ -221,7 +222,7 @@ public class EnemyControl : MonoBehaviour
 
         if (_shootingRoutine != null)
             StopCoroutine(_shootingRoutine);
-        
+
         // TODO: show stars around head
 
         // disable animations
@@ -246,6 +247,8 @@ public class EnemyControl : MonoBehaviour
         {
             _health = HEALTH_POINTS;
             UpdateHealthImage_();
+            if (_shootingRoutine != null)
+                StopCoroutine(_shootingRoutine);
             _shootingRoutine = StartCoroutine(HandleShooting_());
         }
 
@@ -264,7 +267,7 @@ public class EnemyControl : MonoBehaviour
         // enemies can override this to only shoot when they have a sight of the player
         return true;
     }
-    
+
     /// <summary>
     /// Fires a shot
     /// </summary>
@@ -273,17 +276,17 @@ public class EnemyControl : MonoBehaviour
         // shoot
         var bullet = Instantiate(ProjectilePrefab, transform.position + BulletOffset, Quaternion.identity);
         bullet.gameObject.tag = "Enemy";
-        
+
         // set bullet config
         StartCoroutine(bullet.GetComponent<BulletScript>().SetBounces(PROJECTILE_BOUNCES));
         StartCoroutine(bullet.GetComponent<BulletScript>().IgnorePlayer(GetComponent<BoxCollider2D>(), -1));
         bullet.GetComponent<BulletScript>().SetDamage(DAMAGE);
-        
+
         // set shooting direction
         bullet.transform.Rotate(new Vector3(0, 0, GetRotation()));
         // TODO: change animation
     }
-    
+
     /// <summary>
     /// Fires a shot
     /// </summary>
@@ -293,17 +296,18 @@ public class EnemyControl : MonoBehaviour
         // TODO: override in parent classes
         return 0f;
     }
-    
+
     /// <summary>
     /// Find the angle the player is at
     /// </summary>
+    /// <param name="player">Player to get angle to</param>
     /// <returns>The angle to the player</returns>
-    public float GetRotationToPlayer()
+    public float GetRotationToPlayer(Transform player)
     {
-        // TODO: find angle
-        return 20f;
+        var angle = Mathf.Atan2(transform.position.y - (player.transform.position.y + .05f), transform.position.x - player.transform.position.x) * 180 / Mathf.PI + 90;
+        return angle;
     }
-    
+
     /// <summary>
     /// Find all players that can be seen
     /// </summary>
@@ -313,9 +317,10 @@ public class EnemyControl : MonoBehaviour
         // find all players
         var players = ToneDeathController.Instance.GetPlayers().ToList();
         // TODO: use raycast on each player
+        Physics2D.BoxCastAll(transform.position, new Vector2(1, 1), 45, new Vector2(0, 1));
         return false;
     }
-    
+
     /// <summary>
     /// Checks if the enemy can be shot
     /// </summary>
@@ -324,13 +329,14 @@ public class EnemyControl : MonoBehaviour
     {
         return _isShootable;
     }
-    
+
     /// <summary>
     /// When a player starts to claim this speaker
     /// </summary>
     /// <param name="playerIndex">The index of the player</param>
     internal void StartClaim(int playerIndex)
     {
+        Debug.Log("IN");
         _playersInZone.Add(playerIndex);
     }
 
@@ -340,6 +346,7 @@ public class EnemyControl : MonoBehaviour
     /// <param name="playerIndex">The index of the player</param>
     internal void StopClaim(int playerIndex)
     {
+        Debug.Log("OUT");
         _playersInZone.Remove(playerIndex);
     }
 

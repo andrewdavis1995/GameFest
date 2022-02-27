@@ -2,11 +2,18 @@ using UnityEngine;
 
 public class EnemyScript_Billy : EnemyControl
 {
+    /// <summary>
+    /// Gets the rotation to fire a bullet at
+    /// </summary>
+    /// <returns>The angle to shoot at</returns>
     public override float GetRotation()
     {
         return Random.Range(-20f, 20f);
     }
 
+    /// <summary>
+    /// Shoots a base-drop
+    /// </summary>
     public override void Shoot()
     {
         // shoot
@@ -15,7 +22,6 @@ public class EnemyScript_Billy : EnemyControl
 
         // set config
         var drop = baseDrop.GetComponent<BassDropScript>();
-        drop.SetDamage(DAMAGE);
         drop.IgnoreShooter(GetCollider());
 
         // set shooting direction

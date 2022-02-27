@@ -224,6 +224,14 @@ public class ToneDeathInputHandler : GenericInputHandler
             if (enemy != null && !enemy.Claimed())
                 enemy.StartClaim(GetPlayerIndex());
         }
+
+        // blast
+        if (collider.tag == "Blast")
+        {
+            var enemy = collider.GetComponentInParent<BassDropScript>();
+            var sizeFactor = (enemy.MAX_SIZE - enemy.transform.localScale.x) / enemy.MAX_SIZE;
+            DamageDone(enemy.DAMAGE * sizeFactor);
+        }
     }
 
     /// <summary>
@@ -351,7 +359,7 @@ public class ToneDeathInputHandler : GenericInputHandler
     public override void OnTriangle()
     {
         // go into elevator if on ground
-        if (Movement.OnGround())
+        if (Movement.OnGround() && !ToneDeathController.Instance.InstrumentSelect())
             EnterElevator();
     }
 

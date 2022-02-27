@@ -10305,8 +10305,8 @@ MonoBehaviour:
   BulletPrefab: {fileID: 2882808757679892436, guid: 11821d0bb37b84c4399e0b16db855d9e, type: 3}
   Particles: {fileID: 5582965765725223591}
   ParticlesInstrument: {fileID: 7406754973775266387}
-  _healthBarFill: {fileID: 7690857142331389548}
-  _healthBar: {fileID: 2860380691884320188}
+  HealthBarFill: {fileID: 7690857142331389548}
+  HealthBar: {fileID: 2860380691884320188}
 --- !u!1 &8818727978736209218
 GameObject:
   m_ObjectHideFlags: 0

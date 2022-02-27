@@ -42,6 +42,7 @@ public class ToneDeathMovement : MonoBehaviour
             var bullet = Instantiate(BulletPrefab, transform.position + BulletOffset, Quaternion.identity);
             StartCoroutine(bullet.GetComponent<BulletScript>().SetBounces(1));
             StartCoroutine(bullet.GetComponent<BulletScript>().IgnorePlayer(GetComponent<BoxCollider2D>(), _playerIndex));
+            bullet.GetComponent<BulletScript>().SetSpeed(10f);
             bullet.transform.Rotate(Pointer.eulerAngles);
 
             _bulletCount--;
@@ -56,6 +57,7 @@ public class ToneDeathMovement : MonoBehaviour
     {
         _particlesFiring = state;
 
+        // set particles state
         var emission = Particles.emission;
         emission.enabled = state;
         Particles.gameObject.SetActive(state);
@@ -95,9 +97,9 @@ public class ToneDeathMovement : MonoBehaviour
     public void DamageDone(float damage)
     {
         // update health
-        Debug.Log(damage + " " + _health);
-
         _health -= damage;
+
+        if (_health < 0) _health = 0f;
         UpdateHealthImage_();
 
         // die

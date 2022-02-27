@@ -11,29 +11,49 @@ public class BulletScript : MonoBehaviour
     int _shooterIndex = -1;
     int BULLET_HIT_SCORE = 10;
 
+    // Called once at startup
     private void Start()
     {
         _rigidBody = GetComponent<Rigidbody2D>();
-        //_rigidBody.AddForce(transform.up * 20);
         _rigidBody.velocity = transform.up * SPEED;
     }
 
-    private void Update()
+    /// <summary>
+    /// Sets the speed of the bullet
+    /// </summary>
+    /// <param name="speed">The speed to set</param>
+    public void SetSpeed(float speed)
     {
-        // transform.Translate(Vector2.up * Time.deltaTime * SPEED * _direction);
+        SPEED = speed;
+
+        // update velocity
+        _rigidBody = GetComponent<Rigidbody2D>();
+        _rigidBody.velocity = transform.up * SPEED;
     }
 
+    /// <summary>
+    /// Sets the number of times this bullet can bounce
+    /// </summary>
+    /// <param name="bounces">The number of times the bullet can bounce before being destroyed</param>
     public IEnumerator SetBounces(int bounces)
     {
         yield return new WaitForSeconds(0.1f);
         _bouncesRemaining = bounces;
     }
-    
+
+    /// <summary>
+    /// Sets the damage that is done by the bullet
+    /// </summary>
+    /// <param name="damage">The damage that is done</param>
     public void SetDamage(float damage)
     {
         BULLET_DAMAGE = damage;
     }
 
+    /// <summary>
+    /// When the bullet collides with another object
+    /// </summary>
+    /// <param name="collision">The item that was collided with</param>
     private void OnCollisionEnter2D(Collision2D collision)
     {
         switch (collision.gameObject.tag)
@@ -46,10 +66,10 @@ public class BulletScript : MonoBehaviour
             case "Enemy":
             {
                 var enemy = collision.gameObject.GetComponent<EnemyControl>();
-                
                 // only apply damage if enemy can be shot
                 if(enemy != null && enemy.IsShootable())
                 {
+                    // damage the enemy
                     ToneDeathController.Instance.AssignHitPoints(BULLET_HIT_SCORE, _shooterIndex);
                     enemy.Damage(BULLET_DAMAGE);
                 }
@@ -57,6 +77,7 @@ public class BulletScript : MonoBehaviour
                 break;
             }
             case "Bullet":
+                // destroy when colliding with another bullet
                 Destroy(gameObject);
                 break;
 
@@ -70,17 +91,29 @@ public class BulletScript : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Temporarily disables collisions with the specified collider
+    /// </summary>
+    /// <param name="boxCollider2D">The collider to ignore</param>
+    /// <param name="playerIndex">The index of the player who fired the bullet</param>
     internal IEnumerator IgnorePlayer(BoxCollider2D boxCollider2D, int playerIndex)
     {
+        // store who fired the bullet
         _shooterIndex = playerIndex;
     
-        var script = GetComponent<BoxCollider2D>();
-        Physics2D.IgnoreCollision(boxCollider2D, script, true);
-        yield return new WaitForSeconds(0.25f);
-        if (script != null && script.isActiveAndEnabled)
-            Physics2D.IgnoreCollision(boxCollider2D, script, false);
+        // disable collider
+        var script = GetComponent<Collider2D>();
+        script.enabled = false;
+
+        // briefly wait, then re-enable
+        yield return new WaitForSeconds(0.1f);
+        script.enabled = true;
     }
 
+    /// <summary>
+    /// Bounce the bullet - reverse direction
+    /// </summary>
+    /// <param name="collision">The object that the bullet collided with</param>
     private void Bounce_(Collision2D collision)
     {
         // flip
@@ -88,6 +121,7 @@ public class BulletScript : MonoBehaviour
         var norm = collision.contacts[0].normal;
         var vel = Vector3.Reflect(dir, norm);
 
+        // change angle and direction
         _rigidBody.velocity = vel;
         transform.eulerAngles *= -1;
 

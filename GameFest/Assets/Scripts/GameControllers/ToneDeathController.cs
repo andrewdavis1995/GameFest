@@ -350,8 +350,10 @@ public class ToneDeathController : GenericController
     /// </summary>
     internal void CheckInstrumentElevatorComplete()
     {
+        // if all done
         if (_players.All(p => p.Movement.AutoPilot() == false))
         {
+            // enable all players
             foreach (var p in _players)
             {
                 p.Movement.Reenable();
