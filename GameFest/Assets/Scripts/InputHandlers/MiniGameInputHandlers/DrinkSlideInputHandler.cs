@@ -8,6 +8,14 @@ public class DrinkSlideInputHandler : GenericInputHandler
 {
     List<Vector2> _joystickReadings = new List<Vector2>();
     int NUM_READINGS = 5;
+    bool _isActive = false;
+    bool _canFire = false;
+    
+    public void IsActive(bool state)
+    {
+        _isActive = state;
+        _canFire = state;
+    }
 
     public void Initialise(InputDevice device)
     {
@@ -23,9 +31,18 @@ public class DrinkSlideInputHandler : GenericInputHandler
 
         if (ctx.ReadValue<Vector2>().y >= -0.05f && _joystickReadings.Count == NUM_READINGS)
         {
-            Debug.Log("IT WAS: " + _joystickReadings[0].y);
-            // TODO: calculate angle
-            // TODO: pass to controller (with power and angle)
+            if(_canFire)
+            {   
+                _canFire = false;
+                _isActive = false;
+                Debug.Log("IT WAS: " + _joystickReadings[0].y);
+                // TODO: calculate angle
+                float angle = 0f;
+                // TODO: calculate power
+                float powerMultiplier = 1f;
+                // pass to controller (with power and angle)
+                DrinkSlideController.Instance.Fire(GetPlayerIndex(), angle, power);
+            }
         }
     }
 }
