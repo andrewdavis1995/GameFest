@@ -3,15 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System.Diagnostics;
 
 public class DrinkSlideController : MonoBehaviour
 {
+    const int THROW_POWER = 1000f;
     const int NUM_THROWS_PER_ROUND = 3;
+    const float ANGLE_CORRECTION = 90f;
 
     public Transform DrinkPrefab;
     public Vector3 StartPosition;
-
-    bool _canThrow = true;
 
     private Rigidbody2D _nextShot;
     List<DrinkSlideInputHandler> _players;
@@ -46,19 +47,19 @@ public class DrinkSlideController : MonoBehaviour
             _players.Add(ih);
         }
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space) && _canThrow)
-            Throw_(1000f, UnityEngine.Random.Range(-45f, 45f));
+    
+    public void Fire(int playerIndex, float angle, float powerMultiplier)
+    {        
+        Debug.Assert(playerIndex == _playerIndex, "Incorrect player was allowed to fire");
+    
+        if(playerIndex == _playerIndex)
+            Throw_(THROW_POWER * powerMultiplier, angle);
     }
 
     public void Throw_(float force, float angle)
     {
-        angle += 90;
+        angle += ANGLE_CORRECTION;
 
-        _canThrow = false;
         Debug.Log("Throwing");
 
         float xcomponent = Mathf.Cos(angle * Mathf.PI / 180) * force;
@@ -99,7 +100,10 @@ public class DrinkSlideController : MonoBehaviour
         else
         {
             CreateDrink_();
-            _canThrow = true;
+            
+            // enable next player
+            foreach(var p in _players)
+                p.IsActive(p.GetPlayerIndex() == _playerIndex);
         }
     }
 
@@ -107,6 +111,7 @@ public class DrinkSlideController : MonoBehaviour
     {
         var item = Instantiate(DrinkPrefab, StartPosition, Quaternion.identity);
         _nextShot = item.GetComponent<Rigidbody2D>();
-        _nextShot.GetComponent<SpriteRenderer>().color = ColourFetcher.GetColour(_playerIndex);
+        var drinkScript = _nextShot.GetComponent<DrinkObjectScript>();
+        drinkScript.Initialise(_playerIndex);
     }
 }
