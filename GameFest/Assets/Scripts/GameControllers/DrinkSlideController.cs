@@ -13,6 +13,7 @@ public class DrinkSlideController : MonoBehaviour
 
     public Transform DrinkPrefab;
     public Vector3 StartPosition;
+    public Sprite[] GlassShardSprites;
 
     private Rigidbody2D _nextShot;
     List<DrinkSlideInputHandler> _players;
@@ -123,5 +124,11 @@ public class DrinkSlideController : MonoBehaviour
         _nextShot = item.GetComponent<Rigidbody2D>();
         var drinkScript = _nextShot.GetComponent<DrinkObjectScript>();
         drinkScript.Initialise(_playerIndex);
+    }
+    
+    public Sprite GetRandomGlassShard()
+    {
+        var index = UnityEngine.Random.Range(0, GlassShardSprites.Length);
+        return GlassShardSprites[index];
     }
 }
