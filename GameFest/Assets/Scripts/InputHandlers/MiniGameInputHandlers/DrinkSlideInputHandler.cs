@@ -10,6 +10,7 @@ public class DrinkSlideInputHandler : GenericInputHandler
     int NUM_READINGS = 5;
     bool _isActive = false;
     bool _canFire = false;
+    float _spin = 0f;
     
     public void IsActive(bool state)
     {
@@ -39,10 +40,15 @@ public class DrinkSlideInputHandler : GenericInputHandler
                 // TODO: calculate angle
                 float angle = 0f;
                 // TODO: calculate power
-                float powerMultiplier = 1f;
+                float powerMultiplier = Math.Abs(_joystickReadings[0].x) + Math.Abs(_joystickReadings[0].y);
                 // pass to controller (with power and angle)
-                DrinkSlideController.Instance.Fire(GetPlayerIndex(), angle, power);
+                DrinkSlideController.Instance.Fire(GetPlayerIndex(), angle, powerMultiplier);
             }
         }
+    }
+
+    public override void OnMoveRight(InputAction.CallbackContext ctx, InputDevice device)
+    {        
+        _spin = ctx.ReadValue<Vector2>();
     }
 }
