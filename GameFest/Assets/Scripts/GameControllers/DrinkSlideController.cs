@@ -3,11 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using System.Diagnostics;
 
 public class DrinkSlideController : MonoBehaviour
 {
-    const int THROW_POWER = 1000f;
+    public static DrinkSlideController Instance;
+
+    const float THROW_POWER = 1000f;
     const int NUM_THROWS_PER_ROUND = 3;
     const float ANGLE_CORRECTION = 90f;
 
@@ -24,6 +25,8 @@ public class DrinkSlideController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Instance = this;
+
         // TEMP
         _players = FindObjectsOfType<DrinkSlideInputHandler>().ToList();
 
@@ -50,8 +53,8 @@ public class DrinkSlideController : MonoBehaviour
     }
     
     public void Fire(int playerIndex, float angle, float powerMultiplier)
-    {        
-        Debug.Assert(playerIndex == _playerIndex, "Incorrect player was allowed to fire");
+    {
+        System.Diagnostics.Debug.Assert(playerIndex == _playerIndex, "Incorrect player was allowed to fire");
     
         if(playerIndex == _playerIndex)
             Throw_(THROW_POWER * powerMultiplier, angle);
@@ -111,10 +114,6 @@ public class DrinkSlideController : MonoBehaviour
         else
         {
             CreateDrink_();
-            
-            // enable next player
-            foreach(var p in _players)
-                p.IsActive(p.GetPlayerIndex() == _playerIndex);
         }
     }
 
@@ -124,6 +123,10 @@ public class DrinkSlideController : MonoBehaviour
         _nextShot = item.GetComponent<Rigidbody2D>();
         var drinkScript = _nextShot.GetComponent<DrinkObjectScript>();
         drinkScript.Initialise(_playerIndex);
+
+        // enable next player
+        foreach (var p in _players)
+            p.IsActive(p.GetPlayerIndex() == _playerIndex);
     }
     
     public Sprite GetRandomGlassShard()

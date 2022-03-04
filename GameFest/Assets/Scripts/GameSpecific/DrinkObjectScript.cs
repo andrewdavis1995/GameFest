@@ -15,19 +15,19 @@ public class DrinkObjectScript : MonoBehaviour
     public void Initialise(int playerIndex)
     {
         _playerIndex = playerIndex;
-        _nextShot.GetComponent<SpriteRenderer>().color = ColourFetcher.GetColour(_playerIndex);
+        GetComponent<SpriteRenderer>().color = ColourFetcher.GetColour(_playerIndex);
     }
-    
+
     public void Damage(float damage)
     {
         _health -= damage;
-        
-        if(_health <=0)
+
+        if (_health <= 0)
         {
             StartCoroutine(DestroyGlass_());
         }
     }
-    
+
     IEnumerator DestroyGlass_()
     {
         // spawn glass shards
@@ -41,6 +41,6 @@ public class DrinkObjectScript : MonoBehaviour
         yield return new WaitForSeconds(1.5f);
         Destroy(gameObject);
     }
-    
+
     // TODO: collision detection
 }
