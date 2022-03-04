@@ -55,6 +55,16 @@ public class DrinkSlideController : MonoBehaviour
         if(playerIndex == _playerIndex)
             Throw_(THROW_POWER * powerMultiplier, angle);
     }
+    
+    public void UpdatePointer(int playerIndex, float angle)
+    {        
+        Debug.Assert(playerIndex == _playerIndex, "Incorrect player was allowed to update pointer");
+    
+        if(playerIndex == _playerIndex)
+        {
+            // TODO: update pointer
+        }
+    }
 
     public void Throw_(float force, float angle)
     {
