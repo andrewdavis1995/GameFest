@@ -14,10 +14,10 @@ public class GlassShardScript : MonoBehaviour
         Renderer.sprite = DrinkSlideController.Instance.GetRandomGlassShardSprite();
         transform.Translate(new Vector2(UnityEngine.Random.Range(-0.5f, 0.5f), UnityEngine.Random.Range(-0.5f, 0.5f)));
         transform.eulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(0f, 360f));
-        StartCoroutine(SpawnOut_());
+        StartCoroutine(FadeOut_());
     }
     
-    IEnumerator SpawnOut_()
+    IEnumerator FadeOut_()
     {
         var a = 1f;
         while(a > 0)
