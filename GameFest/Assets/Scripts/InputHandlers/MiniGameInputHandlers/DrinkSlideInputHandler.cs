@@ -58,8 +58,6 @@ public class DrinkSlideInputHandler : GenericInputHandler
         {
             if (_canFire)
             {
-                Debug.Log("ANGLE: " + angle);
-
                 _canFire = false;
                 _isActive = false;
 
