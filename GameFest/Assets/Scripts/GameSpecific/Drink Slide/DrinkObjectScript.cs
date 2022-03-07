@@ -23,6 +23,8 @@ public class DrinkObjectScript : MonoBehaviour
 
     bool _inZone = false;
 
+    Coroutine _spinRoutine;
+
     public void Initialise(int playerIndex)
     {
         _playerIndex = playerIndex;
@@ -63,6 +65,20 @@ public class DrinkObjectScript : MonoBehaviour
             case "PowerUp":
                 _inZone = false;
                 break;
+        }
+    }
+
+    /// <summary>
+    /// Moves the ball as the "wind" blows it
+    /// </summary>
+    public IEnumerator SpinMovement()
+    {
+        // continue while running/rolling
+        while (DrinkSlideController.Instance.GlassRunning())
+        {
+            yield return new WaitForSeconds(0.1f);
+            var _windStrength = new Vector2(1, 0);
+            _rigidbody.AddForce(_windStrength * 5 * new Vector2(1, 0));
         }
     }
 

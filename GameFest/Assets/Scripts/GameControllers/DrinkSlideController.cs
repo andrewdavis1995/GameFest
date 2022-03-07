@@ -3,12 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class DrinkSlideController : GenericController
 {
     public static DrinkSlideController Instance;
 
-    const float THROW_POWER = 1000f;
+    const float THROW_POWER = 1800f;
     const int NUM_THROWS_PER_ROUND = 3;
     const int NUM_ROUNDS = 3;
     const float ANGLE_CORRECTION = 90f;
@@ -21,12 +22,15 @@ public class DrinkSlideController : GenericController
     public Sprite[] GlassShardSprites;
     public Vector3[] TargetPositions;
     public CameraLerp LerpControl;
+    public ResultsPageScreen ResultsScreen;
+    public TransitionFader EndFader;
 
     private Rigidbody2D _nextShot;
     List<DrinkSlideInputHandler> _players;
 
     bool _showingRoundResults = false;
     bool _ended = false;
+    bool _running = false;
 
     int _playerIndex = 0;
     int _throwIndex = 0;
@@ -44,18 +48,20 @@ public class DrinkSlideController : GenericController
         // TEMP
         _players = FindObjectsOfType<DrinkSlideInputHandler>().ToList();
 
-        //SpawnPlayers_();
+        SpawnPlayers_();
 
         // initialise pause handler
         List<GenericInputHandler> genericPlayers = _players.ToList<GenericInputHandler>();
-        //PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
+        PauseGameHandler.Instance.Initialise(genericPlayers, QuitGame_);
 
         // fade in
-        //EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
-        //EndFader.StartFade(1, 0, () => { PauseGameHandler.Instance.Pause(true, StartGame_); });
+        EndFader.GetComponentInChildren<Image>().sprite = PlayerManagerScript.Instance.GetFaderImage();
+        EndFader.StartFade(1, 0, () => { PauseGameHandler.Instance.Pause(true, StartGame_); });
+    }
 
-        // TEMP
-        StartGame_();
+    public bool GlassRunning()
+    {
+        return _running;
     }
 
     void StartGame_()
@@ -69,6 +75,8 @@ public class DrinkSlideController : GenericController
 
         _roundIndex++;
 
+        Debug.Log(_roundIndex);
+
         if (_roundIndex < NUM_ROUNDS)
         {
             _playerIndex = 0;
@@ -79,17 +87,15 @@ public class DrinkSlideController : GenericController
         }
         else
         {
-            Debug.Log("End game");
+            StartCoroutine(Complete_());
         }
     }
 
     private void DrinksComplete_()
     {
-        Debug.Log("dc");
         var drinks = FindObjectsOfType<DrinkObjectScript>();
         if (drinks.Count() > 0)
         {
-            Debug.Log("dc inner");
             var ordered = drinks.OrderBy(d => Vector3.Distance(d.transform.position, TargetZone.position)).ToList();
             var winner = ordered.First().GetPlayerIndex();
             var index = 0;
@@ -101,10 +107,20 @@ public class DrinkSlideController : GenericController
                 {
                     ordered[index].WinnerIndicator.SetActive(true);
                     _players[winner].AddPoints(WINNING_STONE_POINTS);
-                    Debug.Log("set");
                 }
 
                 index++;
+            }
+
+
+            // points for being in zone
+            foreach (var d in drinks)
+            {
+                if (d.InZone())
+                {
+                    d.InZoneIndicator.SetActive(true);
+                    _players[d.GetPlayerIndex()].AddPoints(IN_ZONE_POINTS);
+                }
             }
         }
     }
@@ -116,12 +132,6 @@ public class DrinkSlideController : GenericController
         // points for being in zone
         foreach (var d in drinks)
         {
-            if (d.InZone())
-            {
-                d.InZoneIndicator.SetActive(true);
-                _players[d.GetPlayerIndex()].AddPoints(IN_ZONE_POINTS);
-            }
-
             Destroy(d.gameObject);
         }
 
@@ -160,7 +170,7 @@ public class DrinkSlideController : GenericController
     private void QuitGame_()
     {
         _ended = true;
-        //EndFader.StartFade(0, 1, ReturnToCentral_);
+        EndFader.StartFade(0, 1, ReturnToCentral_);
     }
 
     /// <summary>
@@ -225,17 +235,27 @@ public class DrinkSlideController : GenericController
 
         _nextShot.AddForce(new Vector2(xcomponent, ycomponent));
 
+        _running = true;
+        StartCoroutine(_nextShot.GetComponent<DrinkObjectScript>().SpinMovement());
         StartCoroutine(CheckForShotEnd_());
     }
 
     private IEnumerator CheckForShotEnd_()
-    {
+    {;
         yield return new WaitForSeconds(1f);
 
         while (_nextShot != null && _nextShot.gameObject.activeInHierarchy && _nextShot.velocity.y > 0.01f)
         {
             yield return new WaitForSeconds(0.1f);
+
+            // stop spin when too slow
+            if (_nextShot.velocity.y < 0.5f)
+                _running = false;
+
         }
+
+        // make sure spin stops
+        _running = false;
 
         yield return new WaitForSeconds(1f);
 
@@ -303,7 +323,7 @@ public class DrinkSlideController : GenericController
     {
         // sort the players by points scored
         var ordered = _players.Where(p => p.GetPoints() > 0).OrderByDescending(p => p.GetPoints()).ToList();
-        int[] winnerPoints = new int[] { 160, 60, 15 };
+        int[] winnerPoints = new int[] { 100, 60, 15 };
 
         // add winning score points 
         for (int i = 0; i < ordered.Count(); i++)
@@ -329,16 +349,16 @@ public class DrinkSlideController : GenericController
 
         yield return new WaitForSeconds(3f);
 
-        //ResultsScreen.Setup();
+        ResultsScreen.Setup();
 
         GenericInputHandler[] genericPlayers = _players.ToArray<GenericInputHandler>();
-        //ResultsScreen.SetPlayers(genericPlayers);
+        ResultsScreen.SetPlayers(genericPlayers);
 
-        ScoreStoreHandler.StoreResults(Scene.MineGames, genericPlayers);
+        ScoreStoreHandler.StoreResults(Scene.DrinkSlide, genericPlayers);
 
         yield return new WaitForSeconds(4 + genericPlayers.Length);
 
         // fade out
-        //EndFader.StartFade(0, 1, ReturnToCentral_);
+        EndFader.StartFade(0, 1, ReturnToCentral_);
     }
 }

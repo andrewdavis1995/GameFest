@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Assets;
 using UnityEngine;
 
-public enum Scene { Splash, Lobby, GameCentral, PunchlineBling, ShopDrop, MarshLand, Landslide, XTinguish, BeachBowles, QuickPlayLobby, MineGames, Statistics, CashDash, CartAttack, FollowBack, LicenseToGrill, ToneDeath }
+public enum Scene { Splash, Lobby, GameCentral, PunchlineBling, ShopDrop, MarshLand, Landslide, XTinguish, BeachBowles, QuickPlayLobby, MineGames, Statistics, CashDash, CartAttack, FollowBack, LicenseToGrill, ToneDeath, DrinkSlide }
 
 public class GameCentralController : MonoBehaviour
 {

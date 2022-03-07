@@ -13,18 +13,6 @@ public class DrinkSlideInputHandler : GenericInputHandler
     bool _canFire = false;
     float _spin = 0f;
 
-    private void Update()
-    {
-        var x = 0;
-        var y = 0;
-        if (Input.GetKey(KeyCode.LeftArrow)) x = -1;
-        else if (Input.GetKey(KeyCode.RightArrow)) x = 1;
-        if (Input.GetKey(KeyCode.DownArrow)) y = -1;
-        else if (Input.GetKey(KeyCode.UpArrow)) y = 1;
-
-        JoystickMoved(new Vector2(x, y));
-    }
-
     public void IsActive(bool state)
     {
         _isActive = state;
@@ -69,6 +57,12 @@ public class DrinkSlideInputHandler : GenericInputHandler
 
                 _joystickReadings.Clear();
             }
+        }
+
+        // if zero, clear list
+        if(Math.Abs(value.x) < 0.05f && Math.Abs(value.y) < 0.05f)
+        {
+            _joystickReadings.Clear();
         }
     }
 
