@@ -15,6 +15,7 @@ public class DrinkSlideController : GenericController
     const float ANGLE_CORRECTION = 90f;
     const int WINNING_STONE_POINTS = 150;
     const int IN_ZONE_POINTS = 30;
+    const float MAXIMUM_DISTANCE = 3.5f;
 
     public Transform DrinkPrefab;
     public Transform TargetZone;
@@ -27,6 +28,12 @@ public class DrinkSlideController : GenericController
 
     private Rigidbody2D _nextShot;
     List<DrinkSlideInputHandler> _players;
+    float _rightCurve = 0;
+
+    LineRenderer _line;
+
+    Vector3 _direction = Vector3.zero;
+    float _angle = 0;
 
     bool _showingRoundResults = false;
     bool _ended = false;
@@ -36,14 +43,12 @@ public class DrinkSlideController : GenericController
     int _throwIndex = 0;
     int _roundIndex = -1;
 
-    float _cameraSize;
-
     // Start is called before the first frame update
     void Start()
     {
         Instance = this;
 
-        _cameraSize = Camera.main.orthographicSize;
+        _line = GetComponent<LineRenderer>();
 
         // TEMP
         _players = FindObjectsOfType<DrinkSlideInputHandler>().ToList();
@@ -91,6 +96,16 @@ public class DrinkSlideController : GenericController
         }
     }
 
+    internal void UpdateSpin(int playerIndex, float spin)
+    {
+        Debug.Assert(playerIndex == _playerIndex, "Incorrect player was allowed to update spin");
+
+        if (playerIndex == _playerIndex)
+        {
+            _nextShot.GetComponent<DrinkObjectScript>().UpdateSpin(spin);
+        }
+    }
+
     private void DrinksComplete_()
     {
         var drinks = FindObjectsOfType<DrinkObjectScript>();
@@ -103,9 +118,10 @@ public class DrinkSlideController : GenericController
             {
                 var distance = Vector3.Distance(ordered[index].transform.position, TargetZone.position);
 
-                if (distance < 5f)
+                if (distance < MAXIMUM_DISTANCE)
                 {
                     ordered[index].WinnerIndicator.SetActive(true);
+                    ordered[index].WinnerIndicator.GetComponent<SpriteRenderer>().color = ColourFetcher.GetColour(winner);
                     _players[winner].AddPoints(WINNING_STONE_POINTS);
                 }
 
@@ -216,19 +232,47 @@ public class DrinkSlideController : GenericController
             Throw_(THROW_POWER * powerMultiplier, angle);
     }
 
-    public void UpdatePointer(int playerIndex, float angle)
+    public void UpdatePointer(int playerIndex, Vector3 direction, float angle)
     {
         Debug.Assert(playerIndex == _playerIndex, "Incorrect player was allowed to update pointer");
 
         if (playerIndex == _playerIndex)
         {
-            // TODO: update pointer
+            _direction = direction;
+            _angle = angle;
+        }
+    }
+
+    private void Update()
+    {
+        if (_line.enabled && _nextShot != null && _nextShot.gameObject.activeInHierarchy)
+        {
+            _line.positionCount = 2;
+            var position = _nextShot.transform.position - (5 * _direction);
+            //var midPos = ((position + _nextShot.transform.position) / 2) + new Vector3(_direction.y * _rightCurve, 0, 0);
+
+            _line.SetPositions(new Vector3[] { _nextShot.transform.position, position });
+
+            _nextShot.transform.eulerAngles = new Vector3(0, 0, _angle);
+        }
+    }
+
+    public void UpdateCurve(int playerIndex, float curve)
+    {
+        Debug.Assert(playerIndex == _playerIndex, "Incorrect player was allowed to update curve");
+
+        if (playerIndex == _playerIndex)
+        {
+            _rightCurve = curve;
         }
     }
 
     public void Throw_(float force, float angle)
     {
         angle += ANGLE_CORRECTION;
+
+        _line.enabled = false;
+        _line.SetPositions(new Vector3[] { });
 
         float xcomponent = Mathf.Cos(angle * Mathf.PI / 180) * force;
         float ycomponent = Mathf.Sin(angle * Mathf.PI / 180) * force;
@@ -249,9 +293,8 @@ public class DrinkSlideController : GenericController
             yield return new WaitForSeconds(0.1f);
 
             // stop spin when too slow
-            if (_nextShot.velocity.y < 0.5f)
+            if (_nextShot != null && _nextShot.gameObject.activeInHierarchy && _nextShot.velocity.y < 0.5f)
                 _running = false;
-
         }
 
         // make sure spin stops
@@ -304,6 +347,9 @@ public class DrinkSlideController : GenericController
         _nextShot = item.GetComponent<Rigidbody2D>();
         var drinkScript = _nextShot.GetComponent<DrinkObjectScript>();
         drinkScript.Initialise(_playerIndex);
+        _nextShot.GetComponent<SpriteRenderer>().sortingOrder = 1;
+
+        _line.enabled = true;
 
         // enable next player
         foreach (var p in _players)

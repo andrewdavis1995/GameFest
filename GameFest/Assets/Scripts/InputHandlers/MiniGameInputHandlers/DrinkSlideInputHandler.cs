@@ -40,9 +40,9 @@ public class DrinkSlideInputHandler : GenericInputHandler
         float angle = 1 * (Mathf.Atan2(_joystickReadings[0].y, _joystickReadings[0].x) * Mathf.Rad2Deg + 90f);
 
         if (_isActive)
-            DrinkSlideController.Instance.UpdatePointer(GetPlayerIndex(), angle);
+            DrinkSlideController.Instance.UpdatePointer(GetPlayerIndex(), _joystickReadings[0], angle);
 
-        if (value.y >= -0.05f && _joystickReadings.Count == NUM_READINGS && _joystickReadings[0].y < -0.05f)
+        if (value.y >= -0.05f && /*(Math.Abs(value.x) < 0.05f) &&*/ _joystickReadings.Count == NUM_READINGS && _joystickReadings[0].y < -0.05f)
         {
             if (_canFire)
             {
@@ -60,7 +60,7 @@ public class DrinkSlideInputHandler : GenericInputHandler
         }
 
         // if zero, clear list
-        if(Math.Abs(value.x) < 0.05f && Math.Abs(value.y) < 0.05f)
+        if (Math.Abs(value.x) < 0.05f && Math.Abs(value.y) < 0.05f)
         {
             _joystickReadings.Clear();
         }
@@ -69,5 +69,13 @@ public class DrinkSlideInputHandler : GenericInputHandler
     public override void OnMoveRight(InputAction.CallbackContext ctx)
     {
         _spin = ctx.ReadValue<Vector2>().x;
+        if (_isActive)
+            DrinkSlideController.Instance.UpdateCurve(GetPlayerIndex(), _spin);
+    }
+
+    private void Update()
+    {
+        if (_isActive && _canFire)
+            DrinkSlideController.Instance.UpdateSpin(GetPlayerIndex(), _spin);
     }
 }

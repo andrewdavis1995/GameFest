@@ -11,7 +11,8 @@ public class DrinkObjectScript : MonoBehaviour
     float WATER_BOOST = 1.5f;
 
     int _playerIndex;
-    float _health = 100f;
+    float _health = 50f;
+    float _spin = 0f;
 
     public Transform GlassShardPrefab;
     public Transform SpillPrefab;
@@ -22,18 +23,19 @@ public class DrinkObjectScript : MonoBehaviour
     Rigidbody2D _rigidbody;
 
     bool _inZone = false;
-
-    Coroutine _spinRoutine;
+    bool _falling = false;
 
     public void Initialise(int playerIndex)
     {
         _playerIndex = playerIndex;
-        GetComponent<SpriteRenderer>().color = ColourFetcher.GetColour(_playerIndex);
+        Renderer.color = ColourFetcher.GetColour(_playerIndex);
         _rigidbody = GetComponent<Rigidbody2D>();
     }
 
     public void Damage(float damage)
     {
+        Debug.Log("Damage: " + damage);
+
         _health -= damage;
 
         if (_health <= 0)
@@ -74,16 +76,18 @@ public class DrinkObjectScript : MonoBehaviour
     public IEnumerator SpinMovement()
     {
         // continue while running/rolling
-        while (DrinkSlideController.Instance.GlassRunning())
+        while (DrinkSlideController.Instance.GlassRunning() && !_falling)
         {
             yield return new WaitForSeconds(0.1f);
             var _windStrength = new Vector2(1, 0);
-            _rigidbody.AddForce(_windStrength * 5 * new Vector2(1, 0));
+            _rigidbody.AddForce(_windStrength * 5 * new Vector2(_spin, 0) * _rigidbody.velocity.y);
         }
     }
 
     IEnumerator Fall_()
     {
+        _falling = true;
+
         var a = 1f;
         var col = Renderer.color;
         while (a > 0)
@@ -111,6 +115,11 @@ public class DrinkObjectScript : MonoBehaviour
 
         if (_health <= 0)
             StartCoroutine(DestroyGlass_());
+    }
+
+    internal void UpdateSpin(float spin)
+    {
+        _spin = spin;
     }
 
     internal int GetPlayerIndex()
