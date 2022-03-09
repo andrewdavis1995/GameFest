@@ -7,11 +7,12 @@ using UnityEngine;
 /// </summary>
 public class DrinkObjectScript : MonoBehaviour
 {
-    float MAX_DAMAGE = 10f;
-    float WATER_BOOST = 1.5f;
+    const float MAX_DAMAGE = 10f;
+    const float WATER_BOOST = 1.4f;
+    const float TIMEOUT = 45f;
 
     int _playerIndex;
-    float _health = 50f;
+    float _health = 100f;
     float _spin = 0f;
 
     public Transform GlassShardPrefab;
@@ -19,23 +20,28 @@ public class DrinkObjectScript : MonoBehaviour
     public SpriteRenderer Renderer;
     public GameObject InZoneIndicator;
     public GameObject WinnerIndicator;
+    public TextMesh[] Texts;
 
-    Rigidbody2D _rigidbody;
+    public Rigidbody2D Rigidbody;
 
-    bool _inZone = false;
+    SpriteRenderer[] _allRenderers;
+
+    TargetScript _inZone = null;
     bool _falling = false;
 
     public void Initialise(int playerIndex)
     {
         _playerIndex = playerIndex;
         Renderer.color = ColourFetcher.GetColour(_playerIndex);
-        _rigidbody = GetComponent<Rigidbody2D>();
+    }
+
+    private void Start()
+    {
+        _allRenderers = GetComponentsInChildren<SpriteRenderer>();
     }
 
     public void Damage(float damage)
     {
-        Debug.Log("Damage: " + damage);
-
         _health -= damage;
 
         if (_health <= 0)
@@ -52,10 +58,11 @@ public class DrinkObjectScript : MonoBehaviour
                 StartCoroutine(Fall_());
                 break;
             case "PowerUp":
-                _inZone = true;
+                _inZone = collision.GetComponentInParent<TargetScript>();
                 break;
             case "Water":
-                _rigidbody.velocity *= WATER_BOOST;
+                if ((Rigidbody.velocity.x + Rigidbody.velocity.y) < 7f)
+                    Rigidbody.velocity *= WATER_BOOST;
                 break;
         }
     }
@@ -65,7 +72,7 @@ public class DrinkObjectScript : MonoBehaviour
         switch (collision.tag)
         {
             case "PowerUp":
-                _inZone = false;
+                _inZone = null;
                 break;
         }
     }
@@ -76,11 +83,12 @@ public class DrinkObjectScript : MonoBehaviour
     public IEnumerator SpinMovement()
     {
         // continue while running/rolling
-        while (DrinkSlideController.Instance.GlassRunning() && !_falling)
+        while (!_falling && Rigidbody != null && Rigidbody.gameObject.activeInHierarchy)
         {
-            yield return new WaitForSeconds(0.1f);
             var _windStrength = new Vector2(1, 0);
-            _rigidbody.AddForce(_windStrength * 5 * new Vector2(_spin, 0) * _rigidbody.velocity.y);
+            Rigidbody.AddForce(_windStrength * 5 * new Vector2(_spin, 0) * Rigidbody.velocity.y);
+            transform.eulerAngles -= new Vector3(0, 0, Rigidbody.velocity.y * _spin);
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
@@ -90,7 +98,7 @@ public class DrinkObjectScript : MonoBehaviour
 
         var a = 1f;
         var col = Renderer.color;
-        while (a > 0)
+        while (a > 0 && transform.localScale.x > 0)
         {
             transform.eulerAngles += new Vector3(0, 0, 1);
             transform.localScale -= Vector3.one * 0.05f;
@@ -117,6 +125,16 @@ public class DrinkObjectScript : MonoBehaviour
             StartCoroutine(DestroyGlass_());
     }
 
+    internal IEnumerator FadeTexts()
+    {
+        while (Texts[0].color.a > 0)
+        {
+            Texts[0].color = new Color(1, 1, 1, Texts[0].color.a - 0.1f);
+            Texts[1].color = new Color(1, 1, 1, Texts[1].color.a - 0.1f);
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
     internal void UpdateSpin(float spin)
     {
         _spin = spin;
@@ -127,21 +145,35 @@ public class DrinkObjectScript : MonoBehaviour
         return _playerIndex;
     }
 
+    public IEnumerator DrinkTimeout()
+    {
+        yield return new WaitForSeconds(TIMEOUT);
+
+        try
+        {
+            if (gameObject != null && gameObject.activeInHierarchy)
+            {
+                Destroy(gameObject);
+            }
+        }
+        // make sure it is destroyed
+        catch (Exception) { }
+    }
+
     IEnumerator DestroyGlass_()
     {
-        Renderer.enabled = false;
+        foreach (var r in _allRenderers)
+            r.enabled = false;
 
         StartCoroutine(SpillDrink_());
 
         // spawn glass shards
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 15; i++)
         {
             var created = Instantiate(GlassShardPrefab, transform.position, Quaternion.identity);
             created.GetComponent<GlassShardScript>().Create();
-            // TODO: Add force
         }
 
-        // TODO: spawn spilled drink
         yield return new WaitForSeconds(1.5f);
         Destroy(gameObject);
     }
@@ -162,8 +194,13 @@ public class DrinkObjectScript : MonoBehaviour
         }
     }
 
-    internal bool InZone()
+    internal TargetScript InZone()
     {
         return _inZone;
+    }
+
+    public Rigidbody2D GetRigidBody()
+    {
+        return Rigidbody;
     }
 }

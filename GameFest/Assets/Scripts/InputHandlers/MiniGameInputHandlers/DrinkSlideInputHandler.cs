@@ -7,17 +7,19 @@ using UnityEngine.InputSystem.DualShock;
 
 public class DrinkSlideInputHandler : GenericInputHandler
 {
+    const float ANGLE_CORRECTION = 90f;
+    const float THROW_POWER = 1800f;
+
     List<Vector2> _joystickReadings = new List<Vector2>();
     int NUM_READINGS = 5;
-    bool _isActive = false;
     bool _canFire = false;
     float _spin = 0f;
+    float _angle = 0f;
 
-    public void IsActive(bool state)
-    {
-        _isActive = state;
-        _canFire = state;
-    }
+    DrinkObjectScript _activeShot;
+    LineRenderer _activeShotLine;
+
+    Vector3 _direction = Vector3.zero;
 
     public void Initialise(InputDevice device)
     {
@@ -36,26 +38,26 @@ public class DrinkSlideInputHandler : GenericInputHandler
         if (_joystickReadings.Count > NUM_READINGS)
             _joystickReadings.RemoveAt(0);
 
-        // calculate angle - flip by -1 to point opposite direction
-        float angle = 1 * (Mathf.Atan2(_joystickReadings[0].y, _joystickReadings[0].x) * Mathf.Rad2Deg + 90f);
+        // calculate angle
+        _angle = 1 * (Mathf.Atan2(_joystickReadings[0].y, _joystickReadings[0].x) * Mathf.Rad2Deg + 90f);
 
-        if (_isActive)
-            DrinkSlideController.Instance.UpdatePointer(GetPlayerIndex(), _joystickReadings[0], angle);
+        _direction = _joystickReadings[0];
 
-        if (value.y >= -0.05f && /*(Math.Abs(value.x) < 0.05f) &&*/ _joystickReadings.Count == NUM_READINGS && _joystickReadings[0].y < -0.05f)
+        if (value.y >= -0.05f && _joystickReadings.Count == NUM_READINGS && _joystickReadings[0].y < -0.2f)
         {
             if (_canFire)
             {
-                _canFire = false;
-                _isActive = false;
-
                 // calculate power
                 float powerMultiplier = Math.Abs(_joystickReadings[0].x) + Math.Abs(_joystickReadings[0].y);
 
                 // pass to controller (with power and angle)
-                DrinkSlideController.Instance.Fire(GetPlayerIndex(), angle, powerMultiplier);
+                Throw_(THROW_POWER * powerMultiplier);
 
                 _joystickReadings.Clear();
+
+                _angle = 0;
+
+                _direction = Vector3.zero;
             }
         }
 
@@ -69,13 +71,74 @@ public class DrinkSlideInputHandler : GenericInputHandler
     public override void OnMoveRight(InputAction.CallbackContext ctx)
     {
         _spin = ctx.ReadValue<Vector2>().x;
-        if (_isActive)
-            DrinkSlideController.Instance.UpdateCurve(GetPlayerIndex(), _spin);
     }
 
     private void Update()
     {
-        if (_isActive && _canFire)
-            DrinkSlideController.Instance.UpdateSpin(GetPlayerIndex(), _spin);
+        if (_canFire)
+        {
+            // TODO: Update direction
+            // TODO: Update curve
+            if (_activeShotLine.enabled && _activeShot != null && _activeShot.gameObject.activeInHierarchy)
+            {
+                _activeShotLine.positionCount = 2;
+                var position = _activeShot.transform.position - (5 * _direction);
+                //var midPos = ((position + _nextShot.transform.position) / 2) + new Vector3(_direction.y * _rightCurve, 0, 0);
+
+                _activeShotLine.SetPositions(new Vector3[] { _activeShot.transform.position, position });
+
+                _activeShot.transform.eulerAngles = new Vector3(0, 0, _angle);
+            }
+        }
+    }
+
+    public void Throw_(float force)
+    {
+        _canFire = false;
+        var fireAngle = _angle + ANGLE_CORRECTION;
+
+        _activeShotLine.enabled = false;
+        _activeShotLine.SetPositions(new Vector3[] { });
+
+        float xcomponent = Mathf.Cos(fireAngle * Mathf.PI / 180) * force;
+        float ycomponent = Mathf.Sin(fireAngle * Mathf.PI / 180) * force;
+
+        _activeShot.GetRigidBody().AddForce(new Vector2(xcomponent, ycomponent));
+
+        var drink = _activeShot.GetComponent<DrinkObjectScript>();
+        drink.UpdateSpin(_spin);
+        StartCoroutine(drink.SpinMovement());
+        StartCoroutine(drink.DrinkTimeout());
+        StartCoroutine(CheckForShotEnd_());
+    }
+
+    private IEnumerator CheckForShotEnd_()
+    {
+        yield return new WaitForSeconds(1f);
+
+        while (_activeShot != null && _activeShot.gameObject.activeInHierarchy && _activeShot.GetRigidBody().velocity.y > 0.05f)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        CreateDrink_();
+    }
+
+    public void Enable()
+    {
+        CreateDrink_();
+    }
+
+    private void CreateDrink_()
+    {
+        var item = Instantiate(DrinkSlideController.Instance.DrinkPrefab, DrinkSlideController.Instance.StartPositions[GetPlayerIndex()], Quaternion.identity);
+        _activeShot = item.GetComponent<DrinkObjectScript>();
+        _activeShotLine = item.GetComponent<LineRenderer>();
+        _activeShot.Initialise(GetPlayerIndex());
+        _activeShot.GetComponent<SpriteRenderer>().sortingOrder = 1;
+
+        _activeShotLine.enabled = true;
+
+        _canFire = true;
     }
 }
